@@ -38,6 +38,16 @@
 		D9AF18C93024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18C73024C81D00C39DB7 /* KondateTimelineProvider.swift */; };
 		D9AF18CB3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */; };
 		D9AF18CC3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */; };
+		D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CD3024C88A00C39DB7 /* Menu.swift */; };
+		D9AF18D03024C89400C39DB7 /* Ingredient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CF3024C89400C39DB7 /* Ingredient.swift */; };
+		D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */; };
+		D9AF18D43024C8A700C39DB7 /* PatternDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D33024C8A700C39DB7 /* PatternDay.swift */; };
+		D9AF18D63024C8AE00C39DB7 /* StockItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D53024C8AE00C39DB7 /* StockItem.swift */; };
+		D9AF18D73024C96900C39DB7 /* StockItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D53024C8AE00C39DB7 /* StockItem.swift */; };
+		D9AF18D83024C96E00C39DB7 /* PatternDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D33024C8A700C39DB7 /* PatternDay.swift */; };
+		D9AF18D93024C97200C39DB7 /* KondatePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */; };
+		D9AF18DA3024C97600C39DB7 /* Ingredient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CF3024C89400C39DB7 /* Ingredient.swift */; };
+		D9AF18DB3024C97B00C39DB7 /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CD3024C88A00C39DB7 /* Menu.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +109,11 @@
 		D9AF18C33024C7EB00C39DB7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		D9AF18C73024C81D00C39DB7 /* KondateTimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KondateTimelineProvider.swift; sourceTree = "<group>"; };
 		D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayKondateWidgetView.swift; sourceTree = "<group>"; };
+		D9AF18CD3024C88A00C39DB7 /* Menu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Menu.swift; sourceTree = "<group>"; };
+		D9AF18CF3024C89400C39DB7 /* Ingredient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ingredient.swift; sourceTree = "<group>"; };
+		D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KondatePattern.swift; sourceTree = "<group>"; };
+		D9AF18D33024C8A700C39DB7 /* PatternDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternDay.swift; sourceTree = "<group>"; };
+		D9AF18D53024C8AE00C39DB7 /* StockItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockItem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +196,11 @@
 		D9AF18983024C60900C39DB7 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				D9AF18CD3024C88A00C39DB7 /* Menu.swift */,
+				D9AF18CF3024C89400C39DB7 /* Ingredient.swift */,
+				D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */,
+				D9AF18D33024C8A700C39DB7 /* PatternDay.swift */,
+				D9AF18D53024C8AE00C39DB7 /* StockItem.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -407,6 +427,8 @@
 				D9AF18B03024C73200C39DB7 /* ShoppingListView.swift in Sources */,
 				D9AF18973024C60000C39DB7 /* AppDelegate.swift in Sources */,
 				D9AF18A83024C70000C39DB7 /* PatternDetailView.swift in Sources */,
+				D9AF18D03024C89400C39DB7 /* Ingredient.swift in Sources */,
+				D9AF18D43024C8A700C39DB7 /* PatternDay.swift in Sources */,
 				D9AF18C93024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */,
 				D9AF18B23024C74300C39DB7 /* DiffIngredientRow.swift in Sources */,
 				D9AF18AA3024C70B00C39DB7 /* PatternEditorView.swift in Sources */,
@@ -416,10 +438,13 @@
 				D9AF18C23024C7CF00C39DB7 /* CloudKitManager.swift in Sources */,
 				D9AF18B83024C76200C39DB7 /* CloudKitShareView.swift in Sources */,
 				D9AF18BE3024C7BB00C39DB7 /* PresetDataService.swift in Sources */,
+				D9AF18D63024C8AE00C39DB7 /* StockItem.swift in Sources */,
 				D9AF18B43024C74D00C39DB7 /* StockCheckListView.swift in Sources */,
 				D9AF18A43024C6E900C39DB7 /* MealCardView.swift in Sources */,
 				D9AF18C03024C7C400C39DB7 /* DiffCalculator.swift in Sources */,
+				D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */,
 				D9AF18A63024C6F500C39DB7 /* PatternListView.swift in Sources */,
+				D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */,
 				D9AF186D3024C0DD00C39DB7 /* MainTabView.swift in Sources */,
 				D9AF18BA3024C76C00C39DB7 /* OnboardingView.swift in Sources */,
 				D9AF186E3024C0DD00C39DB7 /* SmartKondateApp.swift in Sources */,
@@ -431,9 +456,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9AF18D93024C97200C39DB7 /* KondatePattern.swift in Sources */,
 				D9AF188F3024C28800C39DB7 /* SmartKondateWidget.swift in Sources */,
 				D9AF18CB3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */,
 				D9AF18C83024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */,
+				D9AF18DA3024C97600C39DB7 /* Ingredient.swift in Sources */,
+				D9AF18D83024C96E00C39DB7 /* PatternDay.swift in Sources */,
+				D9AF18DB3024C97B00C39DB7 /* Menu.swift in Sources */,
+				D9AF18D73024C96900C39DB7 /* StockItem.swift in Sources */,
 				D9AF18903024C28800C39DB7 /* SmartKondateWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
