@@ -7,11 +7,15 @@
 
 import SwiftUI
 import SwiftData
+import CloudKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
+    @State private var cloudKitManager = CloudKitManager.shared
+    @State private var isShowingShareSheet = false
+    @State private var activeShare: CKShare?
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingResetConfirmation = false
 
@@ -20,7 +24,15 @@ struct SettingsView: View {
             // MARK: - 1. 家族共有 (CloudKit Share)
             Section {
                 Button {
-                    // CloudKit Share ダイアログ呼出（実装プレースホルダー）
+                    Task {
+                        do {
+                            let share = try await cloudKitManager.prepareShare()
+                            self.activeShare = share
+                            self.isShowingShareSheet = true
+                        } catch {
+                            print("CloudKit Share error: \(error)")
+                        }
+                    }
                 } label: {
                     HStack {
                         Label {
@@ -31,11 +43,18 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                        if cloudKitManager.accountStatus == .available {
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        } else {
+                            Text("iCloud Unavailable")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
+                .disabled(cloudKitManager.accountStatus != .available)
             } header: {
                 Text("Family Sharing")
             } footer: {
@@ -76,14 +95,40 @@ struct SettingsView: View {
                 HStack {
                     Text("App Version")
                     Spacer()
-                    Text("1.0")
+                    Text("1.0.0")
                         .foregroundStyle(.secondary)
+                }
+
+                Link(destination: URL(string: "https://example.com/terms")!) {
+                    HStack {
+                        Text("Terms of Service")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+
+                Link(destination: URL(string: "https://example.com/privacy")!) {
+                    HStack {
+                        Text("Privacy Policy")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Settings")
-        // データリセット確認ダイアログ
+        .sheet(isPresented: $isShowingShareSheet) {
+            if let share = activeShare {
+                CloudKitShareView(share: share, container: CKContainer.default())
+            }
+        }
         .confirmationDialog(
             "Reset to Presets?",
             isPresented: $isShowingResetConfirmation,
@@ -96,7 +141,6 @@ struct SettingsView: View {
         } message: {
             Text("This will delete all current data and restore initial preset patterns and items.")
         }
-        // 全削除確認ダイアログ
         .confirmationDialog(
             "Delete All Data?",
             isPresented: $isShowingDeleteConfirmation,
@@ -111,9 +155,6 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - データ操作ロジック
-
-    /// 全データの削除
     private func deleteAllData() {
         do {
             try modelContext.delete(model: KondatePattern.self)
@@ -127,7 +168,6 @@ struct SettingsView: View {
         }
     }
 
-    /// 全削除した上でプリセットデータを再ロード
     private func resetAndLoadPresets() {
         deleteAllData()
         PresetDataService.insertPresetDataIfNeeded(context: modelContext)

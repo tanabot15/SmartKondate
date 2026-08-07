@@ -6,13 +6,49 @@
 //
 
 import SwiftUI
+import CloudKit
 
-struct CloudKitShareView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+struct CloudKitShareView: UIViewControllerRepresentable {
+    let share: CKShare
+    let container: CKContainer
+    
+    func makeUIViewController(context: Context) -> UICloudSharingController {
+        let controller = UICloudSharingController(share: share, container: container)
+        controller.delegate = context.coordinator
+        controller.availablePermissions = [.allowReadWrite, .allowPrivate]
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UICloudSharingController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UICloudSharingControllerDelegate {
+        var parent: CloudKitShareView
+        
+        init(_ parent: CloudKitShareView) {
+            self.parent = parent
+        }
+        
+        func cloudSharingController(_ csc: UICloudSharingController, failedToSaveShareWithError error: Error) {
+            print("Failed to save CloudKit share: \(error.localizedDescription)")
+        }
+        
+        func itemTitle(for csc: UICloudSharingController) -> String? {
+            "SmartKondate Family Share"
+        }
     }
 }
 
 #Preview {
-    CloudKitShareView()
+    let dummyZoneID = CKRecordZone.ID(zoneName: "PreviewZone", ownerName: CKCurrentUserDefaultName)
+    let dummyShare = CKShare(recordZoneID: dummyZoneID)
+    dummyShare[CKShare.SystemFieldKey.title] = "SmartKondate Family Share" as CKRecordValue
+    
+    return CloudKitShareView(
+        share: dummyShare,
+        container: CKContainer.default()
+    )
 }
