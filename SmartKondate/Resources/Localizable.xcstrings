@@ -1,40 +1,280 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Check items to buy regular pantry supplies." : {
+    "%@ Menu" : {
 
     },
-    "CloudKit sharing and options will be configured here." : {
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      }
+    },
+    "%lld Days" : {
+
+    },
+    "%lld Days Cycle • %lld Days Set" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld Days Cycle • %2$lld Days Set"
+          }
+        }
+      }
+    },
+    "1.0.0" : {
+
+    },
+    "About" : {
+
+    },
+    "Activating this pattern will use it on your Dashboard." : {
+
+    },
+    "Active" : {
+
+    },
+    "Active Pattern: %@ (Day %lld/%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Active Pattern: %1$@ (Day %2$lld/%3$lld)"
+          }
+        }
+      }
+    },
+    "Add" : {
+
+    },
+    "Add Stock Item" : {
+
+    },
+    "Amount (e.g. 1/2)" : {
+
+    },
+    "App Version" : {
+
+    },
+    "Basic Info" : {
+
+    },
+    "Buy" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Category" : {
+
+    },
+    "Change" : {
+
+    },
+    "Changed" : {
+
+    },
+    "Clear Checks" : {
+
+    },
+    "Cycle Duration" : {
 
     },
     "Dashboard" : {
 
     },
+    "Data Management" : {
+
+    },
+    "Day %lld" : {
+
+    },
+    "Delete All Data" : {
+
+    },
+    "Delete All Data?" : {
+
+    },
+    "Delete Everything" : {
+
+    },
+    "Duration" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit Menu" : {
+
+    },
+    "Edit Pattern" : {
+
+    },
+    "Family Sharing" : {
+
+    },
+    "Get Started" : {
+
+    },
+    "Go to Stock Checklist" : {
+
+    },
     "Hello, World!" : {
 
     },
-    "Manage your weekly meal patterns here." : {
+    "iCloud Unavailable" : {
+
+    },
+    "Ingredients" : {
+
+    },
+    "Invite Family" : {
+
+    },
+    "Item (e.g. Onion)" : {
+
+    },
+    "Item Info" : {
+
+    },
+    "Item Name (e.g. Soy Sauce)" : {
+
+    },
+    "Memo" : {
+
+    },
+    "Menu Name (e.g. Curry)" : {
 
     },
     "Menus" : {
 
     },
+    "Modified" : {
+
+    },
+    "Modified / Added Ingredients" : {
+
+    },
+    "New Menu" : {
+
+    },
+    "New Pattern" : {
+
+    },
+    "Next" : {
+
+    },
+    "No active pattern selected" : {
+
+    },
+    "No Ingredients Needed" : {
+
+    },
+    "No ingredients specified" : {
+
+    },
+    "No Meal Patterns" : {
+
+    },
+    "No menu assigned" : {
+
+    },
+    "No Menus Found" : {
+
+    },
+    "No menus set for this date, or menus contain no ingredients." : {
+
+    },
+    "None" : {
+
+    },
+    "None / Clear" : {
+
+    },
+    "Notes, recipes, or links..." : {
+
+    },
+    "Pattern Details" : {
+
+    },
+    "Pattern Info" : {
+
+    },
+    "Pattern Name (e.g. Summer Cycle)" : {
+
+    },
     "Patterns" : {
+
+    },
+    "Privacy Policy" : {
+
+    },
+    "Reset & Load Presets" : {
+
+    },
+    "Reset & Restore Preset Data" : {
+
+    },
+    "Reset to Presets?" : {
+
+    },
+    "Save" : {
+
+    },
+    "Search recipes" : {
+
+    },
+    "Select Menu" : {
+
+    },
+    "Set as Active Pattern" : {
 
     },
     "Settings" : {
 
     },
+    "Share meal patterns and shopping checklists with family members via iCloud." : {
+
+    },
+    "Shopping List" : {
+
+    },
+    "Shopping Period" : {
+
+    },
+    "Skip" : {
+
+    },
+    "Standard Ingredients" : {
+
+    },
     "Stock" : {
 
     },
-    "Stock Checklist" : {
+    "Tap + to create a weekly or custom meal cycle pattern." : {
 
     },
-    "Today's menu and quick adjustments will appear here." : {
+    "Tap + to register a new menu item." : {
 
     },
-    "Your recipe database will be managed here." : {
+    "Target Date" : {
+
+    },
+    "Terms of Service" : {
+
+    },
+    "This action cannot be undone. All meal patterns, menus, ingredients, and stock items will be removed." : {
+
+    },
+    "This will delete all current data and restore initial preset patterns and items." : {
+
+    },
+    "Today's Menu" : {
 
     }
   },

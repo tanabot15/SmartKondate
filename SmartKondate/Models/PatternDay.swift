@@ -11,13 +11,12 @@ import SwiftData
 @Model
 final class PatternDay {
     var id: UUID = UUID()
-    var dayIndex: Int = 0 // 0-based: 0 = Day 1, 1 = Day 2...
+    var dayIndex: Int = 0
     
-    // 親パターンへの参照（親側の inverse と対になる設定）
-    @Relationship(deleteRule: .nullify)
+    // 親パターンへの参照
     var pattern: KondatePattern?
     
-    // 各食のメニュー（オプショナル参照）
+    // 各食のメニュー参照
     var breakfastMenu: Menu?
     var lunchMenu: Menu?
     var dinnerMenu: Menu?

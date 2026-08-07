@@ -35,7 +35,7 @@ final class CloudKitManager {
         }
     }
     
-    /// 共有を作成・準備するための関数
+    /// 共有ゾーンと CKShare の準備
     func prepareShare() async throws -> CKShare {
         let zoneID = CKRecordZone.ID(zoneName: "SmartKondateZone", ownerName: CKCurrentUserDefaultName)
         let share = CKShare(recordZoneID: zoneID)

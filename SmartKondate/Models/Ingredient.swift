@@ -12,10 +12,9 @@ import SwiftData
 final class Ingredient {
     var id: UUID = UUID()
     var name: String = ""
-    var amount: String = "" // 例: "200g", "1 tbsp", "2 pcs"
+    var amount: String = ""
     
-    // 親となるメニューへの参照（削除時はNull化）
-    @Relationship(deleteRule: .nullify)
+    // 親 Menu への参照（@Relationship アノテーションは削除）
     var menu: Menu?
 
     init(name: String, amount: String = "") {

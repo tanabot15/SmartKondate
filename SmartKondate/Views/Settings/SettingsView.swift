@@ -98,28 +98,6 @@ struct SettingsView: View {
                     Text("1.0.0")
                         .foregroundStyle(.secondary)
                 }
-
-                Link(destination: URL(string: "https://example.com/terms")!) {
-                    HStack {
-                        Text("Terms of Service")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        Image(systemName: "arrow.up.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-
-                Link(destination: URL(string: "https://example.com/privacy")!) {
-                    HStack {
-                        Text("Privacy Policy")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        Image(systemName: "arrow.up.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
             }
         }
         .listStyle(.insetGrouped)
@@ -129,6 +107,7 @@ struct SettingsView: View {
                 CloudKitShareView(share: share, container: CKContainer.default())
             }
         }
+        // データリセット確認ダイアログ
         .confirmationDialog(
             "Reset to Presets?",
             isPresented: $isShowingResetConfirmation,
@@ -141,6 +120,7 @@ struct SettingsView: View {
         } message: {
             Text("This will delete all current data and restore initial preset patterns and items.")
         }
+        // 全削除確認ダイアログ
         .confirmationDialog(
             "Delete All Data?",
             isPresented: $isShowingDeleteConfirmation,
@@ -155,6 +135,7 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - データ操作ロジック
     private func deleteAllData() {
         do {
             try modelContext.delete(model: KondatePattern.self)

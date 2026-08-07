@@ -75,5 +75,11 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self], inMemory: true)
+        .modelContainer(for: [
+            Ingredient.self,
+            Menu.self,
+            PatternDay.self,
+            KondatePattern.self,
+            StockItem.self
+        ], inMemory: true)
 }

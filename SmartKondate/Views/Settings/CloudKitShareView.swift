@@ -42,13 +42,4 @@ struct CloudKitShareView: UIViewControllerRepresentable {
     }
 }
 
-#Preview {
-    let dummyZoneID = CKRecordZone.ID(zoneName: "PreviewZone", ownerName: CKCurrentUserDefaultName)
-    let dummyShare = CKShare(recordZoneID: dummyZoneID)
-    dummyShare[CKShare.SystemFieldKey.title] = "SmartKondate Family Share" as CKRecordValue
-    
-    return CloudKitShareView(
-        share: dummyShare,
-        container: CKContainer.default()
-    )
-}
+// #Preview は完全に削除します（Canvasクラッシュの原因になるため）
