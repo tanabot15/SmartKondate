@@ -9,6 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct MainTabView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    
     @State private var selectedTab: Tab = .dashboard
     
     enum Tab {
@@ -61,16 +63,17 @@ struct MainTabView: View {
             }
             .tag(Tab.settings)
         }
+        // 初回起動時（false）の場合のみ OnboardingView を全画面表示
+        .fullScreenCover(isPresented: Binding(
+            get: { !hasCompletedOnboarding },
+            set: { hasCompletedOnboarding = !$0 }
+        )) {
+            OnboardingView()
+        }
     }
 }
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [
-            Ingredient.self,
-            Menu.self,
-            PatternDay.self,
-            KondatePattern.self,
-            StockItem.self
-        ], inMemory: true)
+        .modelContainer(for: [KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self], inMemory: true)
 }
