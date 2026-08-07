@@ -12,7 +12,7 @@ struct StockCheckListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StockItem.name) private var stockItems: [StockItem]
 
-    @State private var isShowingAddItemAlert = false
+    @State private var isShowingAddSheet = false
     @State private var newItemName = ""
     @State private var newItemCategory = "Pantry"
 
@@ -63,21 +63,44 @@ struct StockCheckListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    isShowingAddItemAlert = true
+                    isShowingAddSheet = true
                 } label: {
                     Image(systemName: "plus")
                 }
             }
         }
-        .alert("Add Stock Item", isPresented: $isShowingAddItemAlert) {
-            TextField("Item Name", text: $newItemName)
-            Button("Cancel", role: .cancel) {
-                newItemName = ""
+        .sheet(isPresented: $isShowingAddSheet) {
+            NavigationStack {
+                Form {
+                    Section(header: Text("Item Info")) {
+                        TextField("Item Name (e.g. Soy Sauce)", text: $newItemName)
+                        
+                        Picker("Category", selection: $newItemCategory) {
+                            ForEach(categories, id: \.self) { category in
+                                Text(category).tag(category)
+                            }
+                        }
+                    }
+                }
+                .navigationTitle("Add Stock Item")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            resetInput()
+                            isShowingAddSheet = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Add") {
+                            addStockItem()
+                            isShowingAddSheet = false
+                        }
+                        .disabled(newItemName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                }
             }
-            Button("Add") {
-                addStockItem()
-            }
-            .disabled(newItemName.trimmingCharacters(in: .whitespaces).isEmpty)
+            .presentationDetents([.medium])
         }
     }
 
@@ -91,7 +114,12 @@ struct StockCheckListView: View {
         
         let item = StockItem(name: trimmed, category: newItemCategory)
         modelContext.insert(item)
+        resetInput()
+    }
+
+    private func resetInput() {
         newItemName = ""
+        newItemCategory = "Pantry"
     }
 
     private func deleteItems(at offsets: IndexSet, in categoryItems: [StockItem]) {
