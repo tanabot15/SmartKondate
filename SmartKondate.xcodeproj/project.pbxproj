@@ -35,9 +35,7 @@
 		D9AF18C23024C7CF00C39DB7 /* CloudKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18C13024C7CF00C39DB7 /* CloudKitManager.swift */; };
 		D9AF18C43024C7EB00C39DB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D9AF18C33024C7EB00C39DB7 /* Localizable.xcstrings */; };
 		D9AF18C83024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18C73024C81D00C39DB7 /* KondateTimelineProvider.swift */; };
-		D9AF18C93024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18C73024C81D00C39DB7 /* KondateTimelineProvider.swift */; };
 		D9AF18CB3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */; };
-		D9AF18CC3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */; };
 		D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CD3024C88A00C39DB7 /* Menu.swift */; };
 		D9AF18D03024C89400C39DB7 /* Ingredient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CF3024C89400C39DB7 /* Ingredient.swift */; };
 		D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */; };
@@ -429,10 +427,8 @@
 				D9AF18A83024C70000C39DB7 /* PatternDetailView.swift in Sources */,
 				D9AF18D03024C89400C39DB7 /* Ingredient.swift in Sources */,
 				D9AF18D43024C8A700C39DB7 /* PatternDay.swift in Sources */,
-				D9AF18C93024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */,
 				D9AF18B23024C74300C39DB7 /* DiffIngredientRow.swift in Sources */,
 				D9AF18AA3024C70B00C39DB7 /* PatternEditorView.swift in Sources */,
-				D9AF18CC3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */,
 				D9AF18A23024C6DA00C39DB7 /* DashboardView.swift in Sources */,
 				D9AF18B63024C75900C39DB7 /* SettingsView.swift in Sources */,
 				D9AF18C23024C7CF00C39DB7 /* CloudKitManager.swift in Sources */,
