@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct SmartKondateApp: App {
+    // 💡 AppDelegate を SwiftUI アプリのライフサイクルにアタッチ
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Ingredient.self,
@@ -19,7 +22,7 @@ struct SmartKondateApp: App {
             StockItem.self
         ])
         
-        // 💡 Preview (Canvas) やシミュレータ環境では CloudKit 同期をオフにする
+        // Preview (Canvas) やシミュレータ環境では CloudKit 同期をオフにする
         #if DEBUG
         let cloudKitSetting: ModelConfiguration.CloudKitDatabase = .none
         #else

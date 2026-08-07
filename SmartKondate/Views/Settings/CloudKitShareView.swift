@@ -41,5 +41,3 @@ struct CloudKitShareView: UIViewControllerRepresentable {
         }
     }
 }
-
-// #Preview は完全に削除します（Canvasクラッシュの原因になるため）
