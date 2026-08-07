@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct SmartKondateApp: App {
@@ -13,5 +14,12 @@ struct SmartKondateApp: App {
         WindowGroup {
             MainTabView()
         }
+        .modelContainer(for: [
+            Ingredient.self,
+            Menu.self,
+            PatternDay.self,
+            KondatePattern.self,
+            StockItem.self
+        ])
     }
 }

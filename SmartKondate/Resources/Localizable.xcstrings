@@ -1,7 +1,42 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Check items to buy regular pantry supplies." : {
 
+    },
+    "CloudKit sharing and options will be configured here." : {
+
+    },
+    "Dashboard" : {
+
+    },
+    "Hello, World!" : {
+
+    },
+    "Manage your weekly meal patterns here." : {
+
+    },
+    "Menus" : {
+
+    },
+    "Patterns" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Stock" : {
+
+    },
+    "Stock Checklist" : {
+
+    },
+    "Today's menu and quick adjustments will appear here." : {
+
+    },
+    "Your recipe database will be managed here." : {
+
+    }
   },
   "version" : "1.2"
 }
