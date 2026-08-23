@@ -16,7 +16,7 @@ struct PatternDetailView: View {
     @State private var isShowingEditPatternSheet = false
 
     var sortedDays: [PatternDay] {
-        pattern.days.sorted { $0.dayIndex < $1.dayIndex }
+        (pattern.days ?? []).sorted { $0.dayIndex < $1.dayIndex }
     }
 
     var body: some View {
@@ -84,9 +84,8 @@ struct PatternDetailView: View {
         }
     }
 
-    // 指定した durationDays 分の PatternDay オブジェクトが存在することを確認・生成
     private func ensurePatternDaysExist() {
-        let existingIndices = Set(pattern.days.map { $0.dayIndex })
+        let existingIndices = Set((pattern.days ?? []).map { $0.dayIndex })
         for index in 0..<pattern.durationDays {
             if !existingIndices.contains(index) {
                 let newDay = PatternDay(dayIndex: index)
@@ -97,7 +96,6 @@ struct PatternDetailView: View {
     }
 }
 
-// サブ View: 食事タイプ別のメニュー選択 Picker 行
 private struct MealMenuPickerRow: View {
     let mealTitle: String
     let icon: String

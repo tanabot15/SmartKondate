@@ -20,7 +20,6 @@ struct ShoppingListView: View {
         activePatterns.first
     }
 
-    // 今日の朝・昼・夕のメニュー差分計算
     private var diffResults: [MealDiffResult] {
         DiffCalculator.calculateDiff(
             for: targetDate,
@@ -32,12 +31,11 @@ struct ShoppingListView: View {
         )
     }
 
-    // 各食のメニューから食材アイテム（モデル識別用キー付き）を展開
     private var ingredientItems: [ShoppingIngredientItem] {
         var items: [ShoppingIngredientItem] = []
         for result in diffResults {
             guard let menu = result.effectiveMenu else { continue }
-            for ingredient in menu.ingredients {
+            for ingredient in (menu.ingredients ?? []) {
                 let key = "\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
                 items.append(
                     ShoppingIngredientItem(

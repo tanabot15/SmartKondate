@@ -45,7 +45,7 @@ struct PatternListView: View {
                                     }
                                 }
                                 
-                                Text("\(pattern.durationDays) Days Cycle • \(pattern.days.count) Days Set")
+                                Text("\(pattern.durationDays) Days Cycle • \((pattern.days ?? []).count) Days Set")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -85,7 +85,6 @@ struct PatternListView: View {
     }
 
     private func toggleActive(pattern: KondatePattern) {
-        // アクティブ化する場合、他のパターンの isActive を false にリセット
         if !pattern.isActive {
             for p in patterns {
                 p.isActive = false

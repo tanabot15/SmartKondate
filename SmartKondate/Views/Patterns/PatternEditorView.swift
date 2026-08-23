@@ -70,7 +70,6 @@ struct PatternEditorView: View {
         guard !trimmedName.isEmpty else { return }
 
         if isActive {
-            // 他のすべてのパターンのアクティブフラグを落とす
             let fetchDescriptor = FetchDescriptor<KondatePattern>()
             if let allPatterns = try? modelContext.fetch(fetchDescriptor) {
                 for p in allPatterns { p.isActive = false }
@@ -82,8 +81,8 @@ struct PatternEditorView: View {
             existing.durationDays = durationDays
             existing.isActive = isActive
             
-            // 日数が減った場合、範囲外となった PatternDay を削除
-            let daysToRemove = existing.days.filter { $0.dayIndex >= durationDays }
+            let currentDays = existing.days ?? []
+            let daysToRemove = currentDays.filter { $0.dayIndex >= durationDays }
             for day in daysToRemove {
                 modelContext.delete(day)
             }

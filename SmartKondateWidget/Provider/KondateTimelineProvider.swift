@@ -87,7 +87,8 @@ private enum WidgetDataFetcher {
         
         guard let activePattern = try? context.fetch(descriptor).first,
               activePattern.durationDays > 0,
-              !activePattern.days.isEmpty else {
+              let days = activePattern.days,
+              !days.isEmpty else {
             return nil
         }
         
@@ -99,7 +100,7 @@ private enum WidgetDataFetcher {
         let remainder = dayDifference % activePattern.durationDays
         let dayIndex = remainder >= 0 ? remainder : remainder + activePattern.durationDays
         
-        if let targetDay = activePattern.days.first(where: { $0.dayIndex == dayIndex }) {
+        if let targetDay = days.first(where: { $0.dayIndex == dayIndex }) {
             return SimpleKondateEntry(
                 date: date,
                 patternName: activePattern.name,

@@ -12,12 +12,21 @@ import SwiftData
 final class Menu {
     var id: UUID = UUID()
     var name: String = ""
-    var category: String = "Main" // ex: "Main", "Side", "Soup"
+    var category: String = "Main"
     var memo: String = ""
     var createdAt: Date = Date()
     
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.menu)
-    var ingredients: [Ingredient] = []
+    var ingredients: [Ingredient]? = []
+
+    @Relationship(inverse: \PatternDay.breakfastMenu)
+    var breakfastPatternDays: [PatternDay]? = []
+    
+    @Relationship(inverse: \PatternDay.lunchMenu)
+    var lunchPatternDays: [PatternDay]? = []
+    
+    @Relationship(inverse: \PatternDay.dinnerMenu)
+    var dinnerPatternDays: [PatternDay]? = []
 
     init(name: String, category: String = "Main", memo: String = "") {
         self.id = UUID()
@@ -25,5 +34,6 @@ final class Menu {
         self.category = category
         self.memo = memo
         self.createdAt = Date()
+        self.ingredients = []
     }
 }

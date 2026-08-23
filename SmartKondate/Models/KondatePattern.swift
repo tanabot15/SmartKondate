@@ -18,7 +18,7 @@ final class KondatePattern {
     
     // パターン削除時、紐づく PatternDay 群も一括削除
     @Relationship(deleteRule: .cascade, inverse: \PatternDay.pattern)
-    var days: [PatternDay] = []
+    var days: [PatternDay]? = []
 
     init(name: String, durationDays: Int = 7, isActive: Bool = false) {
         self.id = UUID()
@@ -26,5 +26,6 @@ final class KondatePattern {
         self.durationDays = durationDays
         self.isActive = isActive
         self.createdAt = Date()
+        self.days = []
     }
 }

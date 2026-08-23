@@ -18,7 +18,6 @@ struct MenuDetailEditorView: View {
     @State private var category: String = "Main"
     @State private var memo: String = ""
     
-    // 編集用ローカル食材構造体
     struct TempIngredient: Identifiable {
         let id = UUID()
         var name: String
@@ -37,9 +36,11 @@ struct MenuDetailEditorView: View {
             _name = State(initialValue: menu.name)
             _category = State(initialValue: menu.category)
             _memo = State(initialValue: menu.memo)
-            _ingredientsList = State(initialValue: menu.ingredients.map {
+            
+            let initialIngredients = (menu.ingredients ?? []).map {
                 TempIngredient(name: $0.name, amount: $0.amount)
-            })
+            }
+            _ingredientsList = State(initialValue: initialIngredients)
         }
     }
 
@@ -126,11 +127,12 @@ struct MenuDetailEditorView: View {
             targetMenu.category = category
             targetMenu.memo = memo
             
-            // 既存の Ingredient を削除して新しく同期
-            for item in targetMenu.ingredients {
-                modelContext.delete(item)
+            if let existingIngredients = targetMenu.ingredients {
+                for item in existingIngredients {
+                    modelContext.delete(item)
+                }
             }
-            targetMenu.ingredients.removeAll()
+            targetMenu.ingredients = []
         } else {
             targetMenu = Menu(name: name, category: category, memo: memo)
             modelContext.insert(targetMenu)
