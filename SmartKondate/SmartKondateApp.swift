@@ -10,7 +10,6 @@ import SwiftData
 
 @main
 struct SmartKondateApp: App {
-    // 💡 AppDelegate を SwiftUI アプリのライフサイクルにアタッチ
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var sharedModelContainer: ModelContainer = {
@@ -22,23 +21,28 @@ struct SmartKondateApp: App {
             StockItem.self
         ])
         
-        // Preview (Canvas) やシミュレータ環境では CloudKit 同期をオフにする
-        #if DEBUG
-        let cloudKitSetting: ModelConfiguration.CloudKitDatabase = .none
-        #else
-        let cloudKitSetting: ModelConfiguration.CloudKitDatabase = .automatic
-        #endif
+        let containerID = "iCloud.com.suzuki.kenichiro.SmaKon"
 
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
-            cloudKitDatabase: cloudKitSetting
+            cloudKitDatabase: .private(containerID)
         )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            print("ModelContainer initialization error: \(error)")
+            
+            let fallbackConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .none
+            )
+            if let fallbackContainer = try? ModelContainer(for: schema, configurations: [fallbackConfiguration]) {
+                return fallbackContainer
+            }
+            fatalError("Failed to initialize ModelContainer: \(error)")
         }
     }()
 

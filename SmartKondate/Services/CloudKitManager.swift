@@ -18,7 +18,7 @@ final class CloudKitManager {
     
     private let container: CKContainer
     
-    init(containerIdentifier: String = "iCloud.com.example.SmartKondate") {
+    init(containerIdentifier: String = "iCloud.com.suzuki.kenichiro.SmaKon") {
         self.container = CKContainer(identifier: containerIdentifier)
         checkAccountStatus()
     }

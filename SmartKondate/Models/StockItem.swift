@@ -13,7 +13,7 @@ final class StockItem {
     var id: UUID = UUID()
     var name: String = ""
     var category: String = "Pantry" // 例: "Seasoning", "Pantry", "Household"
-    var isOut: Bool = false // true: 買い出し対象（チェックON）, false: 在庫あり
+    var isOut: Bool = false
     var memo: String = ""
     
     init(name: String, category: String = "Pantry", isOut: Bool = false, memo: String = "") {

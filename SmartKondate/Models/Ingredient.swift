@@ -14,7 +14,6 @@ final class Ingredient {
     var name: String = ""
     var amount: String = ""
     
-    // 親 Menu への参照（@Relationship アノテーションは削除）
     var menu: Menu?
 
     init(name: String, amount: String = "") {

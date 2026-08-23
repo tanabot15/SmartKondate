@@ -16,7 +16,6 @@ final class Menu {
     var memo: String = ""
     var createdAt: Date = Date()
     
-    // メニュー削除時、紐づく食材データも連動して削除
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.menu)
     var ingredients: [Ingredient] = []
 
