@@ -16,7 +16,8 @@ final class CloudKitManager {
     var accountStatus: CKAccountStatus = .couldNotDetermine
     var errorMessage: String?
     
-    private let container: CKContainer
+    // 外部からコンテナを取得できるように public / internal に設定
+    let container: CKContainer
     
     init(containerIdentifier: String = "iCloud.com.suzuki.kenichiro.SmaKon") {
         self.container = CKContainer(identifier: containerIdentifier)
@@ -35,11 +36,33 @@ final class CloudKitManager {
         }
     }
     
-    /// 共有ゾーンと CKShare の準備
+    /// 共有ゾーンと CKShare を作成し、CloudKit サーバーへ保存して返す
     func prepareShare() async throws -> CKShare {
+        let privateDB = container.privateCloudDatabase
         let zoneID = CKRecordZone.ID(zoneName: "SmartKondateZone", ownerName: CKCurrentUserDefaultName)
-        let share = CKShare(recordZoneID: zoneID)
+        let zone = CKRecordZone(zoneID: zoneID)
+        
+        // 1. カスタムゾーンを保存（既存の場合はそのまま取得）
+        try await privateDB.save(zone)
+        
+        // 2. ゾーン内にルートとなるレコードと CKShare を作成
+        let rootRecord = CKRecord(recordType: "KondateRoot", recordID: CKRecord.ID(recordName: "RootRecord", zoneID: zoneID))
+        let share = CKShare(rootRecord: rootRecord)
         share[CKShare.SystemFieldKey.title] = "SmartKondate Family Share" as CKRecordValue
-        return share
+        
+        // 3. ルートレコードと Share をサーバーへ保存（一括書き込み）
+        let operation = CKModifyRecordsOperation(recordsToSave: [rootRecord, share], recordIDsToDelete: nil)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            operation.modifyRecordsResultBlock = { result in
+                switch result {
+                case .success:
+                    continuation.resume(returning: share)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+            privateDB.add(operation)
+        }
     }
 }

@@ -95,7 +95,7 @@ struct SettingsView: View {
                 HStack {
                     Text("App Version")
                     Spacer()
-                    Text("1.1")
+                    Text("1.2")
                         .foregroundStyle(.secondary)
                 }
             }
@@ -104,7 +104,7 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .sheet(isPresented: $isShowingShareSheet) {
             if let share = activeShare {
-                CloudKitShareView(share: share, container: CKContainer.default())
+                CloudKitShareView(share: share, container: cloudKitManager.container)
             }
         }
         // データリセット確認ダイアログ
