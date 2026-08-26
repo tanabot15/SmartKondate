@@ -37,38 +37,30 @@ final class CloudKitManager {
     /// SwiftData ゾーン内に CKShare を作成して保存する
     func prepareShare() async throws -> CKShare {
         let privateDB = container.privateCloudDatabase
-        
-        // SwiftData が標準で使用するゾーン ID
         let zoneID = CKRecordZone.ID(zoneName: "com.apple.coredata.cloudkit.zone", ownerName: CKCurrentUserDefaultName)
-        
-        // 既存の CKShare レコードの有無を確認
         let shareID = CKRecord.ID(recordName: "SmartKondateShare", zoneID: zoneID)
+        
+        // 既存の Share を取得・チェック
         if let existingShare = try? await privateDB.record(for: shareID) as? CKShare {
             return existingShare
         }
         
-        // 1. ルートレコードの作成
+        // ルートレコードの準備
         let rootRecordID = CKRecord.ID(recordName: "KondatePatternRoot", zoneID: zoneID)
-        
-        // サーバー上に既存のルートレコードがあるか確認し、なければ新規作成
         let rootRecord: CKRecord
-        if let fetchedRecord = try? await privateDB.record(for: rootRecordID) {
-            rootRecord = fetchedRecord
+        if let fetched = try? await privateDB.record(for: rootRecordID) {
+            rootRecord = fetched
         } else {
             rootRecord = CKRecord(recordType: "CD_KondatePattern", recordID: rootRecordID)
         }
         
-        // 2. CKShare の作成と公開パーミッションの設定（重要）
-        let share = CKShare(rootRecord: rootRecord)
+        let share = CKShare(rootRecord: rootRecord, shareID: shareID)
         share[CKShare.SystemFieldKey.title] = "SmartKondate Family Share" as CKRecordValue
-        share[CKShare.SystemFieldKey.shareType] = "com.suzuki.kenichiro.SmaKon.share" as CKRecordValue
-        
-        // リンクを知っている非公開メンバーのみアクセス可能（または none）
         share.publicPermission = .none
         
-        // 3. ルートレコードと Share を一括で保存
         let operation = CKModifyRecordsOperation(recordsToSave: [rootRecord, share], recordIDsToDelete: nil)
-        operation.savePolicy = .changedKeys
+        // サーバーにレコードが存在しない場合に新規作成を許可し、タグの不一致エラーを防ぐポリシー設定
+        operation.savePolicy = .allKeys
         
         return try await withCheckedThrowingContinuation { continuation in
             operation.modifyRecordsResultBlock = { result in
