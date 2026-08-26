@@ -16,7 +16,6 @@ final class CloudKitManager {
     var accountStatus: CKAccountStatus = .couldNotDetermine
     var errorMessage: String?
     
-    // 外部からコンテナを取得できるように public / internal に設定
     let container: CKContainer
     
     init(containerIdentifier: String = "iCloud.com.suzuki.kenichiro.SmaKon") {
@@ -24,7 +23,6 @@ final class CloudKitManager {
         checkAccountStatus()
     }
     
-    /// iCloud サインイン状態の確認
     func checkAccountStatus() {
         container.accountStatus { [weak self] status, error in
             DispatchQueue.main.async {
@@ -36,22 +34,41 @@ final class CloudKitManager {
         }
     }
     
-    /// 共有ゾーンと CKShare を作成し、CloudKit サーバーへ保存して返す
+    /// SwiftData ゾーン内に CKShare を作成して保存する
     func prepareShare() async throws -> CKShare {
         let privateDB = container.privateCloudDatabase
-        let zoneID = CKRecordZone.ID(zoneName: "SmartKondateZone", ownerName: CKCurrentUserDefaultName)
-        let zone = CKRecordZone(zoneID: zoneID)
         
-        // 1. カスタムゾーンを保存（既存の場合はそのまま取得）
-        try await privateDB.save(zone)
+        // SwiftData が標準で使用するゾーン ID
+        let zoneID = CKRecordZone.ID(zoneName: "com.apple.coredata.cloudkit.zone", ownerName: CKCurrentUserDefaultName)
         
-        // 2. ゾーン内にルートとなるレコードと CKShare を作成
-        let rootRecord = CKRecord(recordType: "KondateRoot", recordID: CKRecord.ID(recordName: "RootRecord", zoneID: zoneID))
+        // 既存の CKShare レコードの有無を確認
+        let shareID = CKRecord.ID(recordName: "SmartKondateShare", zoneID: zoneID)
+        if let existingShare = try? await privateDB.record(for: shareID) as? CKShare {
+            return existingShare
+        }
+        
+        // 1. ルートレコードの作成
+        let rootRecordID = CKRecord.ID(recordName: "KondatePatternRoot", zoneID: zoneID)
+        
+        // サーバー上に既存のルートレコードがあるか確認し、なければ新規作成
+        let rootRecord: CKRecord
+        if let fetchedRecord = try? await privateDB.record(for: rootRecordID) {
+            rootRecord = fetchedRecord
+        } else {
+            rootRecord = CKRecord(recordType: "CD_KondatePattern", recordID: rootRecordID)
+        }
+        
+        // 2. CKShare の作成と公開パーミッションの設定（重要）
         let share = CKShare(rootRecord: rootRecord)
         share[CKShare.SystemFieldKey.title] = "SmartKondate Family Share" as CKRecordValue
+        share[CKShare.SystemFieldKey.shareType] = "com.suzuki.kenichiro.SmaKon.share" as CKRecordValue
         
-        // 3. ルートレコードと Share をサーバーへ保存（一括書き込み）
+        // リンクを知っている非公開メンバーのみアクセス可能（または none）
+        share.publicPermission = .none
+        
+        // 3. ルートレコードと Share を一括で保存
         let operation = CKModifyRecordsOperation(recordsToSave: [rootRecord, share], recordIDsToDelete: nil)
+        operation.savePolicy = .changedKeys
         
         return try await withCheckedThrowingContinuation { continuation in
             operation.modifyRecordsResultBlock = { result in
