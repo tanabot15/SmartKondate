@@ -56,7 +56,8 @@ final class CloudKitManager {
         
         let share = CKShare(rootRecord: rootRecord, shareID: shareID)
         share[CKShare.SystemFieldKey.title] = "SmartKondate Family Share" as CKRecordValue
-        share.publicPermission = .none
+        
+        share.publicPermission = .readWrite
         
         let operation = CKModifyRecordsOperation(recordsToSave: [rootRecord, share], recordIDsToDelete: nil)
         // サーバーにレコードが存在しない場合に新規作成を許可し、タグの不一致エラーを防ぐポリシー設定
@@ -73,5 +74,29 @@ final class CloudKitManager {
             }
             privateDB.add(operation)
         }
+    }
+    
+    /// 共有 URL
+    func acceptShare(url: URL) {
+        let operation = CKFetchShareMetadataOperation(shareURLs: [url])
+        operation.perShareMetadataResultBlock = { [weak self] shareURL, result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let metadata):
+                let acceptOp = CKAcceptSharesOperation(shareMetadatas: [metadata])
+                acceptOp.acceptSharesResultBlock = { acceptResult in
+                    switch acceptResult {
+                    case .success:
+                        print("SmartKondate: 共有の受け入れに成功しました！")
+                    case .failure(let error):
+                        print("SmartKondate: 共有受諾エラー: \(error.localizedDescription)")
+                    }
+                }
+                self.container.add(acceptOp)
+            case .failure(let error):
+                print("SmartKondate: Share Metadata 取得エラー: \(error.localizedDescription)")
+            }
+        }
+        container.add(operation)
     }
 }

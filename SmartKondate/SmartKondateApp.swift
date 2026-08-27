@@ -49,6 +49,9 @@ struct SmartKondateApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .onOpenURL { url in
+                    CloudKitManager.shared.acceptShare(url: url)
+                }
         }
         .modelContainer(sharedModelContainer)
     }

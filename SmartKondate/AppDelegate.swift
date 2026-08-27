@@ -57,4 +57,21 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             completionHandler(.noData)
         }
     }
+    
+    // MARK: - CloudKit 共有リンクの受け入れ（招待タップ時）
+    func application(
+        _ application: UIApplication,
+        userDidAcceptCloudKitShareWith metadata: CKShare.Metadata
+    ) {
+        let acceptOp = CKAcceptSharesOperation(shareMetadatas: [metadata])
+        acceptOp.acceptSharesResultBlock = { result in
+            switch result {
+            case .success:
+                print("AppDelegate: Done")
+            case .failure(let error):
+                print("AppDelegate: Sharing Error: \(error.localizedDescription)")
+            }
+        }
+        CloudKitManager.shared.container.add(acceptOp)
+    }
 }
