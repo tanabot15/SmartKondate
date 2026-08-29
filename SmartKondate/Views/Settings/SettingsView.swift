@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var cloudKitManager = CloudKitManager.shared
     @State private var isShowingShareSheet = false
     @State private var activeShare: CKShare?
+    @State private var isLoadingShare = false
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingResetConfirmation = false
 
@@ -25,13 +26,7 @@ struct SettingsView: View {
             Section {
                 Button {
                     Task {
-                        do {
-                            let share = try await cloudKitManager.prepareShare()
-                            self.activeShare = share
-                            self.isShowingShareSheet = true
-                        } catch {
-                            print("CloudKit Share error: \(error)")
-                        }
+                        await prepareAndShowShareSheet()
                     }
                 } label: {
                     HStack {
@@ -43,7 +38,10 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                         }
                         Spacer()
-                        if cloudKitManager.accountStatus == .available {
+                        
+                        if isLoadingShare {
+                            ProgressView()
+                        } else if cloudKitManager.accountStatus == .available {
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
@@ -54,7 +52,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                .disabled(cloudKitManager.accountStatus != .available)
+                .disabled(cloudKitManager.accountStatus != .available || isLoadingShare)
             } header: {
                 Text("Family Sharing")
             } footer: {
@@ -95,7 +93,7 @@ struct SettingsView: View {
                 HStack {
                     Text("App Version")
                     Spacer()
-                    Text("1.5")
+                    Text("1.6")
                         .foregroundStyle(.secondary)
                 }
             }
@@ -107,7 +105,6 @@ struct SettingsView: View {
                 CloudKitShareView(share: share, container: cloudKitManager.container)
             }
         }
-        // データリセット確認ダイアログ
         .confirmationDialog(
             "Reset to Presets?",
             isPresented: $isShowingResetConfirmation,
@@ -120,7 +117,6 @@ struct SettingsView: View {
         } message: {
             Text("This will delete all current data and restore initial preset patterns and items.")
         }
-        // 全削除確認ダイアログ
         .confirmationDialog(
             "Delete All Data?",
             isPresented: $isShowingDeleteConfirmation,
@@ -135,7 +131,20 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - データ操作ロジック
+    @MainActor
+    private func prepareAndShowShareSheet() async {
+        isLoadingShare = true
+        defer { isLoadingShare = false }
+        
+        do {
+            let share = try await cloudKitManager.prepareShare()
+            self.activeShare = share
+            self.isShowingShareSheet = true
+        } catch {
+            print("CloudKit Share error: \(error.localizedDescription)")
+        }
+    }
+
     private func deleteAllData() {
         do {
             try modelContext.delete(model: KondatePattern.self)
