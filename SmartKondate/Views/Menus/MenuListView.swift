@@ -29,7 +29,6 @@ struct MenuListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Category Filter Picker
             Picker("Category", selection: $selectedCategory) {
                 ForEach(categories, id: \.self) { cat in
                     Text(cat).tag(cat)
@@ -57,8 +56,8 @@ struct MenuListView: View {
                                         .font(.headline)
                                         .foregroundStyle(.primary)
                                     
-                                    if let ingredients = menu.ingredients, !ingredients.isEmpty {
-                                        Text(ingredients.map { $0.name }.joined(separator: ", "))
+                                    if !menu.ingredients.isEmpty {
+                                        Text(menu.ingredients.map { $0.name }.joined(separator: ", "))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)

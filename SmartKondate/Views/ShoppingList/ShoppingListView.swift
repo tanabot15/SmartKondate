@@ -35,7 +35,7 @@ struct ShoppingListView: View {
         var items: [ShoppingIngredientItem] = []
         for result in diffResults {
             guard let menu = result.effectiveMenu else { continue }
-            for ingredient in (menu.ingredients ?? []) {
+            for ingredient in menu.ingredients {
                 let key = "\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
                 items.append(
                     ShoppingIngredientItem(

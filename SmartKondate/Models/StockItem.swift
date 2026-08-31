@@ -10,9 +10,9 @@ import SwiftData
 
 @Model
 final class StockItem {
-    var id: UUID = UUID()
+    @Attribute(.unique) var id: UUID = UUID()
     var name: String = ""
-    var category: String = "Pantry" // 例: "Seasoning", "Pantry", "Household"
+    var category: String = "Pantry"
     var isOut: Bool = false
     var memo: String = ""
     

@@ -37,7 +37,7 @@ struct MenuDetailEditorView: View {
             _category = State(initialValue: menu.category)
             _memo = State(initialValue: menu.memo)
             
-            let initialIngredients = (menu.ingredients ?? []).map {
+            let initialIngredients = menu.ingredients.map {
                 TempIngredient(name: $0.name, amount: $0.amount)
             }
             _ingredientsList = State(initialValue: initialIngredients)
@@ -127,18 +127,15 @@ struct MenuDetailEditorView: View {
             targetMenu.category = category
             targetMenu.memo = memo
             
-            if let existingIngredients = targetMenu.ingredients {
-                for item in existingIngredients {
-                    modelContext.delete(item)
-                }
+            for item in targetMenu.ingredients {
+                modelContext.delete(item)
             }
-            targetMenu.ingredients = []
+            targetMenu.ingredients.removeAll()
         } else {
             targetMenu = Menu(name: name, category: category, memo: memo)
             modelContext.insert(targetMenu)
         }
 
-        // 新しい Ingredient オブジェクトを構築して関連付け
         for temp in ingredientsList {
             let ingredient = Ingredient(name: temp.name, amount: temp.amount)
             ingredient.menu = targetMenu

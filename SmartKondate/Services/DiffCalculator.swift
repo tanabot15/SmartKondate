@@ -62,7 +62,8 @@ struct DiffCalculator {
         }
         
         let dayIndex = calculateDayIndex(for: targetDate, startDate: startDate, durationDays: pattern.durationDays)
-        let patternDay = (pattern.days ?? []).first(where: { $0.dayIndex == dayIndex })
+        let patternDay = pattern.days.first(where: { $0.dayIndex == dayIndex })
+        
         return [
             MealDiffResult(
                 mealType: .breakfast,

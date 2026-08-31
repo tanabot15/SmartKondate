@@ -74,7 +74,7 @@ private enum WidgetDataFetcher {
             KondatePattern.self,
             StockItem.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
         guard let container = try? ModelContainer(for: schema, configurations: [modelConfiguration]) else {
             return nil
         }
@@ -87,8 +87,7 @@ private enum WidgetDataFetcher {
         
         guard let activePattern = try? context.fetch(descriptor).first,
               activePattern.durationDays > 0,
-              let days = activePattern.days,
-              !days.isEmpty else {
+              !activePattern.days.isEmpty else {
             return nil
         }
         
@@ -100,7 +99,7 @@ private enum WidgetDataFetcher {
         let remainder = dayDifference % activePattern.durationDays
         let dayIndex = remainder >= 0 ? remainder : remainder + activePattern.durationDays
         
-        if let targetDay = days.first(where: { $0.dayIndex == dayIndex }) {
+        if let targetDay = activePattern.days.first(where: { $0.dayIndex == dayIndex }) {
             return SimpleKondateEntry(
                 date: date,
                 patternName: activePattern.name,

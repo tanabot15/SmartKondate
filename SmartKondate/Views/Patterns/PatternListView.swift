@@ -45,7 +45,7 @@ struct PatternListView: View {
                                     }
                                 }
                                 
-                                Text("\(pattern.durationDays) Days Cycle • \((pattern.days ?? []).count) Days Set")
+                                Text("\(pattern.durationDays) Days Cycle • \(pattern.days.count) Days Set")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }

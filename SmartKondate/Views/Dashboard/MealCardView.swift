@@ -71,8 +71,8 @@ struct MealCardView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
 
-                    if let ingredients = menu.ingredients, !ingredients.isEmpty {
-                        Text(ingredients.map { $0.name }.joined(separator: ", "))
+                    if !menu.ingredients.isEmpty {
+                        Text(menu.ingredients.map { $0.name }.joined(separator: ", "))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)

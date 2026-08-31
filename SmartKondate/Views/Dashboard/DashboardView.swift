@@ -16,7 +16,6 @@ struct DashboardView: View {
 
     @State private var selectedDate: Date = Date()
 
-    // ユーザーによる本日の単体差し替え用一時ステート
     @State private var customBreakfast: Menu?
     @State private var customLunch: Menu?
     @State private var customDinner: Menu?
@@ -39,7 +38,6 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                // 日付選択 & パターン情報ヘッダー
                 VStack(spacing: 8) {
                     DatePicker(
                         "Target Date",
@@ -69,7 +67,7 @@ struct DashboardView: View {
                 .background(Color(.secondarySystemGroupedBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // 各食のカード
+                // Meal Card
                 ForEach(diffResults, id: \.mealType) { result in
                     MealCardView(
                         diffResult: result,
@@ -80,7 +78,7 @@ struct DashboardView: View {
                     )
                 }
 
-                // 買い物リストへのナビゲーションボタン
+                // Navigation to Stock List
                 NavigationLink(destination: StockCheckListView()) {
                     HStack {
                         Image(systemName: "cart.fill")

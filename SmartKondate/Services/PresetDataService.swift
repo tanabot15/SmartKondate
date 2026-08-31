@@ -8,9 +8,7 @@
 import Foundation
 import SwiftData
 
-struct PresetDataService {
-    
-    /// Initial setup for preset data (StockItems: 20, Menus: 30, KondatePatterns: 4, PatternDays: 16)
+struct PresetDataService {    
     static func insertPresetDataIfNeeded(context: ModelContext) {
         let descriptor = FetchDescriptor<KondatePattern>()
         if let count = try? context.fetchCount(descriptor), count > 0 {
@@ -139,7 +137,7 @@ struct PresetDataService {
         let allMenus = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30]
         allMenus.forEach { context.insert($0) }
 
-        // MARK: - 3. KondatePatterns (4 Patterns) & PatternDays (16 Total)
+        // MARK: - 3. KondatePatterns & PatternDays
 
         // Pattern 1: Standard Weekly (7 Days) - Active
         let pattern1 = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
@@ -200,6 +198,10 @@ struct PresetDataService {
             context.insert(day)
         }
 
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save preset data: \(error)")
+        }
     }
 }

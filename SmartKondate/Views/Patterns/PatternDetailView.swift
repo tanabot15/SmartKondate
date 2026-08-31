@@ -16,7 +16,7 @@ struct PatternDetailView: View {
     @State private var isShowingEditPatternSheet = false
 
     var sortedDays: [PatternDay] {
-        (pattern.days ?? []).sorted { $0.dayIndex < $1.dayIndex }
+        pattern.days.sorted { $0.dayIndex < $1.dayIndex }
     }
 
     var body: some View {
@@ -33,7 +33,6 @@ struct PatternDetailView: View {
                     get: { pattern.isActive },
                     set: { newValue in
                         if newValue {
-                            // 他のパターンのアクティブ状態を解除
                             let fetchDescriptor = FetchDescriptor<KondatePattern>()
                             if let allPatterns = try? modelContext.fetch(fetchDescriptor) {
                                 for p in allPatterns { p.isActive = false }
@@ -85,7 +84,7 @@ struct PatternDetailView: View {
     }
 
     private func ensurePatternDaysExist() {
-        let existingIndices = Set((pattern.days ?? []).map { $0.dayIndex })
+        let existingIndices = Set(pattern.days.map { $0.dayIndex })
         for index in 0..<pattern.durationDays {
             if !existingIndices.contains(index) {
                 let newDay = PatternDay(dayIndex: index)

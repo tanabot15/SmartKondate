@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 final class PatternDay {
-    var id: UUID = UUID()
+    @Attribute(.unique) var id: UUID = UUID()
     var dayIndex: Int = 0
     
     var pattern: KondatePattern?

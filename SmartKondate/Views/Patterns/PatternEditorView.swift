@@ -81,8 +81,7 @@ struct PatternEditorView: View {
             existing.durationDays = durationDays
             existing.isActive = isActive
             
-            let currentDays = existing.days ?? []
-            let daysToRemove = currentDays.filter { $0.dayIndex >= durationDays }
+            let daysToRemove = existing.days.filter { $0.dayIndex >= durationDays }
             for day in daysToRemove {
                 modelContext.delete(day)
             }
@@ -90,7 +89,6 @@ struct PatternEditorView: View {
             let newPattern = KondatePattern(name: trimmedName, durationDays: durationDays, isActive: isActive)
             modelContext.insert(newPattern)
             
-            // 初期 PatternDay 群を生成して紐付け
             for index in 0..<durationDays {
                 let day = PatternDay(dayIndex: index)
                 day.pattern = newPattern

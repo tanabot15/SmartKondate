@@ -10,23 +10,23 @@ import SwiftData
 
 @Model
 final class Menu {
-    var id: UUID = UUID()
+    @Attribute(.unique) var id: UUID = UUID()
     var name: String = ""
     var category: String = "Main"
     var memo: String = ""
     var createdAt: Date = Date()
     
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.menu)
-    var ingredients: [Ingredient]? = []
+    var ingredients: [Ingredient] = []
 
     @Relationship(inverse: \PatternDay.breakfastMenu)
-    var breakfastPatternDays: [PatternDay]? = []
+    var breakfastPatternDays: [PatternDay] = []
     
     @Relationship(inverse: \PatternDay.lunchMenu)
-    var lunchPatternDays: [PatternDay]? = []
+    var lunchPatternDays: [PatternDay] = []
     
     @Relationship(inverse: \PatternDay.dinnerMenu)
-    var dinnerPatternDays: [PatternDay]? = []
+    var dinnerPatternDays: [PatternDay] = []
 
     init(name: String, category: String = "Main", memo: String = "") {
         self.id = UUID()

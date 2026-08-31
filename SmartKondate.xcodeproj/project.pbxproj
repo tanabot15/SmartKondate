@@ -16,7 +16,6 @@
 		D9AF188F3024C28800C39DB7 /* SmartKondateWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF188C3024C28800C39DB7 /* SmartKondateWidget.swift */; };
 		D9AF18903024C28800C39DB7 /* SmartKondateWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF188D3024C28800C39DB7 /* SmartKondateWidgetBundle.swift */; };
 		D9AF18913024C28800C39DB7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9AF188A3024C28800C39DB7 /* Assets.xcassets */; };
-		D9AF18973024C60000C39DB7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18963024C60000C39DB7 /* AppDelegate.swift */; };
 		D9AF18A23024C6DA00C39DB7 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18A13024C6DA00C39DB7 /* DashboardView.swift */; };
 		D9AF18A43024C6E900C39DB7 /* MealCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18A33024C6E900C39DB7 /* MealCardView.swift */; };
 		D9AF18A63024C6F500C39DB7 /* PatternListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18A53024C6F500C39DB7 /* PatternListView.swift */; };
@@ -28,11 +27,9 @@
 		D9AF18B23024C74300C39DB7 /* DiffIngredientRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18B13024C74300C39DB7 /* DiffIngredientRow.swift */; };
 		D9AF18B43024C74D00C39DB7 /* StockCheckListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18B33024C74D00C39DB7 /* StockCheckListView.swift */; };
 		D9AF18B63024C75900C39DB7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18B53024C75900C39DB7 /* SettingsView.swift */; };
-		D9AF18B83024C76200C39DB7 /* CloudKitShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18B73024C76200C39DB7 /* CloudKitShareView.swift */; };
 		D9AF18BA3024C76C00C39DB7 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18B93024C76C00C39DB7 /* OnboardingView.swift */; };
 		D9AF18BE3024C7BB00C39DB7 /* PresetDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18BD3024C7BB00C39DB7 /* PresetDataService.swift */; };
 		D9AF18C03024C7C400C39DB7 /* DiffCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18BF3024C7C400C39DB7 /* DiffCalculator.swift */; };
-		D9AF18C23024C7CF00C39DB7 /* CloudKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18C13024C7CF00C39DB7 /* CloudKitManager.swift */; };
 		D9AF18C43024C7EB00C39DB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D9AF18C33024C7EB00C39DB7 /* Localizable.xcstrings */; };
 		D9AF18C83024C81D00C39DB7 /* KondateTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18C73024C81D00C39DB7 /* KondateTimelineProvider.swift */; };
 		D9AF18CB3024C82800C39DB7 /* TodayKondateWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */; };
@@ -87,7 +84,6 @@
 		D9AF18933024C2D400C39DB7 /* SmartKondate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SmartKondate.entitlements; sourceTree = "<group>"; };
 		D9AF18943024C31900C39DB7 /* SmartKondateWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SmartKondateWidgetExtension.entitlements; sourceTree = "<group>"; };
 		D9AF18953024C53600C39DB7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D9AF18963024C60000C39DB7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D9AF18A13024C6DA00C39DB7 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		D9AF18A33024C6E900C39DB7 /* MealCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealCardView.swift; sourceTree = "<group>"; };
 		D9AF18A53024C6F500C39DB7 /* PatternListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternListView.swift; sourceTree = "<group>"; };
@@ -99,11 +95,9 @@
 		D9AF18B13024C74300C39DB7 /* DiffIngredientRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffIngredientRow.swift; sourceTree = "<group>"; };
 		D9AF18B33024C74D00C39DB7 /* StockCheckListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockCheckListView.swift; sourceTree = "<group>"; };
 		D9AF18B53024C75900C39DB7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		D9AF18B73024C76200C39DB7 /* CloudKitShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitShareView.swift; sourceTree = "<group>"; };
 		D9AF18B93024C76C00C39DB7 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		D9AF18BD3024C7BB00C39DB7 /* PresetDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetDataService.swift; sourceTree = "<group>"; };
 		D9AF18BF3024C7C400C39DB7 /* DiffCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffCalculator.swift; sourceTree = "<group>"; };
-		D9AF18C13024C7CF00C39DB7 /* CloudKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitManager.swift; sourceTree = "<group>"; };
 		D9AF18C33024C7EB00C39DB7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		D9AF18C73024C81D00C39DB7 /* KondateTimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KondateTimelineProvider.swift; sourceTree = "<group>"; };
 		D9AF18CA3024C82800C39DB7 /* TodayKondateWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayKondateWidgetView.swift; sourceTree = "<group>"; };
@@ -158,7 +152,6 @@
 			isa = PBXGroup;
 			children = (
 				D9AF186B3024C0DD00C39DB7 /* SmartKondateApp.swift */,
-				D9AF18963024C60000C39DB7 /* AppDelegate.swift */,
 				D9AF18983024C60900C39DB7 /* Models */,
 				D9AF189B3024C64800C39DB7 /* Views */,
 				D9AF18BB3024C77F00C39DB7 /* Services */,
@@ -267,7 +260,6 @@
 			isa = PBXGroup;
 			children = (
 				D9AF18B53024C75900C39DB7 /* SettingsView.swift */,
-				D9AF18B73024C76200C39DB7 /* CloudKitShareView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -285,7 +277,6 @@
 			children = (
 				D9AF18BD3024C7BB00C39DB7 /* PresetDataService.swift */,
 				D9AF18BF3024C7C400C39DB7 /* DiffCalculator.swift */,
-				D9AF18C13024C7CF00C39DB7 /* CloudKitManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -423,7 +414,6 @@
 			files = (
 				D9AF18AC3024C71E00C39DB7 /* MenuListView.swift in Sources */,
 				D9AF18B03024C73200C39DB7 /* ShoppingListView.swift in Sources */,
-				D9AF18973024C60000C39DB7 /* AppDelegate.swift in Sources */,
 				D9AF18A83024C70000C39DB7 /* PatternDetailView.swift in Sources */,
 				D9AF18D03024C89400C39DB7 /* Ingredient.swift in Sources */,
 				D9AF18D43024C8A700C39DB7 /* PatternDay.swift in Sources */,
@@ -431,8 +421,6 @@
 				D9AF18AA3024C70B00C39DB7 /* PatternEditorView.swift in Sources */,
 				D9AF18A23024C6DA00C39DB7 /* DashboardView.swift in Sources */,
 				D9AF18B63024C75900C39DB7 /* SettingsView.swift in Sources */,
-				D9AF18C23024C7CF00C39DB7 /* CloudKitManager.swift in Sources */,
-				D9AF18B83024C76200C39DB7 /* CloudKitShareView.swift in Sources */,
 				D9AF18BE3024C7BB00C39DB7 /* PresetDataService.swift in Sources */,
 				D9AF18D63024C8AE00C39DB7 /* StockItem.swift in Sources */,
 				D9AF18B43024C74D00C39DB7 /* StockCheckListView.swift in Sources */,
@@ -606,7 +594,7 @@
 				CODE_SIGN_ENTITLEMENTS = SmartKondate/SmartKondate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -623,7 +611,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -649,7 +637,7 @@
 				CODE_SIGN_ENTITLEMENTS = SmartKondate/SmartKondate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -666,7 +654,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -691,7 +679,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = SmartKondateWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartKondateWidget/Info.plist;
@@ -703,7 +691,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate.SmartKondateWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -727,7 +715,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = SmartKondateWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartKondateWidget/Info.plist;
@@ -739,7 +727,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate.SmartKondateWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
