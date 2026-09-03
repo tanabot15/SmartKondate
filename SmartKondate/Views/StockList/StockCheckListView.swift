@@ -131,8 +131,27 @@ struct StockCheckListView: View {
 }
 
 #Preview {
-    NavigationStack {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: StockItem.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let items = [
+        StockItem(name: "Soy Sauce", category: "Seasoning", isOut: false),
+        StockItem(name: "Mirin", category: "Seasoning", isOut: false),
+        StockItem(name: "Miso Paste", category: "Seasoning", isOut: true),
+        StockItem(name: "Rice", category: "Pantry", isOut: false),
+        StockItem(name: "Flour", category: "Pantry", isOut: true),
+        StockItem(name: "Milk", category: "Household", isOut: false),
+        StockItem(name: "Tofu", category: "Household", isOut: true)
+    ]
+
+    items.forEach { context.insert($0) }
+
+    return NavigationStack {
         StockCheckListView()
     }
-    .modelContainer(for: [StockItem.self], inMemory: true)
+    .modelContainer(container)
 }

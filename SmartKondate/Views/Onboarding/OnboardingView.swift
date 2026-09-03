@@ -13,11 +13,12 @@ struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
     @State private var currentPage = 0
+    @State private var usePresetData: Bool = false
 
     private let pages: [OnboardingPageModel] = [
         OnboardingPageModel(
             title: "Manage Meal Patterns",
-            description: "Set up 7-day or custom meal cycles once, and let the app automate your daily menu planning.",
+            description: "Set up custom meal cycles once, and let the app automate your daily menu planning.",
             imageName: "calendar.day.timeline.left",
             color: .blue
         ),
@@ -37,18 +38,21 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack {
+            // MARK: - Skip Button
             HStack {
                 Spacer()
-                if currentPage < pages.count - 1 {
+                if currentPage < pages.count {
                     Button("Skip") {
-                        completeOnboarding()
+                        completeOnboarding(loadPresets: false)
                     }
                     .foregroundStyle(.secondary)
                     .padding()
                 }
             }
 
+            // MARK: - TabView (Pages)
             TabView(selection: $currentPage) {
+                // page 1~3
                 ForEach(0..<pages.count, id: \.self) { index in
                     let page = pages[index]
                     VStack(spacing: 24) {
@@ -70,21 +74,60 @@ struct OnboardingView: View {
                     }
                     .tag(index)
                 }
+
+                // page 4 (Opt-in)
+                VStack(spacing: 24) {
+                    Image(systemName: "tray.full.fill")
+                        .font(.system(size: 80))
+                        .foregroundStyle(.purple)
+                        .padding()
+
+                    Text("Sample Data Options")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.primary)
+
+                    Text("Would you like to start with pre-filled sample meal patterns, recipes, and stock items?")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 32)
+
+                    VStack(spacing: 12) {
+                        Toggle(isOn: $usePresetData) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Load Sample Data")
+                                    .font(.headline)
+                                Text(usePresetData ? "Starts with sample patterns & menus." : "Starts with a clean, empty app.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .tint(.accentColor)
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.top, 8)
+                }
+                .tag(pages.count)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
 
             Spacer()
 
+            // MARK: - Action Button
             Button {
-                if currentPage < pages.count - 1 {
+                if currentPage < pages.count {
                     withAnimation {
                         currentPage += 1
                     }
                 } else {
-                    completeOnboarding()
+                    completeOnboarding(loadPresets: usePresetData)
                 }
             } label: {
-                Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
+                Text(currentPage == pages.count ? "Get Started" : "Next")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -97,8 +140,11 @@ struct OnboardingView: View {
         }
     }
 
-    private func completeOnboarding() {
-        PresetDataService.insertPresetDataIfNeeded(context: modelContext)
+    // MARK: - Complete Onboarding
+    private func completeOnboarding(loadPresets: Bool) {
+        if loadPresets {
+            PresetDataService.insertPresetDataIfNeeded(context: modelContext)
+        }
         hasCompletedOnboarding = true
     }
 }

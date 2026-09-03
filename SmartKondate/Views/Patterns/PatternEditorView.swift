@@ -100,9 +100,26 @@ struct PatternEditorView: View {
     }
 }
 
-#Preview {
+#Preview("New") {
     NavigationStack {
         PatternEditorView()
     }
     .modelContainer(for: [KondatePattern.self, PatternDay.self], inMemory: true)
+}
+
+#Preview("Edit") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: KondatePattern.self, PatternDay.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let existingPattern = KondatePattern(name: "Quick 3-Day Rotation", durationDays: 3, isActive: true)
+    context.insert(existingPattern)
+
+    return NavigationStack {
+        PatternEditorView(patternToEdit: existingPattern)
+    }
+    .modelContainer(container)
 }

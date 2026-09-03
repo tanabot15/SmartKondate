@@ -104,8 +104,21 @@ struct PatternListView: View {
 }
 
 #Preview {
-    NavigationStack {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: KondatePattern.self, PatternDay.self, Menu.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let pattern1 = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
+    let pattern2 = KondatePattern(name: "Quick 3-Day Rotation", durationDays: 3, isActive: false)
+    let pattern3 = KondatePattern(name: "Healthy & Light", durationDays: 5, isActive: false)
+
+    [pattern1, pattern2, pattern3].forEach { context.insert($0) }
+
+    return NavigationStack {
         PatternListView()
     }
-    .modelContainer(for: [KondatePattern.self, PatternDay.self, Menu.self], inMemory: true)
+    .modelContainer(container)
 }

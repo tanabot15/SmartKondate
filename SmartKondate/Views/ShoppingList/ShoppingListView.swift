@@ -153,8 +153,42 @@ struct ShoppingIngredientItem: Identifiable {
 }
 
 #Preview {
-    NavigationStack {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
+    context.insert(pattern)
+
+    let ing1 = Ingredient(name: "Chicken Thigh", amount: "300g")
+    let ing2 = Ingredient(name: "Onion", amount: "2 pcs")
+    let ing3 = Ingredient(name: "Egg", amount: "4 pcs")
+    
+    let menu1 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
+    menu1.ingredients = [ing1, ing2]
+
+    let menu2 = Menu(name: "Omelette", category: "Main")
+    menu2.ingredients = [ing3]
+
+    let menus = [menu1, menu2]
+    menus.forEach { context.insert($0) }
+
+    let day1 = PatternDay(dayIndex: 0, breakfastMenu: nil, lunchMenu: menu1, dinnerMenu: menu2)
+    day1.pattern = pattern
+    context.insert(day1)
+
+    let stock1 = StockItem(name: "Egg", category: "Pantry", isOut: false)
+    let stock2 = StockItem(name: "Soy Sauce", category: "Seasoning", isOut: true)
+
+    let stocks = [stock1, stock2]
+    stocks.forEach { context.insert($0) }
+
+    // 2. 最後に View のみを記述
+    return NavigationStack {
         ShoppingListView()
     }
-    .modelContainer(for: [KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self], inMemory: true)
+    .modelContainer(container)
 }

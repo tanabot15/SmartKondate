@@ -146,9 +146,38 @@ struct MenuDetailEditorView: View {
     }
 }
 
-#Preview {
+#Preview("New") {
     NavigationStack {
         MenuDetailEditorView()
     }
     .modelContainer(for: [Menu.self, Ingredient.self], inMemory: true)
+}
+
+#Preview("Edit") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Menu.self, Ingredient.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let sampleMenu = Menu(
+        name: "Japanese Curry Rice",
+        category: "Main",
+        memo: "Simmer on low heat for 20 minutes after adding roux."
+    )
+    let ing1 = Ingredient(name: "Pork", amount: "300g")
+    let ing2 = Ingredient(name: "Onion", amount: "2 pcs")
+    let ing3 = Ingredient(name: "Carrot", amount: "1 pc")
+    
+    ing1.menu = sampleMenu
+    ing2.menu = sampleMenu
+    ing3.menu = sampleMenu
+
+    context.insert(sampleMenu)
+
+    return NavigationStack {
+        MenuDetailEditorView(menuToEdit: sampleMenu)
+    }
+    .modelContainer(container)
 }

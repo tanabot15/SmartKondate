@@ -22,25 +22,13 @@ struct SettingsView: View {
                 Button {
                     isShowingResetConfirmation = true
                 } label: {
-                    Label {
-                        Text("Reset & Restore Preset Data")
-                            .foregroundStyle(.primary)
-                    } icon: {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .foregroundStyle(.orange)
-                    }
+                    Text("Reset & Restore Preset Data")
                 }
 
                 Button(role: .destructive) {
                     isShowingDeleteConfirmation = true
                 } label: {
-                    Label {
-                        Text("Delete All Data")
-                            .foregroundStyle(.red)
-                    } icon: {
-                        Image(systemName: "trash.fill")
-                            .foregroundStyle(.red)
-                    }
+                    Text("Delete All Data")
                 }
             } header: {
                 Text("Data Management")
@@ -51,7 +39,7 @@ struct SettingsView: View {
                 HStack {
                     Text("App Version")
                     Spacer()
-                    Text("1.8")
+                    Text("2.1")
                         .foregroundStyle(.secondary)
                 }
             }

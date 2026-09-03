@@ -128,9 +128,31 @@ private struct MealMenuPickerRow: View {
 }
 
 #Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
+    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Lunch")
+    let menu3 = Menu(name: "Grilled Salmon & Veggies", category: "Dinner")
+    [menu1, menu2, menu3].forEach { context.insert($0) }
+
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
+    context.insert(pattern)
+
+    let day1 = PatternDay(dayIndex: 0, breakfastMenu: menu1, lunchMenu: menu2, dinnerMenu: menu3)
+    day1.pattern = pattern
+    context.insert(day1)
+
+    let day2 = PatternDay(dayIndex: 1, breakfastMenu: menu1, lunchMenu: menu2, dinnerMenu: nil)
+    day2.pattern = pattern
+    context.insert(day2)
+
     return NavigationStack {
         PatternDetailView(pattern: pattern)
     }
-    .modelContainer(for: [KondatePattern.self, PatternDay.self, Menu.self], inMemory: true)
+    .modelContainer(container)
 }

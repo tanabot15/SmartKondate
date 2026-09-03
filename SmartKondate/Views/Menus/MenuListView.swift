@@ -113,8 +113,36 @@ struct MenuListView: View {
 }
 
 #Preview {
-    NavigationStack {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Menu.self, Ingredient.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
+    let ing1 = Ingredient(name: "Bread", amount: "2 slices")
+    let ing2 = Ingredient(name: "Egg", amount: "2 pcs")
+    menu1.ingredients = [ing1, ing2]
+
+    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
+    let ing3 = Ingredient(name: "Chicken Thigh", amount: "150g")
+    let ing4 = Ingredient(name: "Rice", amount: "1 bowl")
+    menu2.ingredients = [ing3, ing4]
+
+    let menu3 = Menu(name: "Miso Soup", category: "Soup")
+    let ing5 = Ingredient(name: "Tofu", amount: "1/2 block")
+    let ing6 = Ingredient(name: "Wakame", amount: "5g")
+    menu3.ingredients = [ing5, ing6]
+
+    let menu4 = Menu(name: "Green Salad", category: "Side")
+    let ing7 = Ingredient(name: "Lettuce", amount: "3 leaves")
+    menu4.ingredients = [ing7]
+
+    [menu1, menu2, menu3, menu4].forEach { context.insert($0) }
+
+    return NavigationStack {
         MenuListView()
     }
-    .modelContainer(for: [Menu.self, Ingredient.self], inMemory: true)
+    .modelContainer(container)
 }

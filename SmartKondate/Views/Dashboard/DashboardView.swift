@@ -113,8 +113,46 @@ struct DashboardView: View {
 }
 
 #Preview {
-    NavigationStack {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self,
+        configurations: config
+    )
+
+    let context = container.mainContext
+
+    let ing1 = Ingredient(name: "Bread", amount: "2 slices")
+    let ing2 = Ingredient(name: "Egg", amount: "2 pcs")
+    let ing3 = Ingredient(name: "Chicken Thigh", amount: "150g")
+    let ing4 = Ingredient(name: "Rice", amount: "1 bowl")
+    let ing5 = Ingredient(name: "Salmon Fillet", amount: "2 pcs")
+
+    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
+    menu1.ingredients = [ing1, ing2]
+
+    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Lunch")
+    menu2.ingredients = [ing3, ing4]
+
+    let menu3 = Menu(name: "Grilled Salmon & Veggies", category: "Dinner")
+    menu3.ingredients = [ing5]
+
+    let menu4 = Menu(name: "Japanese Curry Rice", category: "Lunch")
+
+    [menu1, menu2, menu3, menu4].forEach { context.insert($0) }
+
+    let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
+    context.insert(pattern)
+
+    let day1 = PatternDay(dayIndex: 0, breakfastMenu: menu1, lunchMenu: menu2, dinnerMenu: menu3)
+    day1.pattern = pattern
+    context.insert(day1)
+
+    let stock1 = StockItem(name: "Soy Sauce", category: "Seasoning")
+    let stock2 = StockItem(name: "Rice", category: "Pantry")
+    [stock1, stock2].forEach { context.insert($0) }
+
+    return NavigationStack {
         DashboardView()
     }
-    .modelContainer(for: [KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self], inMemory: true)
+    .modelContainer(container)
 }
