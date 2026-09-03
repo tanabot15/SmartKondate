@@ -594,7 +594,7 @@
 				CODE_SIGN_ENTITLEMENTS = SmartKondate/SmartKondate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -611,7 +611,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -637,7 +637,7 @@
 				CODE_SIGN_ENTITLEMENTS = SmartKondate/SmartKondate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -654,7 +654,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -679,7 +679,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = SmartKondateWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartKondateWidget/Info.plist;
@@ -691,7 +691,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate.SmartKondateWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -715,7 +715,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = SmartKondateWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartKondateWidget/Info.plist;
@@ -727,7 +727,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate.SmartKondateWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

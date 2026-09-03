@@ -11,13 +11,25 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    
+    @AppStorage("userColorScheme") private var userColorScheme: String = "system"
 
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingResetConfirmation = false
 
     var body: some View {
         List {
-            // MARK: - 1. データ管理 (初期化・リセット)
+            // MARK: - 1. Appearance
+            Section(header: Text("Appearance")) {
+                Picker("Theme", selection: $userColorScheme) {
+                    Text("Light").tag("light")
+                    Text("Dark").tag("dark")
+                    Text("System").tag("system")
+                }
+                .pickerStyle(.menu)
+            }
+
+            // MARK: - 2. Data Management
             Section {
                 Button {
                     isShowingResetConfirmation = true
@@ -34,12 +46,12 @@ struct SettingsView: View {
                 Text("Data Management")
             }
 
-            // MARK: - 2. アプリ情報
+            // MARK: - 3. App Info
             Section(header: Text("About")) {
                 HStack {
                     Text("App Version")
                     Spacer()
-                    Text("2.1")
+                    Text("2.2")
                         .foregroundStyle(.secondary)
                 }
             }

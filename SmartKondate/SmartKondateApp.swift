@@ -10,6 +10,8 @@ import SwiftData
 
 @main
 struct SmartKondateApp: App {
+    @AppStorage("userColorScheme") private var userColorScheme: String = "system"
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Ingredient.self,
@@ -32,9 +34,18 @@ struct SmartKondateApp: App {
         }
     }()
 
+    private var selectedColorScheme: ColorScheme? {
+        switch userColorScheme {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .preferredColorScheme(selectedColorScheme)
         }
         .modelContainer(sharedModelContainer)
     }
