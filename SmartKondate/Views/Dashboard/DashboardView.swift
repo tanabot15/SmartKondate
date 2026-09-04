@@ -16,9 +16,9 @@ struct DashboardView: View {
 
     @State private var selectedDate: Date = Date()
 
-    @State private var customBreakfast: Menu?
-    @State private var customLunch: Menu?
-    @State private var customDinner: Menu?
+    @State private var customBreakfast: [Menu]?
+    @State private var customLunch: [Menu]?
+    @State private var customDinner: [Menu]?
 
     private var activePattern: KondatePattern? {
         activePatterns.first
@@ -72,27 +72,11 @@ struct DashboardView: View {
                     MealCardView(
                         diffResult: result,
                         availableMenus: availableMenus,
-                        onSelectMenu: { newMenu in
-                            updateCustomMenu(for: result.mealType, with: newMenu)
+                        onSelectMenus: { newMenus in
+                            updateCustomMenus(for: result.mealType, with: newMenus)
                         }
                     )
                 }
-
-                // Navigation to Stock List
-                NavigationLink(destination: StockCheckListView()) {
-                    HStack {
-                        Image(systemName: "cart.fill")
-                            .font(.title3)
-                        Text("Go to Stock Checklist")
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .padding(.top, 8)
             }
             .padding()
         }
@@ -100,14 +84,14 @@ struct DashboardView: View {
         .navigationTitle("Today's Menu")
     }
 
-    private func updateCustomMenu(for mealType: MealType, with menu: Menu?) {
+    private func updateCustomMenus(for mealType: MealType, with menus: [Menu]?) {
         switch mealType {
         case .breakfast:
-            customBreakfast = menu
+            customBreakfast = menus
         case .lunch:
-            customLunch = menu
+            customLunch = menus
         case .dinner:
-            customDinner = menu
+            customDinner = menus
         }
     }
 }
@@ -127,23 +111,24 @@ struct DashboardView: View {
     let ing4 = Ingredient(name: "Rice", amount: "1 bowl")
     let ing5 = Ingredient(name: "Salmon Fillet", amount: "2 pcs")
 
-    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
+    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Main")
     menu1.ingredients = [ing1, ing2]
 
-    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Lunch")
+    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
     menu2.ingredients = [ing3, ing4]
 
-    let menu3 = Menu(name: "Grilled Salmon & Veggies", category: "Dinner")
+    let menu3 = Menu(name: "Grilled Salmon & Veggies", category: "Main")
     menu3.ingredients = [ing5]
 
-    let menu4 = Menu(name: "Japanese Curry Rice", category: "Lunch")
+    let menu4 = Menu(name: "Japanese Curry Rice", category: "Main")
 
     [menu1, menu2, menu3, menu4].forEach { context.insert($0) }
 
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
     context.insert(pattern)
 
-    let day1 = PatternDay(dayIndex: 0, breakfastMenu: menu1, lunchMenu: menu2, dinnerMenu: menu3)
+    // 複数メニュー配列（[Menu]）渡しの初期化子に修正
+    let day1 = PatternDay(dayIndex: 0, breakfastMenus: [menu1], lunchMenus: [menu2], dinnerMenus: [menu3])
     day1.pattern = pattern
     context.insert(day1)
 

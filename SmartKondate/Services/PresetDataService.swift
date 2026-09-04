@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-struct PresetDataService {    
+struct PresetDataService {
     static func insertPresetDataIfNeeded(context: ModelContext) {
         let descriptor = FetchDescriptor<KondatePattern>()
         if let count = try? context.fetchCount(descriptor), count > 0 {
@@ -40,101 +40,48 @@ struct PresetDataService {
         ]
         stockItems.forEach { context.insert($0) }
         
-        // MARK: - 2. Menus (30 menus with ingredients)
-        // Breakfast (1-5)
-        let m1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
+        // MARK: - 2. Menus (Main, Side, Soup, Other)
+        
+        // Main Menus
+        let m1 = Menu(name: "Toast & Fried Eggs", category: "Main")
         m1.ingredients = [Ingredient(name: "Bread", amount: "2 slices"), Ingredient(name: "Egg", amount: "2 pcs")]
         
-        let m2 = Menu(name: "Oatmeal & Berries", category: "Breakfast")
-        m2.ingredients = [Ingredient(name: "Oats", amount: "50g"), Ingredient(name: "Mixed Berries", amount: "30g")]
+        let m2 = Menu(name: "Grilled Salmon", category: "Main")
+        m2.ingredients = [Ingredient(name: "Salmon Fillet", amount: "1 pc")]
         
-        let m3 = Menu(name: "Japanese Breakfast Set", category: "Breakfast")
-        m3.ingredients = [Ingredient(name: "Grilled Salmon", amount: "1 pc"), Ingredient(name: "Rice", amount: "1 bowl"), Ingredient(name: "Miso Soup", amount: "1 cup")]
+        let m3 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
+        m3.ingredients = [Ingredient(name: "Chicken Thigh", amount: "150g"), Ingredient(name: "Rice", amount: "1 bowl")]
         
-        let m4 = Menu(name: "Pancakes & Bacon", category: "Breakfast")
-        m4.ingredients = [Ingredient(name: "Pancake Mix", amount: "100g"), Ingredient(name: "Bacon", amount: "2 slices")]
+        let m4 = Menu(name: "Pasta Carbonara", category: "Main")
+        m4.ingredients = [Ingredient(name: "Pasta", amount: "100g"), Ingredient(name: "Bacon", amount: "40g"), Ingredient(name: "Egg", amount: "1 pc")]
         
-        let m5 = Menu(name: "Fruit Smoothie & Granola", category: "Breakfast")
-        m5.ingredients = [Ingredient(name: "Banana", amount: "1 pc"), Ingredient(name: "Yogurt", amount: "100g"), Ingredient(name: "Granola", amount: "40g")]
+        let m5 = Menu(name: "Pork Ginger Stir-fry", category: "Main")
+        m5.ingredients = [Ingredient(name: "Pork Slice", amount: "200g"), Ingredient(name: "Onion", amount: "1 pc")]
         
-        // Lunch (6-15)
-        let m6 = Menu(name: "Chicken Teriyaki Bowl", category: "Lunch")
-        m6.ingredients = [Ingredient(name: "Chicken Thigh", amount: "150g"), Ingredient(name: "Rice", amount: "1 bowl")]
+        let m6 = Menu(name: "Hamburger Steak", category: "Main")
+        m6.ingredients = [Ingredient(name: "Minced Meat", amount: "250g"), Ingredient(name: "Breadcrumbs", amount: "2 tbsp")]
         
-        let m7 = Menu(name: "Pasta Carbonara", category: "Lunch")
-        m7.ingredients = [Ingredient(name: "Pasta", amount: "100g"), Ingredient(name: "Bacon", amount: "40g"), Ingredient(name: "Egg", amount: "1 pc")]
+        let m7 = Menu(name: "Japanese Curry Rice", category: "Main")
+        m7.ingredients = [Ingredient(name: "Curry Roux", amount: "2 cubes"), Ingredient(name: "Potato", amount: "1 pc"), Ingredient(name: "Carrot", amount: "1/2 pc")]
+
+        // Side Menus
+        let s1 = Menu(name: "Caesar Salad", category: "Side")
+        s1.ingredients = [Ingredient(name: "Romaine Lettuce", amount: "100g"), Ingredient(name: "Croutons", amount: "20g")]
         
-        let m8 = Menu(name: "Beef Gyudon", category: "Lunch")
-        m8.ingredients = [Ingredient(name: "Sliced Beef", amount: "120g"), Ingredient(name: "Onion", amount: "1/2 pc")]
+        let s2 = Menu(name: "Spinach Ohitashi", category: "Side")
+        s2.ingredients = [Ingredient(name: "Spinach", amount: "1/2 bundle")]
         
-        let m9 = Menu(name: "Club Sandwich", category: "Lunch")
-        m9.ingredients = [Ingredient(name: "Bread", amount: "3 slices"), Ingredient(name: "Turkey Slices", amount: "50g"), Ingredient(name: "Lettuce", amount: "2 leaves")]
+        let s3 = Menu(name: "Steamed Broccoli", category: "Side")
+        s3.ingredients = [Ingredient(name: "Broccoli", amount: "1/2 head")]
+
+        // Soup Menus
+        let sp1 = Menu(name: "Miso Soup", category: "Soup")
+        sp1.ingredients = [Ingredient(name: "Tofu", amount: "1/2 block"), Ingredient(name: "Wakame", amount: "5g")]
         
-        let m10 = Menu(name: "Shrimp Fried Rice", category: "Lunch")
-        m10.ingredients = [Ingredient(name: "Rice", amount: "200g"), Ingredient(name: "Shrimp", amount: "80g"), Ingredient(name: "Egg", amount: "1 pc")]
-        
-        let m11 = Menu(name: "Ramen & Gyoza", category: "Lunch")
-        m11.ingredients = [Ingredient(name: "Ramen Noodles", amount: "1 pack"), Ingredient(name: "Frozen Gyoza", amount: "5 pcs")]
-        
-        let m12 = Menu(name: "Caesar Salad Bowl", category: "Lunch")
-        m12.ingredients = [Ingredient(name: "Chicken Breast", amount: "100g"), Ingredient(name: "Romaine Lettuce", amount: "100g"), Ingredient(name: "Croutons", amount: "20g")]
-        
-        let m13 = Menu(name: "Japanese Curry Rice", category: "Lunch")
-        m13.ingredients = [Ingredient(name: "Curry Roux", amount: "2 cubes"), Ingredient(name: "Potato", amount: "1 pc"), Ingredient(name: "Carrot", amount: "1/2 pc")]
-        
-        let m14 = Menu(name: "Udon Noodles with Tempura", category: "Lunch")
-        m14.ingredients = [Ingredient(name: "Udon Noodles", amount: "1 pack"), Ingredient(name: "Shrimp Tempura", amount: "2 pcs")]
-        
-        let m15 = Menu(name: "Tuna & Mayo Rice Balls", category: "Lunch")
-        m15.ingredients = [Ingredient(name: "Canned Tuna", amount: "1 can"), Ingredient(name: "Rice", amount: "2 bowls"), Ingredient(name: "Nori", amount: "2 sheets")]
-        
-        // Dinner (16-30)
-        let m16 = Menu(name: "Grilled Salmon & Vegetables", category: "Main")
-        m16.ingredients = [Ingredient(name: "Salmon Fillet", amount: "2 pcs"), Ingredient(name: "Broccoli", amount: "1/2 head")]
-        
-        let m17 = Menu(name: "Pork Ginger Stir-fry", category: "Main")
-        m17.ingredients = [Ingredient(name: "Pork Slice", amount: "200g"), Ingredient(name: "Onion", amount: "1 pc")]
-        
-        let m18 = Menu(name: "Hamburger Steak", category: "Main")
-        m18.ingredients = [Ingredient(name: "Minced Meat", amount: "250g"), Ingredient(name: "Breadcrumbs", amount: "2 tbsp")]
-        
-        let m19 = Menu(name: "Chicken Katsu", category: "Main")
-        m19.ingredients = [Ingredient(name: "Chicken Breast", amount: "200g"), Ingredient(name: "Panko", amount: "50g")]
-        
-        let m20 = Menu(name: "Beef Steak & Garlic Rice", category: "Main")
-        m20.ingredients = [Ingredient(name: "Beef Steak Cut", amount: "200g"), Ingredient(name: "Garlic", amount: "2 cloves")]
-        
-        let m21 = Menu(name: "Mabo Tofu", category: "Main")
-        m21.ingredients = [Ingredient(name: "Tofu", amount: "1 block"), Ingredient(name: "Minced Pork", amount: "100g")]
-        
-        let m22 = Menu(name: "Saba Miso (Mackerel)", category: "Main")
-        m22.ingredients = [Ingredient(name: "Mackerel Fillet", amount: "2 pcs"), Ingredient(name: "Ginger", amount: "1 slice")]
-        
-        let m23 = Menu(name: "Vegetable Soup & Roast Pork", category: "Main")
-        m23.ingredients = [Ingredient(name: "Roast Pork", amount: "150g"), Ingredient(name: "Cabbage", amount: "1/4 head")]
-        
-        let m24 = Menu(name: "Beef Stew", category: "Main")
-        m24.ingredients = [Ingredient(name: "Beef Chunk", amount: "200g"), Ingredient(name: "Onion", amount: "1 pc"), Ingredient(name: "Red Wine", amount: "100ml")]
-        
-        let m25 = Menu(name: "Stir-fried Meat & Beansprouts", category: "Main")
-        m25.ingredients = [Ingredient(name: "Pork Slice", amount: "150g"), Ingredient(name: "Bean Sprouts", amount: "1 bag")]
-        
-        let m26 = Menu(name: "Grilled Chicken & Asparagus", category: "Main")
-        m26.ingredients = [Ingredient(name: "Chicken Leg", amount: "200g"), Ingredient(name: "Asparagus", amount: "4 spears")]
-        
-        let m27 = Menu(name: "Cod Poached in Butter & Herb", category: "Main")
-        m27.ingredients = [Ingredient(name: "Cod Fillet", amount: "2 pcs"), Ingredient(name: "Butter", amount: "20g")]
-        
-        let m28 = Menu(name: "Suae (Sour & Sweet Pork)", category: "Main")
-        m28.ingredients = [Ingredient(name: "Pork Cubes", amount: "200g"), Ingredient(name: "Bell Pepper", amount: "1 pc")]
-        
-        let m29 = Menu(name: "Sukiyaki Hot Pot", category: "Main")
-        m29.ingredients = [Ingredient(name: "Beef Slices", amount: "250g"), Ingredient(name: "Tofu", amount: "1/2 block"), Ingredient(name: "Enoki Mushroom", amount: "1 pack")]
-        
-        let m30 = Menu(name: "Chilled Soba & Vegetable Tempura", category: "Main")
-        m30.ingredients = [Ingredient(name: "Soba Noodles", amount: "200g"), Ingredient(name: "Sweet Potato", amount: "1/2 pc")]
-        
-        let allMenus = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30]
+        let sp2 = Menu(name: "Corn Soup", category: "Soup")
+        sp2.ingredients = [Ingredient(name: "Corn Cream Can", amount: "1/2 can"), Ingredient(name: "Milk", amount: "100ml")]
+
+        let allMenus = [m1, m2, m3, m4, m5, m6, m7, s1, s2, s3, sp1, sp2]
         allMenus.forEach { context.insert($0) }
 
         // MARK: - 3. KondatePatterns & PatternDays
@@ -144,13 +91,13 @@ struct PresetDataService {
         context.insert(pattern1)
         
         let daysP1 = [
-            PatternDay(dayIndex: 0, breakfastMenu: m1, lunchMenu: m6, dinnerMenu: m16),
-            PatternDay(dayIndex: 1, breakfastMenu: m2, lunchMenu: m7, dinnerMenu: m17),
-            PatternDay(dayIndex: 2, breakfastMenu: m3, lunchMenu: m8, dinnerMenu: m18),
-            PatternDay(dayIndex: 3, breakfastMenu: m4, lunchMenu: m9, dinnerMenu: m19),
-            PatternDay(dayIndex: 4, breakfastMenu: m5, lunchMenu: m10, dinnerMenu: m20),
-            PatternDay(dayIndex: 5, breakfastMenu: m1, lunchMenu: m11, dinnerMenu: m21),
-            PatternDay(dayIndex: 6, breakfastMenu: m3, lunchMenu: m12, dinnerMenu: m22)
+            PatternDay(dayIndex: 0, breakfastMenus: [m1], lunchMenus: [m3, s1], dinnerMenus: [m5, s2, sp1]),
+            PatternDay(dayIndex: 1, breakfastMenus: [m2, sp1], lunchMenus: [m4], dinnerMenus: [m6, s3, sp2]),
+            PatternDay(dayIndex: 2, breakfastMenus: [m1], lunchMenus: [m7, s1], dinnerMenus: [m2, s2, sp1]),
+            PatternDay(dayIndex: 3, breakfastMenus: [m2, sp1], lunchMenus: [m3], dinnerMenus: [m5, s3]),
+            PatternDay(dayIndex: 4, breakfastMenus: [m1], lunchMenus: [m4, s1], dinnerMenus: [m6, sp2]),
+            PatternDay(dayIndex: 5, breakfastMenus: [m2, sp1], lunchMenus: [m7], dinnerMenus: [m5, s2, sp1]),
+            PatternDay(dayIndex: 6, breakfastMenus: [m1], lunchMenus: [m3, s3], dinnerMenus: [m6, s1, sp2])
         ]
         daysP1.forEach { day in
             day.pattern = pattern1
@@ -162,39 +109,12 @@ struct PresetDataService {
         context.insert(pattern2)
         
         let daysP2 = [
-            PatternDay(dayIndex: 0, breakfastMenu: m1, lunchMenu: m13, dinnerMenu: m23),
-            PatternDay(dayIndex: 1, breakfastMenu: m2, lunchMenu: m14, dinnerMenu: m24),
-            PatternDay(dayIndex: 2, breakfastMenu: m4, lunchMenu: m15, dinnerMenu: m25)
+            PatternDay(dayIndex: 0, breakfastMenus: [m1], lunchMenus: [m7, s1], dinnerMenus: [m5, sp1]),
+            PatternDay(dayIndex: 1, breakfastMenus: [m2, sp1], lunchMenus: [m3], dinnerMenus: [m6, s3, sp2]),
+            PatternDay(dayIndex: 2, breakfastMenus: [m1], lunchMenus: [m4], dinnerMenus: [m2, s2, sp1])
         ]
         daysP2.forEach { day in
             day.pattern = pattern2
-            context.insert(day)
-        }
-
-        // Pattern 3: Healthy & Light (3 Days)
-        let pattern3 = KondatePattern(name: "Healthy & Light", durationDays: 3, isActive: false)
-        context.insert(pattern3)
-        
-        let daysP3 = [
-            PatternDay(dayIndex: 0, breakfastMenu: m2, lunchMenu: m12, dinnerMenu: m16),
-            PatternDay(dayIndex: 1, breakfastMenu: m5, lunchMenu: m9, dinnerMenu: m27),
-            PatternDay(dayIndex: 2, breakfastMenu: m3, lunchMenu: m15, dinnerMenu: m30)
-        ]
-        daysP3.forEach { day in
-            day.pattern = pattern3
-            context.insert(day)
-        }
-
-        // Pattern 4: Weekend Special (2 Days)
-        let pattern4 = KondatePattern(name: "Weekend Special", durationDays: 2, isActive: false)
-        context.insert(pattern4)
-        
-        let daysP4 = [
-            PatternDay(dayIndex: 0, breakfastMenu: m4, lunchMenu: m11, dinnerMenu: m20),
-            PatternDay(dayIndex: 1, breakfastMenu: m5, lunchMenu: m10, dinnerMenu: m29)
-        ]
-        daysP4.forEach { day in
-            day.pattern = pattern4
             context.insert(day)
         }
 

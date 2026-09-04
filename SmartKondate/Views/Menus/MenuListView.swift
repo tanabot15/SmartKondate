@@ -75,6 +75,7 @@ struct MenuListView: View {
                                     .clipShape(Capsule())
                             }
                         }
+                        .buttonStyle(.plain)
                     }
                     .onDelete(perform: deleteMenus)
                 }

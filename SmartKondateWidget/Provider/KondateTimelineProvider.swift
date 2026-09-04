@@ -13,9 +13,15 @@ struct SimpleKondateEntry: TimelineEntry {
     let date: Date
     let patternName: String
     let dayText: String
-    let breakfast: String
-    let lunch: String
-    let dinner: String
+    
+    let breakfastMain: String
+    let breakfastSub: String
+    
+    let lunchMain: String
+    let lunchSub: String
+    
+    let dinnerMain: String
+    let dinnerSub: String
 }
 
 struct KondateTimelineProvider: TimelineProvider {
@@ -26,9 +32,12 @@ struct KondateTimelineProvider: TimelineProvider {
             date: Date(),
             patternName: "Standard Rotation",
             dayText: "Day 1",
-            breakfast: "Toast & Eggs",
-            lunch: "Curry Rice",
-            dinner: "Steak & Salad"
+            breakfastMain: "Toast & Eggs",
+            breakfastSub: "Coffee",
+            lunchMain: "Curry Rice",
+            lunchSub: "Side Salad",
+            dinnerMain: "Steak",
+            dinnerSub: "Miso Soup"
         )
     }
 
@@ -49,9 +58,9 @@ struct KondateTimelineProvider: TimelineProvider {
                 date: currentDate,
                 patternName: "Not Set",
                 dayText: "-",
-                breakfast: "Not Set",
-                lunch: "Not Set",
-                dinner: "Not Set"
+                breakfastMain: "-", breakfastSub: "",
+                lunchMain: "-", lunchSub: "",
+                dinnerMain: "-", dinnerSub: ""
             )
             
             let calendar = Calendar.current
@@ -104,12 +113,24 @@ private enum WidgetDataFetcher {
                 date: date,
                 patternName: activePattern.name,
                 dayText: "Day \(dayIndex + 1)",
-                breakfast: targetDay.breakfastMenu?.name ?? "Not Set",
-                lunch: targetDay.lunchMenu?.name ?? "Not Set",
-                dinner: targetDay.dinnerMenu?.name ?? "Not Set"
+                breakfastMain: extractMain(from: targetDay.breakfastMenus),
+                breakfastSub: extractSub(from: targetDay.breakfastMenus),
+                lunchMain: extractMain(from: targetDay.lunchMenus),
+                lunchSub: extractSub(from: targetDay.lunchMenus),
+                dinnerMain: extractMain(from: targetDay.dinnerMenus),
+                dinnerSub: extractSub(from: targetDay.dinnerMenus)
             )
         }
         
         return nil
+    }
+
+    private static func extractMain(from menus: [Menu]) -> String {
+        menus.first(where: { $0.category == "Main" })?.name ?? menus.first?.name ?? ""
+    }
+
+    private static func extractSub(from menus: [Menu]) -> String {
+        let subs = menus.filter { $0.category != "Main" }
+        return subs.map { $0.name }.joined(separator: " / ")
     }
 }

@@ -31,22 +31,24 @@ struct ShoppingListView: View {
         )
     }
 
+    // 複数メニュー配列（effectiveMenus）に対応させた材料集計ロジック
     private var ingredientItems: [ShoppingIngredientItem] {
         var items: [ShoppingIngredientItem] = []
         for result in diffResults {
-            guard let menu = result.effectiveMenu else { continue }
-            for ingredient in menu.ingredients {
-                let key = "\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
-                items.append(
-                    ShoppingIngredientItem(
-                        id: key,
-                        ingredientName: ingredient.name,
-                        amount: ingredient.amount,
-                        menuName: menu.name,
-                        mealType: result.mealType,
-                        isModifiedMeal: result.isModified
+            for menu in result.effectiveMenus {
+                for ingredient in menu.ingredients {
+                    let key = "\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
+                    items.append(
+                        ShoppingIngredientItem(
+                            id: key,
+                            ingredientName: ingredient.name,
+                            amount: ingredient.amount,
+                            menuName: menu.name,
+                            mealType: result.mealType,
+                            isModifiedMeal: result.isModified
+                        )
                     )
-                )
+                }
             }
         }
         return items
@@ -176,7 +178,7 @@ struct ShoppingIngredientItem: Identifiable {
     let menus = [menu1, menu2]
     menus.forEach { context.insert($0) }
 
-    let day1 = PatternDay(dayIndex: 0, breakfastMenu: nil, lunchMenu: menu1, dinnerMenu: menu2)
+    let day1 = PatternDay(dayIndex: 0, breakfastMenus: [], lunchMenus: [menu1], dinnerMenus: [menu2])
     day1.pattern = pattern
     context.insert(day1)
 
@@ -186,7 +188,6 @@ struct ShoppingIngredientItem: Identifiable {
     let stocks = [stock1, stock2]
     stocks.forEach { context.insert($0) }
 
-    // 2. 最後に View のみを記述
     return NavigationStack {
         ShoppingListView()
     }

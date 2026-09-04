@@ -15,15 +15,20 @@ final class PatternDay {
     
     var pattern: KondatePattern?
     
-    var breakfastMenu: Menu?
-    var lunchMenu: Menu?
-    var dinnerMenu: Menu?
+    var breakfastMenus: [Menu] = []
+    var lunchMenus: [Menu] = []
+    var dinnerMenus: [Menu] = []
 
-    init(dayIndex: Int, breakfastMenu: Menu? = nil, lunchMenu: Menu? = nil, dinnerMenu: Menu? = nil) {
+    init(
+        dayIndex: Int,
+        breakfastMenus: [Menu] = [],
+        lunchMenus: [Menu] = [],
+        dinnerMenus: [Menu] = []
+    ) {
         self.id = UUID()
         self.dayIndex = dayIndex
-        self.breakfastMenu = breakfastMenu
-        self.lunchMenu = lunchMenu
-        self.dinnerMenu = dinnerMenu
+        self.breakfastMenus = breakfastMenus
+        self.lunchMenus = lunchMenus
+        self.dinnerMenus = dinnerMenus
     }
 }

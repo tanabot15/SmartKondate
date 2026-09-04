@@ -19,13 +19,13 @@ final class Menu {
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.menu)
     var ingredients: [Ingredient] = []
 
-    @Relationship(inverse: \PatternDay.breakfastMenu)
+    @Relationship(inverse: \PatternDay.breakfastMenus)
     var breakfastPatternDays: [PatternDay] = []
     
-    @Relationship(inverse: \PatternDay.lunchMenu)
+    @Relationship(inverse: \PatternDay.lunchMenus)
     var lunchPatternDays: [PatternDay] = []
     
-    @Relationship(inverse: \PatternDay.dinnerMenu)
+    @Relationship(inverse: \PatternDay.dinnerMenus)
     var dinnerPatternDays: [PatternDay] = []
 
     init(name: String, category: String = "Main", memo: String = "") {

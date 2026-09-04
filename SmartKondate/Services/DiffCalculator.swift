@@ -17,15 +17,17 @@ enum MealType: String, CaseIterable, Identifiable {
 
 struct MealDiffResult {
     let mealType: MealType
-    let defaultMenu: Menu?
-    let customMenu: Menu?
+    let defaultMenus: [Menu]
+    let customMenus: [Menu]?
     
+    // カスタム指定（個別変更）があるかどうか
     var isModified: Bool {
-        defaultMenu?.id != customMenu?.id
+        customMenus != nil
     }
     
-    var effectiveMenu: Menu? {
-        customMenu ?? defaultMenu
+    // カスタム指定があればそれを返し、なければデフォルトのパターンメニューを返す
+    var effectiveMenus: [Menu] {
+        customMenus ?? defaultMenus
     }
 }
 
@@ -48,16 +50,16 @@ struct DiffCalculator {
         for targetDate: Date,
         pattern: KondatePattern?,
         startDate: Date,
-        customBreakfast: Menu? = nil,
-        customLunch: Menu? = nil,
-        customDinner: Menu? = nil
+        customBreakfast: [Menu]? = nil,
+        customLunch: [Menu]? = nil,
+        customDinner: [Menu]? = nil
     ) -> [MealDiffResult] {
         
         guard let pattern = pattern, pattern.durationDays > 0 else {
             return [
-                MealDiffResult(mealType: .breakfast, defaultMenu: nil, customMenu: customBreakfast),
-                MealDiffResult(mealType: .lunch, defaultMenu: nil, customMenu: customLunch),
-                MealDiffResult(mealType: .dinner, defaultMenu: nil, customMenu: customDinner)
+                MealDiffResult(mealType: .breakfast, defaultMenus: [], customMenus: customBreakfast),
+                MealDiffResult(mealType: .lunch, defaultMenus: [], customMenus: customLunch),
+                MealDiffResult(mealType: .dinner, defaultMenus: [], customMenus: customDinner)
             ]
         }
         
@@ -67,18 +69,18 @@ struct DiffCalculator {
         return [
             MealDiffResult(
                 mealType: .breakfast,
-                defaultMenu: patternDay?.breakfastMenu,
-                customMenu: customBreakfast
+                defaultMenus: patternDay?.breakfastMenus ?? [],
+                customMenus: customBreakfast
             ),
             MealDiffResult(
                 mealType: .lunch,
-                defaultMenu: patternDay?.lunchMenu,
-                customMenu: customLunch
+                defaultMenus: patternDay?.lunchMenus ?? [],
+                customMenus: customLunch
             ),
             MealDiffResult(
                 mealType: .dinner,
-                defaultMenu: patternDay?.dinnerMenu,
-                customMenu: customDinner
+                defaultMenus: patternDay?.dinnerMenus ?? [],
+                customMenus: customDinner
             )
         ]
     }

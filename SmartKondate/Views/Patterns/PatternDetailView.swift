@@ -47,20 +47,32 @@ struct PatternDetailView: View {
 
             ForEach(sortedDays) { day in
                 Section(header: Text("Day \(day.dayIndex + 1)")) {
-                    MealMenuPickerRow(mealTitle: "Breakfast", icon: "sun.max.fill", iconColor: .orange, selectedMenu: Binding(
-                        get: { day.breakfastMenu },
-                        set: { day.breakfastMenu = $0 }
-                    ), availableMenus: availableMenus)
+                    MealSectionRows(
+                        mealTitle: "Breakfast",
+                        menus: Binding(
+                            get: { day.breakfastMenus },
+                            set: { day.breakfastMenus = $0 }
+                        ),
+                        availableMenus: availableMenus
+                    )
 
-                    MealMenuPickerRow(mealTitle: "Lunch", icon: "sun.headline.fill", iconColor: .yellow, selectedMenu: Binding(
-                        get: { day.lunchMenu },
-                        set: { day.lunchMenu = $0 }
-                    ), availableMenus: availableMenus)
+                    MealSectionRows(
+                        mealTitle: "Lunch",
+                        menus: Binding(
+                            get: { day.lunchMenus },
+                            set: { day.lunchMenus = $0 }
+                        ),
+                        availableMenus: availableMenus
+                    )
 
-                    MealMenuPickerRow(mealTitle: "Dinner", icon: "moon.stars.fill", iconColor: .indigo, selectedMenu: Binding(
-                        get: { day.dinnerMenu },
-                        set: { day.dinnerMenu = $0 }
-                    ), availableMenus: availableMenus)
+                    MealSectionRows(
+                        mealTitle: "Dinner",
+                        menus: Binding(
+                            get: { day.dinnerMenus },
+                            set: { day.dinnerMenus = $0 }
+                        ),
+                        availableMenus: availableMenus
+                    )
                 }
             }
         }
@@ -95,34 +107,170 @@ struct PatternDetailView: View {
     }
 }
 
-private struct MealMenuPickerRow: View {
+// MARK: - MealSectionRows (1つの食事区分ごとの Main / Sub 行)
+private struct MealSectionRows: View {
     let mealTitle: String
-    let icon: String
-    let iconColor: Color
-    @Binding var selectedMenu: Menu?
+    @Binding var menus: [Menu]
     let availableMenus: [Menu]
 
-    var body: some View {
-        HStack {
-            Label {
-                Text(mealTitle)
-                    .foregroundStyle(.primary)
-            } icon: {
-                Image(systemName: icon)
-                    .foregroundStyle(iconColor)
-            }
-            
-            Spacer()
+    @State private var isShowingSubSheet = false
 
-            Picker(mealTitle, selection: $selectedMenu) {
-                Text("None").tag(Menu?.none)
-                Divider()
-                ForEach(availableMenus) { menu in
-                    Text(menu.name).tag(Menu?.some(menu))
+    // Mainカテゴリのメニュー（単一）
+    private var mainSelection: Menu? {
+        menus.first(where: { $0.category == "Main" })
+    }
+
+    // Main以外のサブカテゴリ（Side, Soup等）のメニュー（複数）
+    private var selectedSubMenus: [Menu] {
+        menus.filter { $0.category != "Main" }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(mealTitle)
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(.secondary)
+
+            // Main
+            HStack {
+                Text("Main")
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Picker("Main", selection: Binding(
+                    get: { mainSelection },
+                    set: { newMain in
+                        var updated = menus.filter { $0.category != "Main" }
+                        if let newMain = newMain {
+                            updated.append(newMain)
+                        }
+                        menus = updated
+                    }
+                )) {
+                    Text("None").tag(Menu?.none)
+                    Divider()
+                    ForEach(availableMenus.filter { $0.category == "Main" }) { menu in
+                        Text(menu.name).tag(Menu?.some(menu))
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+            }
+
+            Divider()
+
+            // Subs
+            HStack {
+                Text("Side / Soup")
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Button {
+                    isShowingSubSheet = true
+                } label: {
+                    if selectedSubMenus.isEmpty {
+                        Text("None")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(selectedSubMenus.map { $0.name }.joined(separator: " / "))
+                            .lineLimit(1)
+                            .foregroundStyle(.primary)
+                    }
+                }
+                .font(.subheadline)
+            }
+        }
+        .padding(.vertical, 4)
+        .sheet(isPresented: $isShowingSubSheet) {
+            SubMenuPickerSheet(
+                mealTitle: mealTitle,
+                allSubMenus: availableMenus.filter { $0.category != "Main" },
+                selectedSubMenus: selectedSubMenus,
+                onSave: { updatedSubs in
+                    // Main は残したまま、Subメニュー群を差し替える
+                    let currentMain = menus.filter { $0.category == "Main" }
+                    menus = currentMain + updatedSubs
+                }
+            )
+        }
+    }
+}
+
+// MARK: - SubMenuPickerSheet
+private struct SubMenuPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let mealTitle: String
+    let allSubMenus: [Menu]
+    @State var selectedSubMenus: [Menu]
+    let onSave: ([Menu]) -> Void
+
+    init(mealTitle: String, allSubMenus: [Menu], selectedSubMenus: [Menu], onSave: @escaping ([Menu]) -> Void) {
+        self.mealTitle = mealTitle
+        self.allSubMenus = allSubMenus
+        self._selectedSubMenus = State(initialValue: selectedSubMenus)
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if allSubMenus.isEmpty {
+                    ContentUnavailableView(
+                        "No Side or Soup Available",
+                        systemImage: "fork.knife",
+                        description: Text("Register Side/Soup items in Menus first.")
+                    )
+                } else {
+                    ForEach(allSubMenus) { menu in
+                        Button {
+                            toggleSelection(menu)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(menu.name)
+                                        .foregroundStyle(.primary)
+                                    Text(menu.category)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if selectedSubMenus.contains(where: { $0.id == menu.id }) {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
-            .pickerStyle(.menu)
-            .labelsHidden()
+            .navigationTitle("\(mealTitle) - Side & Soup")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        onSave(selectedSubMenus)
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private func toggleSelection(_ menu: Menu) {
+        if let index = selectedSubMenus.firstIndex(where: { $0.id == menu.id }) {
+            selectedSubMenus.remove(at: index)
+        } else {
+            selectedSubMenus.append(menu)
         }
     }
 }
@@ -135,21 +283,18 @@ private struct MealMenuPickerRow: View {
     )
     let context = container.mainContext
 
-    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
-    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Lunch")
-    let menu3 = Menu(name: "Grilled Salmon & Veggies", category: "Dinner")
-    [menu1, menu2, menu3].forEach { context.insert($0) }
+    let main1 = Menu(name: "Toast & Fried Eggs", category: "Main")
+    let main2 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
+    let side1 = Menu(name: "Green Salad", category: "Side")
+    let soup1 = Menu(name: "Miso Soup", category: "Soup")
+    [main1, main2, side1, soup1].forEach { context.insert($0) }
 
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
     context.insert(pattern)
 
-    let day1 = PatternDay(dayIndex: 0, breakfastMenu: menu1, lunchMenu: menu2, dinnerMenu: menu3)
+    let day1 = PatternDay(dayIndex: 0, breakfastMenus: [main1, side1], lunchMenus: [main2], dinnerMenus: [main2, side1, soup1])
     day1.pattern = pattern
     context.insert(day1)
-
-    let day2 = PatternDay(dayIndex: 1, breakfastMenu: menu1, lunchMenu: menu2, dinnerMenu: nil)
-    day2.pattern = pattern
-    context.insert(day2)
 
     return NavigationStack {
         PatternDetailView(pattern: pattern)

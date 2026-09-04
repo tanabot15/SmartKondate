@@ -11,37 +11,28 @@ import SwiftData
 struct MealCardView: View {
     let diffResult: MealDiffResult
     let availableMenus: [Menu]
-    let onSelectMenu: (Menu?) -> Void
+    let onSelectMenus: ([Menu]?) -> Void
 
     @State private var isShowingPickerSheet = false
 
-    private var iconName: String {
-        switch diffResult.mealType {
-        case .breakfast: return "sun.max.fill"
-        case .lunch: return "sun.headline.fill"
-        case .dinner: return "moon.stars.fill"
-        }
+    // Main Category
+    private var mainMenusText: String {
+        let mains = diffResult.effectiveMenus.filter { $0.category == "Main" }
+        return mains.map { $0.name }.joined(separator: " / ")
     }
 
-    private var iconColor: Color {
-        switch diffResult.mealType {
-        case .breakfast: return .orange
-        case .lunch: return .yellow
-        case .dinner: return .indigo
-        }
+    // Side / Soup / Other Category
+    private var subMenusText: String {
+        let subs = diffResult.effectiveMenus.filter { $0.category != "Main" }
+        return subs.map { $0.name }.joined(separator: " / ")
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label {
-                    Text(diffResult.mealType.rawValue)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                } icon: {
-                    Image(systemName: iconName)
-                        .foregroundStyle(iconColor)
-                }
+                Text(diffResult.mealType.rawValue)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
 
                 if diffResult.isModified {
                     Text("Modified")
@@ -64,29 +55,40 @@ struct MealCardView: View {
 
             Divider()
 
-            if let menu = diffResult.effectiveMenu {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(menu.name)
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    if !menu.ingredients.isEmpty {
-                        Text(menu.ingredients.map { $0.name }.joined(separator: ", "))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                    } else {
-                        Text("No ingredients specified")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-            } else {
+            if diffResult.effectiveMenus.isEmpty {
                 Text("No menu assigned")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .italic()
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    // Main
+                    if !mainMenusText.isEmpty {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text("Main:")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                            Text(mainMenusText)
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                        }
+                    }
+
+                    // Sub
+                    if !subMenusText.isEmpty {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text("Side/Soup:")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                            Text(subMenusText)
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                }
             }
         }
         .padding()
@@ -96,33 +98,24 @@ struct MealCardView: View {
             NavigationStack {
                 List {
                     Section {
-                        Button("None / Clear") {
-                            onSelectMenu(nil)
+                        Button("Clear All") {
+                            onSelectMenus(nil)
                             isShowingPickerSheet = false
                         }
                         .foregroundStyle(.red)
                     }
 
-                    Section(header: Text("Select Menu")) {
+                    Section(header: Text("Available Menus")) {
                         ForEach(availableMenus) { menu in
-                            Button {
-                                onSelectMenu(menu)
-                                isShowingPickerSheet = false
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(menu.name)
-                                            .foregroundStyle(.primary)
-                                        Text(menu.category)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    if diffResult.effectiveMenu?.id == menu.id {
-                                        Image(systemName: "checkmark")
-                                            .foregroundStyle(Color.accentColor)
-                                    }
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(menu.name)
+                                        .foregroundStyle(.primary)
+                                    Text(menu.category)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                 }
+                                Spacer()
                             }
                         }
                     }
@@ -143,10 +136,40 @@ struct MealCardView: View {
 }
 
 #Preview {
-    let sampleMenu = Menu(name: "Grilled Salmon", category: "Main")
-    let result = MealDiffResult(mealType: .dinner, defaultMenu: sampleMenu, customMenu: nil)
-    
-    return MealCardView(diffResult: result, availableMenus: [sampleMenu], onSelectMenu: { _ in })
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Menu.self, Ingredient.self,
+        configurations: config
+    )
+    let context = container.mainContext
+
+    let main1 = Menu(name: "Hamburger Steak", category: "Main")
+    let main2 = Menu(name: "Grilled Chicken", category: "Main")
+    let side1 = Menu(name: "Caesar Salad", category: "Side")
+    let soup1 = Menu(name: "Corn Soup", category: "Soup")
+
+    let menus = [main1, main2, side1, soup1]
+    menus.forEach { context.insert($0) }
+
+    let dinnerResult = MealDiffResult(
+        mealType: .dinner,
+        defaultMenus: [main1, side1, soup1],
+        customMenus: nil
+    )
+
+    let lunchResult = MealDiffResult(
+        mealType: .lunch,
+        defaultMenus: [],
+        customMenus: [main1, main2, side1]
+    )
+
+    return ScrollView {
+        VStack(spacing: 16) {
+            MealCardView(diffResult: dinnerResult, availableMenus: menus, onSelectMenus: { _ in })
+            MealCardView(diffResult: lunchResult, availableMenus: menus, onSelectMenus: { _ in })
+        }
         .padding()
-        .background(Color(.systemGroupedBackground))
+    }
+    .background(Color(.systemGroupedBackground))
+    .modelContainer(container)
 }

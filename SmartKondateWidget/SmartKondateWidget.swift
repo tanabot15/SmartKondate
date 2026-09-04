@@ -18,19 +18,22 @@ struct SmartKondateWidget: Widget {
         }
         .configurationDisplayName("Today's Menu")
         .description("Displays breakfast, lunch, and dinner from your active meal pattern.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemMedium])
     }
 }
 
-#Preview(as: .systemSmall) {
+#Preview(as: .systemMedium) {
     SmartKondateWidget()
 } timeline: {
     SimpleKondateEntry(
         date: Date(),
         patternName: "Standard Rotation",
         dayText: "Day 1",
-        breakfast: "Toast & Eggs",
-        lunch: "Curry Rice",
-        dinner: "Steak & Salad"
+        breakfastMain: "Toast & Eggs",
+        breakfastSub: "Coffee",
+        lunchMain: "Curry Rice",
+        lunchSub: "Side Salad",
+        dinnerMain: "Steak",
+        dinnerSub: "Miso Soup"
     )
 }
