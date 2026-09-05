@@ -20,6 +20,30 @@ struct StockCheckListView: View {
 
     var body: some View {
         List {
+            // MARK: - Shopping List Navigation Section
+            Section {
+                NavigationLink {
+                    ShoppingListView()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "cart.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.accentColor)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Shopping List")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("Check ingredients needed for scheduled meals")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
+            // MARK: - Stock Items Section
             ForEach(categories, id: \.self) { category in
                 let itemsInCategory = stockItems.filter { $0.category == category }
                 if !itemsInCategory.isEmpty {
@@ -30,22 +54,21 @@ struct StockCheckListView: View {
                             } label: {
                                 HStack {
                                     Image(systemName: item.isOut ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(item.isOut ? .red : .secondary)
+                                        .foregroundStyle(item.isOut ? Color.accentColor : .secondary)
                                         .font(.title3)
 
                                     Text(item.name)
-                                        .foregroundStyle(item.isOut ? .secondary : .primary)
-                                        .strikethrough(item.isOut)
+                                        .foregroundStyle(.primary)
 
                                     Spacer()
 
                                     if item.isOut {
-                                        Text("Buy")
+                                        Text("Need to Buy")
                                             .font(.caption2)
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)
-                                            .background(Color.red.opacity(0.1))
-                                            .foregroundStyle(.red)
+                                            .background(Color.orange.opacity(0.15))
+                                            .foregroundStyle(.orange)
                                             .clipShape(Capsule())
                                     }
                                 }
@@ -62,10 +85,18 @@ struct StockCheckListView: View {
         .navigationTitle("Stock")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isShowingAddSheet = true
-                } label: {
-                    Image(systemName: "plus")
+                HStack(spacing: 12) {
+                    NavigationLink {
+                        ShoppingListView()
+                    } label: {
+                        Image(systemName: "cart")
+                    }
+
+                    Button {
+                        isShowingAddSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         }
@@ -112,7 +143,7 @@ struct StockCheckListView: View {
         let trimmed = newItemName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         
-        let item = StockItem(name: trimmed, category: newItemCategory)
+        let item = StockItem(name: trimmed, category: newItemCategory, isOut: true) // 追加時は購入対象としてデフォルトON
         modelContext.insert(item)
         resetInput()
     }
@@ -133,7 +164,7 @@ struct StockCheckListView: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: StockItem.self,
+        for: StockItem.self, KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self,
         configurations: config
     )
     let context = container.mainContext

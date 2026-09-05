@@ -12,6 +12,7 @@ struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
     
     @Query(filter: #Predicate<KondatePattern> { $0.isActive }) private var activePatterns: [KondatePattern]
+    @Query(filter: #Predicate<StockItem> { $0.isOut == true }) private var outOfStockItems: [StockItem]
     
     @State private var targetDate: Date = Date()
     @State private var checkedIngredientKeys: Set<String> = []
@@ -72,15 +73,60 @@ struct ShoppingListView: View {
                 Text("Shopping Period")
             }
 
-            if ingredientItems.isEmpty {
+            // 1. 在庫チェック画面で「要購入」にチェックされた日用品・常備品
+            if !outOfStockItems.isEmpty {
+                Section {
+                    ForEach(outOfStockItems) { stockItem in
+                        Button {
+                            toggleStockBought(stockItem)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "circle")
+                                    .font(.title3)
+                                    .foregroundStyle(Color.secondary)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(stockItem.name)
+                                        .font(.body)
+                                        .foregroundStyle(.primary)
+
+                                    Text(stockItem.category)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+
+                                Text("Stock Out")
+                                    .font(.caption2)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.orange.opacity(0.15))
+                                    .foregroundStyle(.orange)
+                                    .clipShape(Capsule())
+                            }
+                        }
+                    }
+                } header: {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text("Out of Stock (Refill Needed)")
+                            .foregroundStyle(.orange)
+                            .fontWeight(.bold)
+                    }
+                }
+            }
+
+            if ingredientItems.isEmpty && outOfStockItems.isEmpty {
                 ContentUnavailableView {
                     Label("No Ingredients Needed", systemImage: "cart")
                 } description: {
-                    Text("No menus set for this date, or menus contain no ingredients.")
+                    Text("No menus set for this date, and no stock items marked as out.")
                         .foregroundStyle(.secondary)
                 }
             } else {
-                // 1. 変更・追加メニューの食材（ハイライトセクション）
+                // 2. 変更・追加メニューの食材（ハイライトセクション）
                 if !modifiedItems.isEmpty {
                     Section {
                         ForEach(modifiedItems) { item in
@@ -97,16 +143,16 @@ struct ShoppingListView: View {
                         HStack {
                             Image(systemName: "sparkles")
                                 .foregroundStyle(Color.accentColor)
-                            Text("Modified / Added Ingredients")
+                            Text("Modified / Added Meal Ingredients")
                                 .foregroundStyle(Color.accentColor)
                                 .fontWeight(.bold)
                         }
                     }
                 }
 
-                // 2. パターン通りの通常食材
+                // 3. パターン通りの通常食材
                 if !standardItems.isEmpty {
-                    Section(header: Text("Standard Ingredients")) {
+                    Section(header: Text("Standard Meal Ingredients")) {
                         ForEach(standardItems) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
@@ -141,6 +187,10 @@ struct ShoppingListView: View {
         } else {
             checkedIngredientKeys.insert(key)
         }
+    }
+
+    private func toggleStockBought(_ item: StockItem) {
+        item.isOut = false
     }
 }
 

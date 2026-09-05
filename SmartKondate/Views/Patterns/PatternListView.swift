@@ -14,6 +14,16 @@ struct PatternListView: View {
     
     @State private var isShowingCreateSheet = false
 
+    // Active Pattern
+    private var activePatterns: [KondatePattern] {
+        patterns.filter { $0.isActive }
+    }
+
+    // Non-Active Pattern
+    private var inactivePatterns: [KondatePattern] {
+        patterns.filter { !$0.isActive }
+    }
+
     var body: some View {
         List {
             if patterns.isEmpty {
@@ -24,46 +34,91 @@ struct PatternListView: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ForEach(patterns) { pattern in
-                    NavigationLink(destination: PatternDetailView(pattern: pattern)) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
+                // MARK: - Active Pattern Section
+                if !activePatterns.isEmpty {
+                    Section {
+                        ForEach(activePatterns) { pattern in
+                            NavigationLink(destination: PatternDetailView(pattern: pattern)) {
                                 HStack {
-                                    Text(pattern.name)
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                    
-                                    if pattern.isActive {
-                                        Text("Active")
-                                            .font(.caption2)
-                                            .fontWeight(.bold)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.accentColor)
-                                            .foregroundStyle(.white)
-                                            .clipShape(Capsule())
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack(spacing: 8) {
+                                            Text(pattern.name)
+                                                .font(.headline)
+                                                .foregroundStyle(.primary)
+
+                                            Text("Active")
+                                                .font(.caption2)
+                                                .fontWeight(.bold)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color.accentColor)
+                                                .foregroundStyle(.white)
+                                                .clipShape(Capsule())
+                                        }
+
+                                        Text("\(pattern.durationDays) Days Cycle • \(pattern.days.count) Days Set")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
                                     }
+
+                                    Spacer()
+
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(Color.accentColor)
                                 }
-                                
-                                Text("\(pattern.durationDays) Days Cycle • \(pattern.days.count) Days Set")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
                             }
-                            
-                            Spacer()
-                            
-                            Button {
-                                toggleActive(pattern: pattern)
-                            } label: {
-                                Image(systemName: pattern.isActive ? "checkmark.circle.fill" : "circle")
-                                    .font(.title2)
-                                    .foregroundStyle(pattern.isActive ? Color.accentColor : Color.secondary)
-                            }
-                            .buttonStyle(.plain)
+                        }
+                    } header: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "play.circle.fill")
+                                .foregroundStyle(Color.accentColor)
+                            Text("Active Pattern")
+                                .foregroundStyle(Color.accentColor)
+                                .fontWeight(.bold)
                         }
                     }
                 }
-                .onDelete(perform: deletePatterns)
+
+                // MARK: - Inactive / Saved Patterns Section
+                if !inactivePatterns.isEmpty {
+                    Section {
+                        ForEach(inactivePatterns) { pattern in
+                            NavigationLink(destination: PatternDetailView(pattern: pattern)) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(pattern.name)
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+
+                                        Text("\(pattern.durationDays) Days Cycle • \(pattern.days.count) Days Set")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Button {
+                                        toggleActive(pattern: pattern)
+                                    } label: {
+                                        Text("Activate")
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 4)
+                                            .background(Color.secondary.opacity(0.15))
+                                            .foregroundStyle(.primary)
+                                            .clipShape(Capsule())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        .onDelete(perform: deleteInactivePatterns)
+                    } header: {
+                        Text(activePatterns.isEmpty ? "Saved Patterns" : "Other Patterns")
+                    }
+                }
             }
         }
         .listStyle(.insetGrouped)
@@ -85,19 +140,15 @@ struct PatternListView: View {
     }
 
     private func toggleActive(pattern: KondatePattern) {
-        if !pattern.isActive {
-            for p in patterns {
-                p.isActive = false
-            }
-            pattern.isActive = true
-        } else {
-            pattern.isActive = false
+        for p in patterns {
+            p.isActive = false
         }
+        pattern.isActive = true
     }
 
-    private func deletePatterns(offsets: IndexSet) {
+    private func deleteInactivePatterns(offsets: IndexSet) {
         for index in offsets {
-            let patternToDelete = patterns[index]
+            let patternToDelete = inactivePatterns[index]
             modelContext.delete(patternToDelete)
         }
     }

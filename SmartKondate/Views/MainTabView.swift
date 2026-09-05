@@ -63,7 +63,7 @@ struct MainTabView: View {
             }
             .tag(Tab.settings)
         }
-        // 初回起動時（false）の場合のみ OnboardingView を全画面表示
+        // OnboardingView
         .fullScreenCover(isPresented: Binding(
             get: { !hasCompletedOnboarding },
             set: { hasCompletedOnboarding = !$0 }
