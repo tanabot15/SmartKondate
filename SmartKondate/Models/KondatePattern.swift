@@ -14,16 +14,20 @@ final class KondatePattern {
     var name: String = ""
     var durationDays: Int = 7
     var isActive: Bool = false
+    var queueOrder: Int? = nil // 0: Now Active, 1+: Upcoming Queue, nil: None
+    var startDate: Date? = nil
     var createdAt: Date = Date()
     
     @Relationship(deleteRule: .cascade, inverse: \PatternDay.pattern)
     var days: [PatternDay] = []
 
-    init(name: String, durationDays: Int = 7, isActive: Bool = false) {
+    init(name: String, durationDays: Int = 7, isActive: Bool = false, queueOrder: Int? = nil, startDate: Date? = nil) {
         self.id = UUID()
         self.name = name
         self.durationDays = durationDays
         self.isActive = isActive
+        self.queueOrder = queueOrder
+        self.startDate = startDate
         self.createdAt = Date()
         self.days = []
     }

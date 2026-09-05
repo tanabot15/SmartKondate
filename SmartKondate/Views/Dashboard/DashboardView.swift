@@ -11,8 +11,10 @@ import SwiftData
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     
-    @Query(filter: #Predicate<KondatePattern> { $0.isActive }) private var activePatterns: [KondatePattern]
+    @Query(sort: \KondatePattern.queueOrder) private var allPatterns: [KondatePattern]
     @Query(sort: \Menu.name) private var availableMenus: [Menu]
+
+    @AppStorage("isQueueLoopEnabled") private var isQueueLoopEnabled: Bool = false
 
     @State private var selectedDate: Date = Date()
 
@@ -21,14 +23,14 @@ struct DashboardView: View {
     @State private var customDinner: [Menu]?
 
     private var activePattern: KondatePattern? {
-        activePatterns.first
+        allPatterns.first { $0.queueOrder == 0 }
     }
 
     private var diffResults: [MealDiffResult] {
         DiffCalculator.calculateDiff(
             for: selectedDate,
             pattern: activePattern,
-            startDate: activePattern?.createdAt ?? Date(),
+            startDate: activePattern?.startDate ?? activePattern?.createdAt ?? Date(),
             customBreakfast: customBreakfast,
             customLunch: customLunch,
             customDinner: customDinner
@@ -48,16 +50,17 @@ struct DashboardView: View {
                     .labelsHidden()
 
                     if let pattern = activePattern {
+                        let startDate = pattern.startDate ?? pattern.createdAt
                         let dayIndex = DiffCalculator.calculateDayIndex(
                             for: selectedDate,
-                            startDate: pattern.createdAt,
+                            startDate: startDate,
                             durationDays: pattern.durationDays
                         )
                         Text("Active Pattern: \(pattern.name) (Day \(dayIndex + 1)/\(pattern.durationDays))")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("No active pattern selected")
+                        Text("No active pattern scheduled")
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
@@ -82,6 +85,42 @@ struct DashboardView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Today's Menu")
+        .onAppear {
+            checkAndAdvanceQueue()
+        }
+        .onChange(of: selectedDate) {
+            checkAndAdvanceQueue()
+        }
+    }
+
+    private func checkAndAdvanceQueue() {
+        var queued = allPatterns.filter { $0.queueOrder != nil }.sorted { ($0.queueOrder ?? 0) < ($1.queueOrder ?? 0) }
+        guard let current = queued.first, let startDate = current.startDate else { return }
+
+        let calendar = Calendar.current
+        let daysPassed = calendar.dateComponents([.day], from: calendar.startOfDay(for: startDate), to: calendar.startOfDay(for: selectedDate)).day ?? 0
+
+        if daysPassed >= current.durationDays {
+            let finishedPattern = queued.removeFirst()
+
+            if isQueueLoopEnabled {
+                queued.append(finishedPattern)
+            } else {
+                finishedPattern.queueOrder = nil
+                finishedPattern.isActive = false
+                finishedPattern.startDate = nil
+            }
+
+            let nextStartDate = calendar.date(byAdding: .day, value: current.durationDays, to: startDate) ?? selectedDate
+
+            for (index, p) in queued.enumerated() {
+                p.queueOrder = index
+                p.isActive = (index == 0)
+                if index == 0 {
+                    p.startDate = nextStartDate
+                }
+            }
+        }
     }
 
     private func updateCustomMenus(for mealType: MealType, with menus: [Menu]?) {
@@ -124,10 +163,15 @@ struct DashboardView: View {
 
     [menu1, menu2, menu3, menu4].forEach { context.insert($0) }
 
-    let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
+    let pattern = KondatePattern(
+        name: "Standard Weekly",
+        durationDays: 7,
+        isActive: true,
+        queueOrder: 0,
+        startDate: Date()
+    )
     context.insert(pattern)
 
-    // 複数メニュー配列（[Menu]）渡しの初期化子に修正
     let day1 = PatternDay(dayIndex: 0, breakfastMenus: [menu1], lunchMenus: [menu2], dinnerMenus: [menu3])
     day1.pattern = pattern
     context.insert(day1)
