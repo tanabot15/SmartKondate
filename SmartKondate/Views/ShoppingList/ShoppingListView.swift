@@ -8,50 +8,102 @@
 import SwiftUI
 import SwiftData
 
+enum ShoppingMode: String, CaseIterable, Identifiable {
+    case pattern = "Pattern"
+    case date = "Date"
+    
+    var id: String { self.rawValue }
+}
+
 struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
     
-    @Query(filter: #Predicate<KondatePattern> { $0.isActive }) private var activePatterns: [KondatePattern]
+    @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query(filter: #Predicate<StockItem> { $0.isOut == true }) private var outOfStockItems: [StockItem]
     
+    @State private var shoppingMode: ShoppingMode = .pattern
     @State private var targetDate: Date = Date()
+    @State private var selectedPatternID: UUID?
     @State private var checkedIngredientKeys: Set<String> = []
 
     private var activePattern: KondatePattern? {
-        activePatterns.first
+        allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
     }
 
-    private var diffResults: [MealDiffResult] {
-        DiffCalculator.calculateDiff(
-            for: targetDate,
-            pattern: activePattern,
-            startDate: activePattern?.createdAt ?? Date(),
-            customBreakfast: nil,
-            customLunch: nil,
-            customDinner: nil
-        )
+    private var selectedPattern: KondatePattern? {
+        if let id = selectedPatternID {
+            return allPatterns.first { $0.id == id }
+        }
+        return activePattern ?? allPatterns.first
     }
 
-    // 複数メニュー配列（effectiveMenus）に対応させた材料集計ロジック
+    // 選択されたモード（Date / Pattern）に応じて食材リストを構築
     private var ingredientItems: [ShoppingIngredientItem] {
         var items: [ShoppingIngredientItem] = []
-        for result in diffResults {
-            for menu in result.effectiveMenus {
-                for ingredient in menu.ingredients {
-                    let key = "\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
-                    items.append(
-                        ShoppingIngredientItem(
-                            id: key,
-                            ingredientName: ingredient.name,
-                            amount: ingredient.amount,
-                            menuName: menu.name,
-                            mealType: result.mealType,
-                            isModifiedMeal: result.isModified
+
+        switch shoppingMode {
+        case .date:
+            // 1日分の集計（DashboardViewと同様にDiffCalculatorを利用）
+            let diffResults = DiffCalculator.calculateDiff(
+                for: targetDate,
+                pattern: activePattern,
+                startDate: activePattern?.startDate ?? activePattern?.createdAt ?? Date(),
+                customBreakfast: nil,
+                customLunch: nil,
+                customDinner: nil
+            )
+
+            for result in diffResults {
+                for menu in result.effectiveMenus {
+                    for ingredient in menu.ingredients {
+                        let key = "date_\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
+                        items.append(
+                            ShoppingIngredientItem(
+                                id: key,
+                                ingredientName: ingredient.name,
+                                amount: ingredient.amount,
+                                menuName: menu.name,
+                                mealType: result.mealType,
+                                isModifiedMeal: result.isModified
+                            )
                         )
-                    )
+                    }
+                }
+            }
+
+        case .pattern:
+            // パターン全体の全日数分を集計
+            guard let pattern = selectedPattern else { break }
+
+            for dayIndex in 0..<pattern.durationDays {
+                guard let patternDay = pattern.days.first(where: { $0.dayIndex == dayIndex }) else { continue }
+
+                let meals: [(MealType, [Menu])] = [
+                    (.breakfast, patternDay.breakfastMenus),
+                    (.lunch, patternDay.lunchMenus),
+                    (.dinner, patternDay.dinnerMenus)
+                ]
+
+                for (mealType, menus) in meals {
+                    for menu in menus {
+                        for ingredient in menu.ingredients {
+                            let key = "pattern_\(pattern.id.uuidString)_day\(dayIndex)_\(mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
+                            items.append(
+                                ShoppingIngredientItem(
+                                    id: key,
+                                    ingredientName: ingredient.name,
+                                    amount: ingredient.amount,
+                                    menuName: "Day \(dayIndex + 1): \(menu.name)",
+                                    mealType: mealType,
+                                    isModifiedMeal: false
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }
+
         return items
     }
 
@@ -65,15 +117,42 @@ struct ShoppingListView: View {
 
     var body: some View {
         List {
-            // 日付選択セクション
+            // MARK: - Shopping Period Selector
             Section {
-                DatePicker("Target Date", selection: $targetDate, displayedComponents: [.date])
-                    .datePickerStyle(.compact)
+                Picker("Target Mode", selection: $shoppingMode) {
+                    ForEach(ShoppingMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                if shoppingMode == .date {
+                    DatePicker("Target Date", selection: $targetDate, displayedComponents: [.date])
+                        .datePickerStyle(.compact)
+                } else {
+                    if allPatterns.isEmpty {
+                        Text("No patterns available")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Picker("Target Pattern", selection: $selectedPatternID) {
+                            ForEach(allPatterns) { pattern in
+                                HStack {
+                                    Text(pattern.name)
+                                    if pattern.queueOrder == 0 {
+                                        Text("(Active)")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .tag(Optional(pattern.id))
+                            }
+                        }
+                    }
+                }
             } header: {
                 Text("Shopping Period")
             }
 
-            // 1. 在庫チェック画面で「要購入」にチェックされた日用品・常備品
+            // MARK: - 1. Out of Stock Items
             if !outOfStockItems.isEmpty {
                 Section {
                     ForEach(outOfStockItems) { stockItem in
@@ -118,15 +197,18 @@ struct ShoppingListView: View {
                 }
             }
 
+            // MARK: - 2. Ingredients List
             if ingredientItems.isEmpty && outOfStockItems.isEmpty {
                 ContentUnavailableView {
                     Label("No Ingredients Needed", systemImage: "cart")
                 } description: {
-                    Text("No menus set for this date, and no stock items marked as out.")
+                    Text(shoppingMode == .date
+                         ? "No menus set for this date, and no stock items marked as out."
+                         : "No menus set for the selected pattern, and no stock items marked as out.")
                         .foregroundStyle(.secondary)
                 }
             } else {
-                // 2. 変更・追加メニューの食材（ハイライトセクション）
+                // 変更・追加メニューの食材（Date モードのみ該当）
                 if !modifiedItems.isEmpty {
                     Section {
                         ForEach(modifiedItems) { item in
@@ -150,9 +232,9 @@ struct ShoppingListView: View {
                     }
                 }
 
-                // 3. パターン通りの通常食材
+                // 通常の予定食材
                 if !standardItems.isEmpty {
-                    Section(header: Text("Standard Meal Ingredients")) {
+                    Section(header: Text(shoppingMode == .date ? "Standard Meal Ingredients" : "Pattern Ingredients")) {
                         ForEach(standardItems) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
@@ -169,6 +251,11 @@ struct ShoppingListView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Shopping List")
+        .onAppear {
+            if selectedPatternID == nil {
+                selectedPatternID = activePattern?.id ?? allPatterns.first?.id
+            }
+        }
         .toolbar {
             if !checkedIngredientKeys.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -212,7 +299,7 @@ struct ShoppingIngredientItem: Identifiable {
     )
     let context = container.mainContext
 
-    let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)
+    let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true, queueOrder: 0)
     context.insert(pattern)
 
     let ing1 = Ingredient(name: "Chicken Thigh", amount: "300g")
