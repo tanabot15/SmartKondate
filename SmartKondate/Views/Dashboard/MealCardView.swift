@@ -9,123 +9,153 @@ import SwiftUI
 import SwiftData
 
 struct MealCardView: View {
-    let diffResult: MealDiffResult
+    let dayIndex: Int
+    let date: Date
+    let diffResults: [MealDiffResult]
     let availableMenus: [Menu]
-    let onSelectMenus: ([Menu]?) -> Void
+    let onSelectMenus: (MealType, [Menu]?) -> Void
 
-    @State private var isShowingPickerSheet = false
+    @State private var editingMealType: MealType?
 
-    // Main Category
-    private var mainMenusText: String {
-        let mains = diffResult.effectiveMenus.filter { $0.category == "Main" }
-        return mains.map { $0.name }.joined(separator: " / ")
-    }
-
-    // Side / Soup / Other Category
-    private var subMenusText: String {
-        let subs = diffResult.effectiveMenus.filter { $0.category != "Main" }
-        return subs.map { $0.name }.joined(separator: " / ")
+    private var dateString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d (EEE)"
+        return formatter.string(from: date)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
+            // Header: Day & Date
             HStack {
-                Text(diffResult.mealType.rawValue)
+                Text("Day \(dayIndex + 1)")
                     .font(.headline)
                     .foregroundStyle(.primary)
 
-                if diffResult.isModified {
-                    Text("Modified")
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.15))
-                        .foregroundStyle(.blue)
-                        .clipShape(Capsule())
-                }
+                Text(dateString)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
 
                 Spacer()
-
-                Button("Change") {
-                    isShowingPickerSheet = true
-                }
-                .font(.subheadline)
             }
 
             Divider()
 
-            if diffResult.effectiveMenus.isEmpty {
-                Text("No menu assigned")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .italic()
-            } else {
+            ForEach(diffResults, id: \.mealType) { result in
                 VStack(alignment: .leading, spacing: 6) {
-                    // Main
-                    if !mainMenusText.isEmpty {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text("Main:")
-                                .font(.caption)
+                    HStack {
+                        Text(result.mealType.rawValue)
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.accentColor)
+
+                        if result.isModified {
+                            Text("Modified")
+                                .font(.caption2)
                                 .fontWeight(.bold)
-                                .foregroundStyle(.secondary)
-                            Text(mainMenusText)
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.primary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.15))
+                                .foregroundStyle(.blue)
+                                .clipShape(Capsule())
                         }
+
+                        Spacer()
+
+                        Button("Change") {
+                            editingMealType = result.mealType
+                        }
+                        .font(.caption)
                     }
 
-                    // Sub
-                    if !subMenusText.isEmpty {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text("Side/Soup:")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.secondary)
-                            Text(subMenusText)
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
+                    if result.effectiveMenus.isEmpty {
+                        Text("No menu assigned")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .italic()
+                    } else {
+                        let mainText = result.effectiveMenus
+                            .filter { $0.category == "Main" }
+                            .map { $0.name }
+                            .joined(separator: " / ")
+
+                        let subText = result.effectiveMenus
+                            .filter { $0.category != "Main" }
+                            .map { $0.name }
+                            .joined(separator: " / ")
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            if !mainText.isEmpty {
+                                Text("Main: \(mainText)")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.primary)
+                            }
+                            if !subText.isEmpty {
+                                Text("Side: \(subText)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
+                }
+                
+                if result.mealType != .dinner {
+                    Divider()
+                        .padding(.vertical, 2)
                 }
             }
         }
         .padding()
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .sheet(isPresented: $isShowingPickerSheet) {
+        .sheet(item: $editingMealType) { mealType in
+            let currentResult = diffResults.first { $0.mealType == mealType }
             NavigationStack {
                 List {
                     Section {
                         Button("Clear All") {
-                            onSelectMenus(nil)
-                            isShowingPickerSheet = false
+                            onSelectMenus(mealType, nil)
+                            editingMealType = nil
                         }
                         .foregroundStyle(.red)
                     }
 
                     Section(header: Text("Available Menus")) {
                         ForEach(availableMenus) { menu in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(menu.name)
-                                        .foregroundStyle(.primary)
-                                    Text(menu.category)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                            Button {
+                                let current = currentResult?.effectiveMenus ?? []
+                                var updated = current
+                                if let idx = updated.firstIndex(where: { $0.id == menu.id }) {
+                                    updated.remove(at: idx)
+                                } else {
+                                    updated.append(menu)
                                 }
-                                Spacer()
+                                onSelectMenus(mealType, updated)
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(menu.name)
+                                            .foregroundStyle(.primary)
+                                        Text(menu.category)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    if currentResult?.effectiveMenus.contains(where: { $0.id == menu.id }) == true {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(Color.accentColor)
+                                    }
+                                }
                             }
                         }
                     }
                 }
-                .navigationTitle("\(diffResult.mealType.rawValue) Menu")
+                .navigationTitle("\(mealType.rawValue) Menu")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            isShowingPickerSheet = false
+                        Button("Done") {
+                            editingMealType = nil
                         }
                     }
                 }
@@ -151,9 +181,9 @@ struct MealCardView: View {
     let menus = [main1, main2, side1, soup1]
     menus.forEach { context.insert($0) }
 
-    let dinnerResult = MealDiffResult(
-        mealType: .dinner,
-        defaultMenus: [main1, side1, soup1],
+    let breakfastResult = MealDiffResult(
+        mealType: .breakfast,
+        defaultMenus: [],
         customMenus: nil
     )
 
@@ -163,10 +193,23 @@ struct MealCardView: View {
         customMenus: [main1, main2, side1]
     )
 
+    let dinnerResult = MealDiffResult(
+        mealType: .dinner,
+        defaultMenus: [main1, side1, soup1],
+        customMenus: nil
+    )
+
+    let diffResults = [breakfastResult, lunchResult, dinnerResult]
+
     return ScrollView {
         VStack(spacing: 16) {
-            MealCardView(diffResult: dinnerResult, availableMenus: menus, onSelectMenus: { _ in })
-            MealCardView(diffResult: lunchResult, availableMenus: menus, onSelectMenus: { _ in })
+            MealCardView(
+                dayIndex: 0,
+                date: Date(),
+                diffResults: diffResults,
+                availableMenus: menus,
+                onSelectMenus: { mealType, newMenus in }
+            )
         }
         .padding()
     }
