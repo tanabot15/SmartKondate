@@ -44,42 +44,77 @@ struct PresetDataService {
         
         // Main Menus
         let m1 = Menu(name: "Toast & Fried Eggs", category: "Main")
-        m1.ingredients = [Ingredient(name: "Bread", amount: "2 slices"), Ingredient(name: "Egg", amount: "2 pcs")]
+        m1.ingredients = [
+            Ingredient(name: "Bread", quantity: 2, unit: "slices"),
+            Ingredient(name: "Egg", quantity: 2, unit: "pcs")
+        ]
         
         let m2 = Menu(name: "Grilled Salmon", category: "Main")
-        m2.ingredients = [Ingredient(name: "Salmon Fillet", amount: "1 pc")]
+        m2.ingredients = [
+            Ingredient(name: "Salmon Fillet", quantity: 1, unit: "pc")
+        ]
         
         let m3 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
-        m3.ingredients = [Ingredient(name: "Chicken Thigh", amount: "150g"), Ingredient(name: "Rice", amount: "1 bowl")]
+        m3.ingredients = [
+            Ingredient(name: "Chicken Thigh", quantity: 150, unit: "g"),
+            Ingredient(name: "Rice", quantity: 1, unit: "bowl")
+        ]
         
         let m4 = Menu(name: "Pasta Carbonara", category: "Main")
-        m4.ingredients = [Ingredient(name: "Pasta", amount: "100g"), Ingredient(name: "Bacon", amount: "40g"), Ingredient(name: "Egg", amount: "1 pc")]
+        m4.ingredients = [
+            Ingredient(name: "Pasta", quantity: 100, unit: "g"),
+            Ingredient(name: "Bacon", quantity: 40, unit: "g"),
+            Ingredient(name: "Egg", quantity: 1, unit: "pc")
+        ]
         
         let m5 = Menu(name: "Pork Ginger Stir-fry", category: "Main")
-        m5.ingredients = [Ingredient(name: "Pork Slice", amount: "200g"), Ingredient(name: "Onion", amount: "1 pc")]
+        m5.ingredients = [
+            Ingredient(name: "Pork Slice", quantity: 200, unit: "g"),
+            Ingredient(name: "Onion", quantity: 1, unit: "pc")
+        ]
         
         let m6 = Menu(name: "Hamburger Steak", category: "Main")
-        m6.ingredients = [Ingredient(name: "Minced Meat", amount: "250g"), Ingredient(name: "Breadcrumbs", amount: "2 tbsp")]
+        m6.ingredients = [
+            Ingredient(name: "Minced Meat", quantity: 250, unit: "g"),
+            Ingredient(name: "Breadcrumbs", quantity: 2, unit: "tbsp")
+        ]
         
         let m7 = Menu(name: "Japanese Curry Rice", category: "Main")
-        m7.ingredients = [Ingredient(name: "Curry Roux", amount: "2 cubes"), Ingredient(name: "Potato", amount: "1 pc"), Ingredient(name: "Carrot", amount: "1/2 pc")]
+        m7.ingredients = [
+            Ingredient(name: "Curry Roux", quantity: 2, unit: "cubes"),
+            Ingredient(name: "Potato", quantity: 1, unit: "pc"),
+            Ingredient(name: "Carrot", quantity: 0.5, unit: "pc")
+        ]
 
         // Side Menus
         let s1 = Menu(name: "Caesar Salad", category: "Side")
-        s1.ingredients = [Ingredient(name: "Romaine Lettuce", amount: "100g"), Ingredient(name: "Croutons", amount: "20g")]
+        s1.ingredients = [
+            Ingredient(name: "Romaine Lettuce", quantity: 100, unit: "g"),
+            Ingredient(name: "Croutons", quantity: 20, unit: "g")
+        ]
         
         let s2 = Menu(name: "Spinach Ohitashi", category: "Side")
-        s2.ingredients = [Ingredient(name: "Spinach", amount: "1/2 bundle")]
+        s2.ingredients = [
+            Ingredient(name: "Spinach", quantity: 0.5, unit: "bundle")
+        ]
         
         let s3 = Menu(name: "Steamed Broccoli", category: "Side")
-        s3.ingredients = [Ingredient(name: "Broccoli", amount: "1/2 head")]
+        s3.ingredients = [
+            Ingredient(name: "Broccoli", quantity: 0.5, unit: "head")
+        ]
 
         // Soup Menus
         let sp1 = Menu(name: "Miso Soup", category: "Soup")
-        sp1.ingredients = [Ingredient(name: "Tofu", amount: "1/2 block"), Ingredient(name: "Wakame", amount: "5g")]
+        sp1.ingredients = [
+            Ingredient(name: "Tofu", quantity: 0.5, unit: "block"),
+            Ingredient(name: "Wakame", quantity: 5, unit: "g")
+        ]
         
         let sp2 = Menu(name: "Corn Soup", category: "Soup")
-        sp2.ingredients = [Ingredient(name: "Corn Cream Can", amount: "1/2 can"), Ingredient(name: "Milk", amount: "100ml")]
+        sp2.ingredients = [
+            Ingredient(name: "Corn Cream Can", quantity: 0.5, unit: "can"),
+            Ingredient(name: "Milk", quantity: 100, unit: "ml")
+        ]
 
         let allMenus = [m1, m2, m3, m4, m5, m6, m7, s1, s2, s3, sp1, sp2]
         allMenus.forEach { context.insert($0) }

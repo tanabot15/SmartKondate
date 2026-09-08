@@ -12,13 +12,23 @@ import SwiftData
 final class Ingredient {
     @Attribute(.unique) var id: UUID = UUID()
     var name: String = ""
-    var amount: String = ""
+    var quantity: Double = 0.0
+    var unit: String = ""
     
     var menu: Menu?
 
-    init(name: String, amount: String = "") {
+    var amountText: String {
+        guard quantity > 0 else { return "" }
+        let formattedQuantity = quantity.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", quantity)
+            : String(format: "%.1f", quantity)
+        return "\(formattedQuantity)\(unit)"
+    }
+
+    init(name: String, quantity: Double = 0.0, unit: String = "") {
         self.id = UUID()
         self.name = name
-        self.amount = amount
+        self.quantity = quantity
+        self.unit = unit
     }
 }

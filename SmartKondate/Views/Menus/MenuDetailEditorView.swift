@@ -21,12 +21,22 @@ struct MenuDetailEditorView: View {
     struct TempIngredient: Identifiable {
         let id = UUID()
         var name: String
-        var amount: String
+        var quantity: Double
+        var unit: String
+
+        var amountText: String {
+            guard quantity > 0 else { return "" }
+            let formattedQuantity = quantity.truncatingRemainder(dividingBy: 1) == 0
+                ? String(format: "%.0f", quantity)
+                : String(format: "%.1f", quantity)
+            return "\(formattedQuantity)\(unit)"
+        }
     }
     
     @State private var ingredientsList: [TempIngredient] = []
     @State private var newIngredientName: String = ""
-    @State private var newIngredientAmount: String = ""
+    @State private var newIngredientQuantity: String = ""
+    @State private var newIngredientUnit: String = ""
 
     private let categories = ["Main", "Side", "Soup", "Other"]
 
@@ -38,7 +48,7 @@ struct MenuDetailEditorView: View {
             _memo = State(initialValue: menu.memo)
             
             let initialIngredients = menu.ingredients.map {
-                TempIngredient(name: $0.name, amount: $0.amount)
+                TempIngredient(name: $0.name, quantity: $0.quantity, unit: $0.unit)
             }
             _ingredientsList = State(initialValue: initialIngredients)
         }
@@ -57,18 +67,25 @@ struct MenuDetailEditorView: View {
             }
 
             Section(header: Text("Ingredients")) {
-                HStack {
-                    TextField("Item (e.g. Onion)", text: $newIngredientName)
-                    TextField("Amount (e.g. 1/2)", text: $newIngredientAmount)
-                        .frame(width: 100)
-                    
-                    Button {
-                        addIngredient()
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(Color.accentColor)
+                VStack(spacing: 8) {
+                    HStack {
+                        TextField("Item (e.g. Onion)", text: $newIngredientName)
+                        
+                        TextField("Qty (e.g. 2)", text: $newIngredientQuantity)
+                            .keyboardType(.decimalPad)
+                            .frame(width: 70)
+                        
+                        TextField("Unit (e.g. pcs)", text: $newIngredientUnit)
+                            .frame(width: 70)
+                        
+                        Button {
+                            addIngredient()
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                        .disabled(newIngredientName.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
-                    .disabled(newIngredientName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
 
                 ForEach(ingredientsList) { item in
@@ -76,7 +93,7 @@ struct MenuDetailEditorView: View {
                         Text(item.name)
                             .foregroundStyle(.primary)
                         Spacer()
-                        Text(item.amount)
+                        Text(item.amountText)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -109,10 +126,15 @@ struct MenuDetailEditorView: View {
         let trimmedName = newIngredientName.trimmingCharacters(in: .whitespaces)
         guard !trimmedName.isEmpty else { return }
         
-        let newItem = TempIngredient(name: trimmedName, amount: newIngredientAmount.trimmingCharacters(in: .whitespaces))
+        let qtyDouble = Double(newIngredientQuantity.trimmingCharacters(in: .whitespaces)) ?? 0.0
+        let trimmedUnit = newIngredientUnit.trimmingCharacters(in: .whitespaces)
+
+        let newItem = TempIngredient(name: trimmedName, quantity: qtyDouble, unit: trimmedUnit)
         ingredientsList.append(newItem)
+        
         newIngredientName = ""
-        newIngredientAmount = ""
+        newIngredientQuantity = ""
+        newIngredientUnit = ""
     }
 
     private func removeIngredient(at offsets: IndexSet) {
@@ -137,7 +159,7 @@ struct MenuDetailEditorView: View {
         }
 
         for temp in ingredientsList {
-            let ingredient = Ingredient(name: temp.name, amount: temp.amount)
+            let ingredient = Ingredient(name: temp.name, quantity: temp.quantity, unit: temp.unit)
             ingredient.menu = targetMenu
             modelContext.insert(ingredient)
         }
@@ -166,9 +188,9 @@ struct MenuDetailEditorView: View {
         category: "Main",
         memo: "Simmer on low heat for 20 minutes after adding roux."
     )
-    let ing1 = Ingredient(name: "Pork", amount: "300g")
-    let ing2 = Ingredient(name: "Onion", amount: "2 pcs")
-    let ing3 = Ingredient(name: "Carrot", amount: "1 pc")
+    let ing1 = Ingredient(name: "Pork", quantity: 300, unit: "g")
+    let ing2 = Ingredient(name: "Onion", quantity: 2, unit: "pcs")
+    let ing3 = Ingredient(name: "Carrot", quantity: 1, unit: "pc")
     
     ing1.menu = sampleMenu
     ing2.menu = sampleMenu

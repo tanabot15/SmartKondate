@@ -57,7 +57,7 @@ struct MenuListView: View {
                                         .foregroundStyle(.primary)
                                     
                                     if !menu.ingredients.isEmpty {
-                                        Text(menu.ingredients.map { $0.name }.joined(separator: ", "))
+                                        Text(menu.ingredients.map { "\($0.name)\($0.amountText.isEmpty ? "" : " (\($0.amountText))")" }.joined(separator: ", "))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)
@@ -122,25 +122,16 @@ struct MenuListView: View {
     let context = container.mainContext
 
     let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
-    let ing1 = Ingredient(name: "Bread", amount: "2 slices")
-    let ing2 = Ingredient(name: "Egg", amount: "2 pcs")
+    let ing1 = Ingredient(name: "Bread", quantity: 2, unit: "slices")
+    let ing2 = Ingredient(name: "Egg", quantity: 2, unit: "pcs")
     menu1.ingredients = [ing1, ing2]
 
     let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
-    let ing3 = Ingredient(name: "Chicken Thigh", amount: "150g")
-    let ing4 = Ingredient(name: "Rice", amount: "1 bowl")
+    let ing3 = Ingredient(name: "Chicken Thigh", quantity: 150, unit: "g")
+    let ing4 = Ingredient(name: "Rice", quantity: 1, unit: "bowl")
     menu2.ingredients = [ing3, ing4]
 
-    let menu3 = Menu(name: "Miso Soup", category: "Soup")
-    let ing5 = Ingredient(name: "Tofu", amount: "1/2 block")
-    let ing6 = Ingredient(name: "Wakame", amount: "5g")
-    menu3.ingredients = [ing5, ing6]
-
-    let menu4 = Menu(name: "Green Salad", category: "Side")
-    let ing7 = Ingredient(name: "Lettuce", amount: "3 leaves")
-    menu4.ingredients = [ing7]
-
-    [menu1, menu2, menu3, menu4].forEach { context.insert($0) }
+    [menu1, menu2].forEach { context.insert($0) }
 
     return NavigationStack {
         MenuListView()

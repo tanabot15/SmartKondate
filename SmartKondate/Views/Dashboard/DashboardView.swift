@@ -177,9 +177,9 @@ struct DashboardView: View {
 
     let context = container.mainContext
 
-    let ing1 = Ingredient(name: "Bread", amount: "2 slices")
-    let ing2 = Ingredient(name: "Egg", amount: "2 pcs")
-    let ing3 = Ingredient(name: "Chicken Thigh", amount: "150g")
+    let ing1 = Ingredient(name: "Bread", quantity: 2, unit: "slices")
+    let ing2 = Ingredient(name: "Egg", quantity: 2, unit: "pcs")
+    let ing3 = Ingredient(name: "Chicken Thigh", quantity: 150, unit: "g")
 
     let menu1 = Menu(name: "Toast & Fried Eggs", category: "Main")
     menu1.ingredients = [ing1, ing2]

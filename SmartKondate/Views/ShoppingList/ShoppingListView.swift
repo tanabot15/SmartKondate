@@ -37,13 +37,11 @@ struct ShoppingListView: View {
         return activePattern ?? allPatterns.first
     }
 
-    // 選択されたモード（Date / Pattern）に応じて食材リストを構築
-    private var ingredientItems: [ShoppingIngredientItem] {
-        var items: [ShoppingIngredientItem] = []
+    private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool)] {
+        var result: [(Ingredient, String, Bool)] = []
 
         switch shoppingMode {
         case .date:
-            // 1日分の集計（DashboardViewと同様にDiffCalculatorを利用）
             let diffResults = DiffCalculator.calculateDiff(
                 for: targetDate,
                 pattern: activePattern,
@@ -53,26 +51,15 @@ struct ShoppingListView: View {
                 customDinner: nil
             )
 
-            for result in diffResults {
-                for menu in result.effectiveMenus {
+            for res in diffResults {
+                for menu in res.effectiveMenus {
                     for ingredient in menu.ingredients {
-                        let key = "date_\(result.mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
-                        items.append(
-                            ShoppingIngredientItem(
-                                id: key,
-                                ingredientName: ingredient.name,
-                                amount: ingredient.amount,
-                                menuName: menu.name,
-                                mealType: result.mealType,
-                                isModifiedMeal: result.isModified
-                            )
-                        )
+                        result.append((ingredient, menu.name, res.isModified))
                     }
                 }
             }
 
         case .pattern:
-            // パターン全体の全日数分を集計
             guard let pattern = selectedPattern else { break }
 
             for dayIndex in 0..<pattern.durationDays {
@@ -84,35 +71,67 @@ struct ShoppingListView: View {
                     (.dinner, patternDay.dinnerMenus)
                 ]
 
-                for (mealType, menus) in meals {
+                for (_, menus) in meals {
                     for menu in menus {
                         for ingredient in menu.ingredients {
-                            let key = "pattern_\(pattern.id.uuidString)_day\(dayIndex)_\(mealType.rawValue)_\(menu.id.uuidString)_\(ingredient.id.uuidString)"
-                            items.append(
-                                ShoppingIngredientItem(
-                                    id: key,
-                                    ingredientName: ingredient.name,
-                                    amount: ingredient.amount,
-                                    menuName: "Day \(dayIndex + 1): \(menu.name)",
-                                    mealType: mealType,
-                                    isModifiedMeal: false
-                                )
-                            )
+                            let label = "Day \(dayIndex + 1): \(menu.name)"
+                            result.append((ingredient, label, false))
                         }
                     }
                 }
             }
         }
 
-        return items
+        return result
+    }
+
+    // MARK: - 同じ材料・単位を足し合わせるグループ化プロパティ
+    private var aggregatedItems: [ShoppingIngredientItem] {
+        var groupedDict: [String: (name: String, quantity: Double, unit: String, menus: Set<String>, isModified: Bool)] = [:]
+
+        for item in rawIngredientItems {
+            let name = item.ingredient.name.trimmingCharacters(in: .whitespaces)
+            guard !name.isEmpty else { continue }
+            
+            let unit = item.ingredient.unit.trimmingCharacters(in: .whitespaces)
+            let groupKey = "\(name.lowercased())_\(unit.lowercased())_\(item.isModified)"
+
+            if var existing = groupedDict[groupKey] {
+                existing.quantity += item.ingredient.quantity
+                existing.menus.insert(item.menuName)
+                groupedDict[groupKey] = existing
+            } else {
+                groupedDict[groupKey] = (
+                    name: name,
+                    quantity: item.ingredient.quantity,
+                    unit: unit,
+                    menus: [item.menuName],
+                    isModified: item.isModified
+                )
+            }
+        }
+
+        return groupedDict.map { (key, value) in
+            let tempIng = Ingredient(name: value.name, quantity: value.quantity, unit: value.unit)
+            let sortedMenus = value.menus.sorted().joined(separator: ", ")
+
+            return ShoppingIngredientItem(
+                id: key,
+                ingredientName: value.name,
+                amountText: tempIng.amountText,
+                menuDetails: sortedMenus,
+                isModifiedMeal: value.isModified
+            )
+        }
+        .sorted { $0.ingredientName < $1.ingredientName }
     }
 
     private var modifiedItems: [ShoppingIngredientItem] {
-        ingredientItems.filter { $0.isModifiedMeal }
+        aggregatedItems.filter { $0.isModifiedMeal }
     }
 
     private var standardItems: [ShoppingIngredientItem] {
-        ingredientItems.filter { !$0.isModifiedMeal }
+        aggregatedItems.filter { !$0.isModifiedMeal }
     }
 
     var body: some View {
@@ -197,8 +216,8 @@ struct ShoppingListView: View {
                 }
             }
 
-            // MARK: - 2. Ingredients List
-            if ingredientItems.isEmpty && outOfStockItems.isEmpty {
+            // MARK: - 2. Aggregated Ingredients List
+            if aggregatedItems.isEmpty && outOfStockItems.isEmpty {
                 ContentUnavailableView {
                     Label("No Ingredients Needed", systemImage: "cart")
                 } description: {
@@ -208,14 +227,13 @@ struct ShoppingListView: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                // 変更・追加メニューの食材（Date モードのみ該当）
                 if !modifiedItems.isEmpty {
                     Section {
                         ForEach(modifiedItems) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
-                                amount: item.amount,
-                                menuName: item.menuName,
+                                amountText: item.amountText,
+                                menuDetails: item.menuDetails,
                                 isModifiedMeal: true,
                                 isChecked: checkedIngredientKeys.contains(item.id),
                                 onToggle: { toggleCheck(for: item.id) }
@@ -232,14 +250,13 @@ struct ShoppingListView: View {
                     }
                 }
 
-                // 通常の予定食材
                 if !standardItems.isEmpty {
                     Section(header: Text(shoppingMode == .date ? "Standard Meal Ingredients" : "Pattern Ingredients")) {
                         ForEach(standardItems) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
-                                amount: item.amount,
-                                menuName: item.menuName,
+                                amountText: item.amountText,
+                                menuDetails: item.menuDetails,
                                 isModifiedMeal: false,
                                 isChecked: checkedIngredientKeys.contains(item.id),
                                 onToggle: { toggleCheck(for: item.id) }
@@ -281,13 +298,11 @@ struct ShoppingListView: View {
     }
 }
 
-// 注文表の表示用内部構造体
 struct ShoppingIngredientItem: Identifiable {
     let id: String
     let ingredientName: String
-    let amount: String
-    let menuName: String
-    let mealType: MealType
+    let amountText: String
+    let menuDetails: String
     let isModifiedMeal: Bool
 }
 
@@ -302,9 +317,9 @@ struct ShoppingIngredientItem: Identifiable {
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true, queueOrder: 0)
     context.insert(pattern)
 
-    let ing1 = Ingredient(name: "Chicken Thigh", amount: "300g")
-    let ing2 = Ingredient(name: "Onion", amount: "2 pcs")
-    let ing3 = Ingredient(name: "Egg", amount: "4 pcs")
+    let ing1 = Ingredient(name: "Chicken Thigh", quantity: 300, unit: "g")
+    let ing2 = Ingredient(name: "Onion", quantity: 2, unit: "pcs")
+    let ing3 = Ingredient(name: "Egg", quantity: 4, unit: "pcs")
     
     let menu1 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
     menu1.ingredients = [ing1, ing2]

@@ -9,8 +9,8 @@ import SwiftUI
 
 struct DiffIngredientRow: View {
     let ingredientName: String
-    let amount: String
-    let menuName: String
+    let amountText: String
+    let menuDetails: String
     let isModifiedMeal: Bool
     let isChecked: Bool
     let onToggle: () -> Void
@@ -30,6 +30,13 @@ struct DiffIngredientRow: View {
                             .foregroundStyle(isChecked ? .secondary : .primary)
                             .strikethrough(isChecked)
 
+                        if !amountText.isEmpty {
+                            Text("(\(amountText))")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(isChecked ? .secondary : Color.accentColor)
+                        }
+
                         if isModifiedMeal {
                             Text("Changed")
                                 .font(.caption2)
@@ -42,9 +49,11 @@ struct DiffIngredientRow: View {
                         }
                     }
 
-                    Text("\(menuName)\(amount.isEmpty ? "" : " • \(amount)")")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if !menuDetails.isEmpty {
+                        Text(menuDetails)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Spacer()
@@ -59,8 +68,8 @@ struct DiffIngredientRow: View {
     VStack(spacing: 16) {
         DiffIngredientRow(
             ingredientName: "Pork Slice",
-            amount: "200g",
-            menuName: "Pork Ginger (Standard)",
+            amountText: "200g",
+            menuDetails: "Pork Ginger (Standard)",
             isModifiedMeal: false,
             isChecked: false,
             onToggle: {}
@@ -68,8 +77,8 @@ struct DiffIngredientRow: View {
         
         DiffIngredientRow(
             ingredientName: "Salmon Fillet",
-            amount: "2 pcs",
-            menuName: "Grilled Salmon (Custom)",
+            amountText: "2 pcs",
+            menuDetails: "Grilled Salmon (Custom)",
             isModifiedMeal: true,
             isChecked: false,
             onToggle: {}
@@ -77,8 +86,8 @@ struct DiffIngredientRow: View {
         
         DiffIngredientRow(
             ingredientName: "Onion",
-            amount: "1 pc",
-            menuName: "Pork Ginger (Standard)",
+            amountText: "1 pc",
+            menuDetails: "Pork Ginger (Standard)",
             isModifiedMeal: false,
             isChecked: true,
             onToggle: {}
