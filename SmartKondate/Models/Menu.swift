@@ -13,6 +13,7 @@ final class Menu {
     @Attribute(.unique) var id: UUID = UUID()
     var name: String = ""
     var category: String = "Main"
+    var source: String = ""
     var memo: String = ""
     var createdAt: Date = Date()
     
@@ -28,10 +29,11 @@ final class Menu {
     @Relationship(inverse: \PatternDay.dinnerMenus)
     var dinnerPatternDays: [PatternDay] = []
 
-    init(name: String, category: String = "Main", memo: String = "") {
+    init(name: String, category: String = "Main", source: String = "", memo: String = "") {
         self.id = UUID()
         self.name = name
         self.category = category
+        self.source = source
         self.memo = memo
         self.createdAt = Date()
         self.ingredients = []

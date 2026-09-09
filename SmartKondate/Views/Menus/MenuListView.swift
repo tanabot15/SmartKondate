@@ -62,6 +62,17 @@ struct MenuListView: View {
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)
                                     }
+
+                                    if !menu.source.trimmingCharacters(in: .whitespaces).isEmpty {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "bookmark")
+                                                .font(.caption2)
+                                            Text(menu.source)
+                                                .font(.caption2)
+                                                .lineLimit(1)
+                                        }
+                                        .foregroundStyle(.secondary)
+                                    }
                                 }
                                 
                                 Spacer()
@@ -121,12 +132,20 @@ struct MenuListView: View {
     )
     let context = container.mainContext
 
-    let menu1 = Menu(name: "Toast & Fried Eggs", category: "Breakfast")
+    let menu1 = Menu(
+        name: "Toast & Fried Eggs",
+        category: "Breakfast",
+        source: "Breakfast Cookbook p.15"
+    )
     let ing1 = Ingredient(name: "Bread", quantity: 2, unit: "slices")
     let ing2 = Ingredient(name: "Egg", quantity: 2, unit: "pcs")
     menu1.ingredients = [ing1, ing2]
 
-    let menu2 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
+    let menu2 = Menu(
+        name: "Chicken Teriyaki Bowl",
+        category: "Main",
+        source: "https://example.com/recipes/teriyaki"
+    )
     let ing3 = Ingredient(name: "Chicken Thigh", quantity: 150, unit: "g")
     let ing4 = Ingredient(name: "Rice", quantity: 1, unit: "bowl")
     menu2.ingredients = [ing3, ing4]
