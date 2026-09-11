@@ -8,15 +8,24 @@
 import Foundation
 import SwiftData
 
+enum StockCategory: String, Codable, CaseIterable, Identifiable {
+    case pantry = "Pantry"
+    case seasoning = "Seasoning"
+    case household = "Household"
+    case other = "Other"
+
+    var id: String { rawValue }
+}
+
 @Model
 final class StockItem {
     @Attribute(.unique) var id: UUID = UUID()
     var name: String = ""
-    var category: String = "Pantry"
+    var category: StockCategory = StockCategory.pantry
     var isOut: Bool = false
     var memo: String = ""
     
-    init(name: String, category: String = "Pantry", isOut: Bool = false, memo: String = "") {
+    init(name: String, category: StockCategory = .pantry, isOut: Bool = false, memo: String = "") {
         self.id = UUID()
         self.name = name
         self.category = category

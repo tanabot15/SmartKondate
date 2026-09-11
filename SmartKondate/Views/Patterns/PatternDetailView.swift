@@ -117,12 +117,12 @@ private struct MealSectionRows: View {
 
     // Mainカテゴリのメニュー（単一）
     private var mainSelection: Menu? {
-        menus.first(where: { $0.category == "Main" })
+        menus.first(where: { $0.category == .main })
     }
 
     // Main以外のサブカテゴリ（Side, Soup等）のメニュー（複数）
     private var selectedSubMenus: [Menu] {
-        menus.filter { $0.category != "Main" }
+        menus.filter { $0.category != .main }
     }
 
     var body: some View {
@@ -143,7 +143,7 @@ private struct MealSectionRows: View {
                 Picker("Main", selection: Binding(
                     get: { mainSelection },
                     set: { newMain in
-                        var updated = menus.filter { $0.category != "Main" }
+                        var updated = menus.filter { $0.category != .main }
                         if let newMain = newMain {
                             updated.append(newMain)
                         }
@@ -152,7 +152,7 @@ private struct MealSectionRows: View {
                 )) {
                     Text("None").tag(Menu?.none)
                     Divider()
-                    ForEach(availableMenus.filter { $0.category == "Main" }) { menu in
+                    ForEach(availableMenus.filter { $0.category == .main }) { menu in
                         Text(menu.name).tag(Menu?.some(menu))
                     }
                 }
@@ -189,11 +189,11 @@ private struct MealSectionRows: View {
         .sheet(isPresented: $isShowingSubSheet) {
             SubMenuPickerSheet(
                 mealTitle: mealTitle,
-                allSubMenus: availableMenus.filter { $0.category != "Main" },
+                allSubMenus: availableMenus.filter { $0.category != .main },
                 selectedSubMenus: selectedSubMenus,
                 onSave: { updatedSubs in
                     // Main は残したまま、Subメニュー群を差し替える
-                    let currentMain = menus.filter { $0.category == "Main" }
+                    let currentMain = menus.filter { $0.category == .main }
                     menus = currentMain + updatedSubs
                 }
             )
@@ -234,7 +234,7 @@ private struct SubMenuPickerSheet: View {
                                 VStack(alignment: .leading) {
                                     Text(menu.name)
                                         .foregroundStyle(.primary)
-                                    Text(menu.category)
+                                    Text(menu.category.rawValue)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -283,10 +283,10 @@ private struct SubMenuPickerSheet: View {
     )
     let context = container.mainContext
 
-    let main1 = Menu(name: "Toast & Fried Eggs", category: "Main")
-    let main2 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
-    let side1 = Menu(name: "Green Salad", category: "Side")
-    let soup1 = Menu(name: "Miso Soup", category: "Soup")
+    let main1 = Menu(name: "Toast & Fried Eggs", category: .main)
+    let main2 = Menu(name: "Chicken Teriyaki Bowl", category: .main)
+    let side1 = Menu(name: "Green Salad", category: .side)
+    let soup1 = Menu(name: "Miso Soup", category: .soup)
     [main1, main2, side1, soup1].forEach { context.insert($0) }
 
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true)

@@ -14,9 +14,7 @@ struct StockCheckListView: View {
 
     @State private var isShowingAddSheet = false
     @State private var newItemName = ""
-    @State private var newItemCategory = "Pantry"
-
-    private let categories = ["Pantry", "Seasoning", "Household", "Other"]
+    @State private var newItemCategory: StockCategory = .pantry // String から StockCategory へ変更
 
     var body: some View {
         List {
@@ -44,10 +42,10 @@ struct StockCheckListView: View {
             }
 
             // MARK: - Stock Items Section
-            ForEach(categories, id: \.self) { category in
+            ForEach(StockCategory.allCases) { category in
                 let itemsInCategory = stockItems.filter { $0.category == category }
                 if !itemsInCategory.isEmpty {
-                    Section(header: Text(category)) {
+                    Section(header: Text(category.rawValue)) {
                         ForEach(itemsInCategory) { item in
                             Button {
                                 toggleStockStatus(item)
@@ -107,8 +105,8 @@ struct StockCheckListView: View {
                         TextField("Item Name (e.g. Soy Sauce)", text: $newItemName)
                         
                         Picker("Category", selection: $newItemCategory) {
-                            ForEach(categories, id: \.self) { category in
-                                Text(category).tag(category)
+                            ForEach(StockCategory.allCases) { category in
+                                Text(category.rawValue).tag(category)
                             }
                         }
                     }
@@ -143,14 +141,15 @@ struct StockCheckListView: View {
         let trimmed = newItemName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         
-        let item = StockItem(name: trimmed, category: newItemCategory, isOut: true) // 追加時は購入対象としてデフォルトON
+        // newItemCategory (StockCategory) をそのまま渡す
+        let item = StockItem(name: trimmed, category: newItemCategory, isOut: true)
         modelContext.insert(item)
         resetInput()
     }
 
     private func resetInput() {
         newItemName = ""
-        newItemCategory = "Pantry"
+        newItemCategory = .pantry
     }
 
     private func deleteItems(at offsets: IndexSet, in categoryItems: [StockItem]) {
@@ -170,13 +169,13 @@ struct StockCheckListView: View {
     let context = container.mainContext
 
     let items = [
-        StockItem(name: "Soy Sauce", category: "Seasoning", isOut: false),
-        StockItem(name: "Mirin", category: "Seasoning", isOut: false),
-        StockItem(name: "Miso Paste", category: "Seasoning", isOut: true),
-        StockItem(name: "Rice", category: "Pantry", isOut: false),
-        StockItem(name: "Flour", category: "Pantry", isOut: true),
-        StockItem(name: "Milk", category: "Household", isOut: false),
-        StockItem(name: "Tofu", category: "Household", isOut: true)
+        StockItem(name: "Soy Sauce", category: .seasoning, isOut: false),
+        StockItem(name: "Mirin", category: .seasoning, isOut: false),
+        StockItem(name: "Miso Paste", category: .seasoning, isOut: true),
+        StockItem(name: "Rice", category: .pantry, isOut: false),
+        StockItem(name: "Flour", category: .pantry, isOut: true),
+        StockItem(name: "Milk", category: .pantry, isOut: false),
+        StockItem(name: "Tofu", category: .pantry, isOut: true)
     ]
 
     items.forEach { context.insert($0) }

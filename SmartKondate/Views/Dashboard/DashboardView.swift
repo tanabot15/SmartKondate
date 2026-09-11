@@ -188,19 +188,19 @@ struct DashboardView: View {
         let ingRice = Ingredient(name: "Rice", quantity: 1, unit: "bowl")
         let ingOnion = Ingredient(name: "Onion", quantity: 1, unit: "pc")
 
-        let stockBread = StockItem(name: "Bread", category: "Pantry")
-        let stockEgg = StockItem(name: "Egg", category: "Fridge")
+        let stockBread = StockItem(name: "Bread", category: .pantry)
+        let stockEgg = StockItem(name: "Egg", category: .pantry)
 
         context.insert(stockBread)
         context.insert(stockEgg)
 
-        let menuToast = Menu(name: "Toast & Fried Eggs", category: "Breakfast", source: "Cookbook p.12")
+        let menuToast = Menu(name: "Toast & Fried Eggs", category: .main, source: "Cookbook p.12")
         menuToast.ingredients = [ingBread, ingEgg]
 
-        let menuTeriyaki = Menu(name: "Chicken Teriyaki Bowl", category: "Main", source: "https://example.com/teriyaki")
+        let menuTeriyaki = Menu(name: "Chicken Teriyaki Bowl", category: .main, source: "https://example.com/teriyaki")
         menuTeriyaki.ingredients = [ingChicken, ingRice]
 
-        let menuCurry = Menu(name: "Japanese Curry", category: "Main", source: "Family Recipe")
+        let menuCurry = Menu(name: "Japanese Curry", category: .main, source: "Family Recipe")
         menuCurry.ingredients = [ingChicken, ingOnion]
 
         context.insert(menuToast)

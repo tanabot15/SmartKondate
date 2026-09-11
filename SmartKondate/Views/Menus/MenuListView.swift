@@ -13,15 +13,13 @@ struct MenuListView: View {
     @Query(sort: \Menu.createdAt, order: .reverse) private var menus: [Menu]
     
     @State private var searchText = ""
-    @State private var selectedCategory = "All"
+    @State private var selectedCategory: MenuCategory? = nil // nil を「すべて」として扱う
     @State private var isShowingEditor = false
     @State private var selectedMenuForEdit: Menu?
     
-    private let categories = ["All", "Main", "Side", "Soup", "Other"]
-    
     var filteredMenus: [Menu] {
         menus.filter { menu in
-            let matchesCategory = (selectedCategory == "All") || (menu.category == selectedCategory)
+            let matchesCategory = (selectedCategory == nil) || (menu.category == selectedCategory)
             let matchesSearch = searchText.isEmpty || menu.name.localizedStandardContains(searchText)
             return matchesCategory && matchesSearch
         }
@@ -30,8 +28,9 @@ struct MenuListView: View {
     var body: some View {
         VStack(spacing: 0) {
             Picker("Category", selection: $selectedCategory) {
-                ForEach(categories, id: \.self) { cat in
-                    Text(cat).tag(cat)
+                Text("All").tag(Optional<MenuCategory>.none)
+                ForEach(MenuCategory.allCases) { cat in
+                    Text(cat.rawValue).tag(Optional(cat))
                 }
             }
             .pickerStyle(.segmented)
@@ -77,7 +76,7 @@ struct MenuListView: View {
                                 
                                 Spacer()
                                 
-                                Text(menu.category)
+                                Text(menu.category.rawValue)
                                     .font(.caption)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
@@ -134,7 +133,7 @@ struct MenuListView: View {
 
     let menu1 = Menu(
         name: "Toast & Fried Eggs",
-        category: "Breakfast",
+        category: .other, // "Breakfast" から .other 等の定義済Enumへ修正
         source: "Breakfast Cookbook p.15"
     )
     let ing1 = Ingredient(name: "Bread", quantity: 2, unit: "slices")
@@ -143,7 +142,7 @@ struct MenuListView: View {
 
     let menu2 = Menu(
         name: "Chicken Teriyaki Bowl",
-        category: "Main",
+        category: .main, // StringからMenuCategoryへ修正
         source: "https://example.com/recipes/teriyaki"
     )
     let ing3 = Ingredient(name: "Chicken Thigh", quantity: 150, unit: "g")

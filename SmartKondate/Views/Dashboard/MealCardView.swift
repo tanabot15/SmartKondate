@@ -74,8 +74,8 @@ struct MealCardView: View {
                             .foregroundStyle(.secondary)
                             .italic()
                     } else {
-                        let mains = result.effectiveMenus.filter { $0.category == "Main" }
-                        let sides = result.effectiveMenus.filter { $0.category != "Main" }
+                        let mains = result.effectiveMenus.filter { $0.category == .main }
+                        let sides = result.effectiveMenus.filter { $0.category != .main }
 
                         VStack(alignment: .leading, spacing: 4) {
                             if !mains.isEmpty {
@@ -142,7 +142,7 @@ struct MealCardView: View {
                                     VStack(alignment: .leading) {
                                         Text(menu.name)
                                             .foregroundStyle(.primary)
-                                        Text(menu.category)
+                                        Text(menu.category.rawValue)
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
@@ -211,10 +211,10 @@ private struct FlowMenuView: View {
     )
     let context = container.mainContext
 
-    let main1 = Menu(name: "Hamburger Steak", category: "Main")
-    let main2 = Menu(name: "Grilled Chicken", category: "Main")
-    let side1 = Menu(name: "Caesar Salad", category: "Side")
-    let soup1 = Menu(name: "Corn Soup", category: "Soup")
+    let main1 = Menu(name: "Hamburger Steak", category: .main)
+    let main2 = Menu(name: "Grilled Chicken", category: .main)
+    let side1 = Menu(name: "Caesar Salad", category: .side)
+    let soup1 = Menu(name: "Corn Soup", category: .soup)
 
     let menus = [main1, main2, side1, soup1]
     menus.forEach { context.insert($0) }

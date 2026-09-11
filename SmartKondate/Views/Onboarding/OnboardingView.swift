@@ -14,7 +14,7 @@ struct OnboardingView: View {
 
     @State private var currentPage = 0
     @State private var usePresetData: Bool = false
-    @State private var selectedPreset: PresetType = .standard
+    @State private var selectedPreset: PresetType = .balanced
 
     private let pages: [OnboardingPageModel] = [
         OnboardingPageModel(

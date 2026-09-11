@@ -188,7 +188,7 @@ struct ShoppingListView: View {
                                         .font(.body)
                                         .foregroundStyle(.primary)
 
-                                    Text(stockItem.category)
+                                    Text(stockItem.category.rawValue)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -321,10 +321,11 @@ struct ShoppingIngredientItem: Identifiable {
     let ing2 = Ingredient(name: "Onion", quantity: 2, unit: "pcs")
     let ing3 = Ingredient(name: "Egg", quantity: 4, unit: "pcs")
     
-    let menu1 = Menu(name: "Chicken Teriyaki Bowl", category: "Main")
+    // category を Enum 型 (MenuCategory) に変更
+    let menu1 = Menu(name: "Chicken Teriyaki Bowl", category: .main)
     menu1.ingredients = [ing1, ing2]
 
-    let menu2 = Menu(name: "Omelette", category: "Main")
+    let menu2 = Menu(name: "Omelette", category: .main)
     menu2.ingredients = [ing3]
 
     let menus = [menu1, menu2]
@@ -334,8 +335,9 @@ struct ShoppingIngredientItem: Identifiable {
     day1.pattern = pattern
     context.insert(day1)
 
-    let stock1 = StockItem(name: "Egg", category: "Pantry", isOut: false)
-    let stock2 = StockItem(name: "Soy Sauce", category: "Seasoning", isOut: true)
+    // category を Enum 型 (StockCategory) に変更
+    let stock1 = StockItem(name: "Egg", category: .pantry, isOut: false)
+    let stock2 = StockItem(name: "Soy Sauce", category: .seasoning, isOut: true)
 
     let stocks = [stock1, stock2]
     stocks.forEach { context.insert($0) }

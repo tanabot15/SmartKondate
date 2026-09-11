@@ -126,11 +126,11 @@ private enum WidgetDataFetcher {
     }
 
     private static func extractMain(from menus: [Menu]) -> String {
-        menus.first(where: { $0.category == "Main" })?.name ?? menus.first?.name ?? ""
+        menus.first(where: { $0.category == .main })?.name ?? menus.first?.name ?? ""
     }
 
     private static func extractSub(from menus: [Menu]) -> String {
-        let subs = menus.filter { $0.category != "Main" }
+        let subs = menus.filter { $0.category != .main }
         return subs.map { $0.name }.joined(separator: " / ")
     }
 }

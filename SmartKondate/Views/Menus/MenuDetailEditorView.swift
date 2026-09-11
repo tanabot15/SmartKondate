@@ -18,7 +18,7 @@ struct MenuDetailEditorView: View {
     var menuToEdit: Menu?
 
     @State private var name: String = ""
-    @State private var category: String = "Main"
+    @State private var category: MenuCategory = .main
     @State private var source: String = ""
     @State private var memo: String = ""
     
@@ -51,7 +51,6 @@ struct MenuDetailEditorView: View {
     
     @State private var editingIngredientID: UUID?
 
-    private let categories = ["Main", "Side", "Soup", "Other"]
     private let commonUnits = ["pcs", "g", "ml", "tbsp", "tsp", "block", "can", "slice", "bundle", "head"]
 
     private var isAddDisabled: Bool {
@@ -104,8 +103,8 @@ struct MenuDetailEditorView: View {
                 TextField("Menu Name (e.g. Curry)", text: $name)
                 
                 Picker("Category", selection: $category) {
-                    ForEach(categories, id: \.self) { cat in
-                        Text(cat).tag(cat)
+                    ForEach(MenuCategory.allCases) { cat in
+                        Text(cat.rawValue).tag(cat)
                     }
                 }
 
@@ -333,7 +332,7 @@ struct MenuDetailEditorView: View {
 
     let sampleMenu = Menu(
         name: "Japanese Curry Rice",
-        category: "Main",
+        category: .main, // StringからMenuCategoryへ修正
         memo: "Simmer on low heat for 20 minutes after adding roux."
     )
     let ing1 = Ingredient(name: "Pork", quantity: 300, unit: "g")
