@@ -14,6 +14,7 @@ struct OnboardingView: View {
 
     @State private var currentPage = 0
     @State private var usePresetData: Bool = false
+    @State private var selectedPreset: PresetType = .standard
 
     private let pages: [OnboardingPageModel] = [
         OnboardingPageModel(
@@ -52,7 +53,6 @@ struct OnboardingView: View {
 
             // MARK: - TabView (Pages)
             TabView(selection: $currentPage) {
-                // page 1~3
                 ForEach(0..<pages.count, id: \.self) { index in
                     let page = pages[index]
                     VStack(spacing: 24) {
@@ -75,8 +75,8 @@ struct OnboardingView: View {
                     .tag(index)
                 }
 
-                // page 4 (Opt-in)
-                VStack(spacing: 24) {
+                // Page 4: Sample Data Option
+                VStack(spacing: 20) {
                     Image(systemName: "tray.full.fill")
                         .font(.system(size: 80))
                         .foregroundStyle(.purple)
@@ -93,23 +93,41 @@ struct OnboardingView: View {
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 32)
 
-                    VStack(spacing: 12) {
-                        Toggle(isOn: $usePresetData) {
+                    VStack(spacing: 16) {
+                        Toggle(isOn: $usePresetData.animation()) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Load Sample Data")
                                     .font(.headline)
-                                Text(usePresetData ? "Starts with sample patterns & menus." : "Starts with a clean, empty app.")
+                                Text(usePresetData ? "Starts with chosen sample pattern." : "Starts with a clean, empty app.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .tint(.accentColor)
-                        .padding()
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                        if usePresetData {
+                            Divider()
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Select Preset Type")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.secondary)
+
+                                Picker("Preset Type", selection: $selectedPreset) {
+                                    ForEach(PresetType.allCases) { type in
+                                        Text(type.rawValue).tag(type)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
                     }
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(.horizontal, 32)
-                    .padding(.top, 8)
                 }
                 .tag(pages.count)
             }
@@ -140,15 +158,15 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Complete Onboarding
     private func completeOnboarding(loadPresets: Bool) {
         if loadPresets {
-            PresetDataService.insertPresetDataIfNeeded(context: modelContext)
+            PresetDataService.insertPresetDataIfNeeded(context: modelContext, presetType: selectedPreset)
         }
         hasCompletedOnboarding = true
     }
 }
 
+// MARK: - Page Model Definition
 private struct OnboardingPageModel {
     let title: String
     let description: String
