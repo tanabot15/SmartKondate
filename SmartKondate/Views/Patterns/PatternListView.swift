@@ -2,8 +2,6 @@
 //  PatternListView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/08/06.
-//
 
 import SwiftUI
 import SwiftData
@@ -15,6 +13,8 @@ struct PatternListView: View {
     
     @AppStorage("isQueueLoopEnabled") private var isQueueLoopEnabled: Bool = false
     @State private var isShowingCreateSheet = false
+    @State private var patternToActivate: KondatePattern?
+    @State private var selectedStartDate: Date = Date()
 
     private var queuedPatterns: [KondatePattern] {
         patterns
@@ -170,16 +170,38 @@ struct PatternListView: View {
                 PatternEditorView()
             }
         }
+        // MARK: - 初回Active用の開始日付選択シート
+        .sheet(item: $patternToActivate) { pattern in
+            ActivateDatePickerSheet(
+                patternName: pattern.name,
+                startDate: $selectedStartDate,
+                onConfirm: {
+                    confirmFirstActivePattern(pattern, startDate: selectedStartDate)
+                }
+            )
+        }
     }
 
     private func addToQueue(_ pattern: KondatePattern) {
-        let nextOrder = queuedPatterns.count
-        pattern.queueOrder = nextOrder
-        pattern.isActive = (nextOrder == 0)
-        if nextOrder == 0 {
-            pattern.startDate = Date()
+        if queuedPatterns.isEmpty {
+            // まだActiveなPatternがない場合は日付指定用のシートを表示
+            selectedStartDate = Date()
+            patternToActivate = pattern
+        } else {
+            // すでにQueueがある場合はそのまま追加
+            let nextOrder = queuedPatterns.count
+            pattern.queueOrder = nextOrder
+            pattern.isActive = false
+            WidgetCenter.shared.reloadAllTimelines()
         }
+    }
+
+    private func confirmFirstActivePattern(_ pattern: KondatePattern, startDate: Date) {
+        pattern.queueOrder = 0
+        pattern.isActive = true
+        pattern.startDate = startDate
         
+        patternToActivate = nil
         WidgetCenter.shared.reloadAllTimelines()
     }
 
@@ -222,6 +244,44 @@ struct PatternListView: View {
             let patternToDelete = unqueuedPatterns[index]
             modelContext.delete(patternToDelete)
         }
+    }
+}
+
+// MARK: - Start Date
+private struct ActivateDatePickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let patternName: String
+    @Binding var startDate: Date
+    let onConfirm: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                DatePicker(
+                    "Start Date",
+                    selection: $startDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(.graphical)
+                .padding()
+
+                Spacer()
+            }
+            .padding(.top)
+            .navigationTitle("Set Start Date")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Start Pattern") {
+                        onConfirm()
+                        dismiss()
+                    }
+                    .foregroundStyle(Color.accentColor)
+                    .fontWeight(.bold)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 
