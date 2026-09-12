@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -24,7 +25,6 @@ struct DashboardView: View {
             .sorted { ($0.queueOrder ?? 0) < ($1.queueOrder ?? 0) }
     }
 
-    // パターンの累計日数から開始日を安全に計算するヘルパー
     private func startDate(for patternIndex: Int) -> Date {
         let baseStartDate = queuedPatterns.first?.startDate ?? Date()
         let offsetDays = queuedPatterns.prefix(patternIndex).reduce(0) { $0 + $1.durationDays }
@@ -107,9 +107,10 @@ struct DashboardView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Pattern Dashboard")
+        .navigationTitle("Dashboard")
         .onAppear {
             checkAndAdvanceQueue()
+            WidgetCenter.shared.reloadAllTimelines()
         }
     }
 
@@ -135,6 +136,8 @@ struct DashboardView: View {
         } else {
             customMenuDict.removeValue(forKey: key)
         }
+        
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func checkAndAdvanceQueue() {
@@ -164,6 +167,8 @@ struct DashboardView: View {
                     p.startDate = nextStartDate
                 }
             }
+            
+            WidgetCenter.shared.reloadAllTimelines()
         }
     }
 }

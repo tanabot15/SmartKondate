@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct PatternListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -15,7 +16,6 @@ struct PatternListView: View {
     @AppStorage("isQueueLoopEnabled") private var isQueueLoopEnabled: Bool = false
     @State private var isShowingCreateSheet = false
 
-    // Queue (0: Active, 1+: Queue)
     private var queuedPatterns: [KondatePattern] {
         patterns
             .filter { $0.queueOrder != nil }
@@ -179,6 +179,8 @@ struct PatternListView: View {
         if nextOrder == 0 {
             pattern.startDate = Date()
         }
+        
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func removeFromQueue(_ pattern: KondatePattern) {
@@ -186,6 +188,8 @@ struct PatternListView: View {
         pattern.isActive = false
         pattern.startDate = nil
         reindexQueue()
+        
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func moveQueuedPatterns(from source: IndexSet, to destination: Int) {
@@ -199,6 +203,8 @@ struct PatternListView: View {
                 pattern.startDate = Date()
             }
         }
+        
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func reindexQueue() {
