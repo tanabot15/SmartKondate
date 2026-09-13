@@ -43,6 +43,8 @@
 		D9AF18D93024C97200C39DB7 /* KondatePattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */; };
 		D9AF18DA3024C97600C39DB7 /* Ingredient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CF3024C89400C39DB7 /* Ingredient.swift */; };
 		D9AF18DB3024C97B00C39DB7 /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CD3024C88A00C39DB7 /* Menu.swift */; };
+		D9BA15DC30565C61008B3FC5 /* KondateBackupDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15DB30565C61008B3FC5 /* KondateBackupDTO.swift */; };
+		D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +108,8 @@
 		D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KondatePattern.swift; sourceTree = "<group>"; };
 		D9AF18D33024C8A700C39DB7 /* PatternDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternDay.swift; sourceTree = "<group>"; };
 		D9AF18D53024C8AE00C39DB7 /* StockItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockItem.swift; sourceTree = "<group>"; };
+		D9BA15DB30565C61008B3FC5 /* KondateBackupDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KondateBackupDTO.swift; sourceTree = "<group>"; };
+		D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBackupService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -260,6 +264,7 @@
 			isa = PBXGroup;
 			children = (
 				D9AF18B53024C75900C39DB7 /* SettingsView.swift */,
+				D9BA15DB30565C61008B3FC5 /* KondateBackupDTO.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -277,6 +282,7 @@
 			children = (
 				D9AF18BD3024C7BB00C39DB7 /* PresetDataService.swift */,
 				D9AF18BF3024C7C400C39DB7 /* DiffCalculator.swift */,
+				D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -426,10 +432,12 @@
 				D9AF18B43024C74D00C39DB7 /* StockCheckListView.swift in Sources */,
 				D9AF18A43024C6E900C39DB7 /* MealCardView.swift in Sources */,
 				D9AF18C03024C7C400C39DB7 /* DiffCalculator.swift in Sources */,
+				D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */,
 				D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */,
 				D9AF18A63024C6F500C39DB7 /* PatternListView.swift in Sources */,
 				D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */,
 				D9AF186D3024C0DD00C39DB7 /* MainTabView.swift in Sources */,
+				D9BA15DC30565C61008B3FC5 /* KondateBackupDTO.swift in Sources */,
 				D9AF18BA3024C76C00C39DB7 /* OnboardingView.swift in Sources */,
 				D9AF186E3024C0DD00C39DB7 /* SmartKondateApp.swift in Sources */,
 				D9AF18AE3024C72700C39DB7 /* MenuDetailEditorView.swift in Sources */,
