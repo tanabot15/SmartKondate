@@ -137,6 +137,26 @@ struct DashboardView: View {
             customMenuDict.removeValue(forKey: key)
         }
         
+        if let pattern = queuedPatterns.first(where: { $0.id == patternID }),
+           let targetDay = pattern.days.first(where: { $0.dayIndex == dayIndex }) {
+            
+            let updatedMenus = menus ?? []
+            switch mealType {
+            case .breakfast:
+                targetDay.breakfastMenus = updatedMenus
+            case .lunch:
+                targetDay.lunchMenus = updatedMenus
+            case .dinner:
+                targetDay.dinnerMenus = updatedMenus
+            }
+            
+            do {
+                try modelContext.save()
+            } catch {
+                print("Failed to save menu update: \(error)")
+            }
+        }
+
         WidgetCenter.shared.reloadAllTimelines()
     }
 

@@ -14,6 +14,7 @@ struct SettingsView: View {
     
     @AppStorage("userColorScheme") private var userColorScheme: String = "system"
 
+    @State private var selectedPreset: PresetType = .balanced
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingResetConfirmation = false
 
@@ -30,11 +31,25 @@ struct SettingsView: View {
             }
 
             // MARK: - 2. Data Management
-            Section {
-                Button {
-                    isShowingResetConfirmation = true
-                } label: {
-                    Text("Reset & Restore Preset Data")
+            Section(header: Text("Data Management")) {
+                HStack {
+                    Text("Restore Preset")
+                    Spacer()
+                    SwiftUI.Menu {
+                        ForEach(PresetType.allCases) { preset in
+                            Button(preset.rawValue) {
+                                selectedPreset = preset
+                                isShowingResetConfirmation = true
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(selectedPreset.rawValue)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(.tint)
+                    }
                 }
 
                 Button(role: .destructive) {
@@ -42,16 +57,14 @@ struct SettingsView: View {
                 } label: {
                     Text("Delete All Data")
                 }
-            } header: {
-                Text("Data Management")
             }
 
             // MARK: - 3. App Info
             Section(header: Text("About")) {
                 HStack {
-                    Text("App Version")
+                    Text("Version")
                     Spacer()
-                    Text("2.11")
+                    Text("2.12")
                         .foregroundStyle(.secondary)
                 }
             }
@@ -63,12 +76,12 @@ struct SettingsView: View {
             isPresented: $isShowingResetConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Reset & Load Presets", role: .destructive) {
+            Button("Reset & Load \(selectedPreset.rawValue)", role: .destructive) {
                 resetAndLoadPresets()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will delete all current data and restore initial preset patterns and items.")
+            Text("This will delete all current data and restore initial preset patterns and items for '\(selectedPreset.rawValue)'.")
         }
         .confirmationDialog(
             "Delete All Data?",
@@ -99,7 +112,7 @@ struct SettingsView: View {
 
     private func resetAndLoadPresets() {
         deleteAllData()
-        PresetDataService.insertPresetDataIfNeeded(context: modelContext)
+        PresetDataService.insertPresetDataIfNeeded(context: modelContext, presetType: selectedPreset)
     }
 }
 
