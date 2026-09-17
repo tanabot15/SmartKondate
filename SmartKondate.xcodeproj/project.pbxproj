@@ -45,6 +45,8 @@
 		D9AF18DB3024C97B00C39DB7 /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF18CD3024C88A00C39DB7 /* Menu.swift */; };
 		D9BA15DC30565C61008B3FC5 /* KondateBackupDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15DB30565C61008B3FC5 /* KondateBackupDTO.swift */; };
 		D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */; };
+		D9BA15E7305BBFD6008B3FC5 /* ShoppingListConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */; };
+		D9BA15E9305BC000008B3FC5 /* ShoppingSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -110,6 +112,8 @@
 		D9AF18D53024C8AE00C39DB7 /* StockItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockItem.swift; sourceTree = "<group>"; };
 		D9BA15DB30565C61008B3FC5 /* KondateBackupDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KondateBackupDTO.swift; sourceTree = "<group>"; };
 		D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBackupService.swift; sourceTree = "<group>"; };
+		D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingListConfig.swift; sourceTree = "<group>"; };
+		D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingSetupView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -248,6 +252,8 @@
 			children = (
 				D9AF18AF3024C73200C39DB7 /* ShoppingListView.swift */,
 				D9AF18B13024C74300C39DB7 /* DiffIngredientRow.swift */,
+				D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */,
+				D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */,
 			);
 			path = ShoppingList;
 			sourceTree = "<group>";
@@ -431,6 +437,7 @@
 				D9AF18D63024C8AE00C39DB7 /* StockItem.swift in Sources */,
 				D9AF18B43024C74D00C39DB7 /* StockCheckListView.swift in Sources */,
 				D9AF18A43024C6E900C39DB7 /* MealCardView.swift in Sources */,
+				D9BA15E7305BBFD6008B3FC5 /* ShoppingListConfig.swift in Sources */,
 				D9AF18C03024C7C400C39DB7 /* DiffCalculator.swift in Sources */,
 				D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */,
 				D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */,
@@ -438,6 +445,7 @@
 				D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */,
 				D9AF186D3024C0DD00C39DB7 /* MainTabView.swift in Sources */,
 				D9BA15DC30565C61008B3FC5 /* KondateBackupDTO.swift in Sources */,
+				D9BA15E9305BC000008B3FC5 /* ShoppingSetupView.swift in Sources */,
 				D9AF18BA3024C76C00C39DB7 /* OnboardingView.swift in Sources */,
 				D9AF186E3024C0DD00C39DB7 /* SmartKondateApp.swift in Sources */,
 				D9AF18AE3024C72700C39DB7 /* MenuDetailEditorView.swift in Sources */,

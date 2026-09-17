@@ -40,7 +40,7 @@ struct MainTabView: View {
             .tag(Tab.patterns)
             
             NavigationStack {
-                ShoppingListView()
+                ShoppingSetupView()
             }
             .tabItem {
                 Label("Shopping", systemImage: "cart.fill")

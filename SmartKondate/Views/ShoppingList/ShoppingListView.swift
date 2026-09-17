@@ -6,61 +6,32 @@
 import SwiftUI
 import SwiftData
 
-enum ShoppingMode: String, CaseIterable, Identifiable {
-    case pattern = "Pattern"
-    case date = "Date"
-    
-    var id: String { self.rawValue }
-}
-
 struct ShoppingListView: View {
+    let config: ShoppingListConfig
+
     @Environment(\.modelContext) private var modelContext
-    
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
-    @Query(filter: #Predicate<StockItem> { $0.isOut == true }) private var outOfStockItems: [StockItem]
-    
-    @State private var shoppingMode: ShoppingMode = .pattern
-    @State private var targetDate: Date = Date()
-    @State private var selectedPatternID: UUID?
+    @Query private var allStockItems: [StockItem]
+
     @State private var checkedIngredientKeys: Set<String> = []
+    @State private var customQuantities: [String: Double] = [:]
 
     private var activePattern: KondatePattern? {
         allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
     }
 
-    private var selectedPattern: KondatePattern? {
-        if let id = selectedPatternID {
-            return allPatterns.first { $0.id == id }
-        }
-        return activePattern ?? allPatterns.first
+    private var outOfStockItems: [StockItem] {
+        allStockItems.filter { $0.isOut }
     }
 
+    // MARK: - Combined Ingredient Extraction Logic
     private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool)] {
         var result: [(Ingredient, String, Bool)] = []
 
-        switch shoppingMode {
-        case .date:
-            let diffResults = DiffCalculator.calculateDiff(
-                for: targetDate,
-                pattern: activePattern,
-                startDate: activePattern?.startDate ?? activePattern?.createdAt ?? Date(),
-                customBreakfast: nil,
-                customLunch: nil,
-                customDinner: nil
-            )
-
-            for res in diffResults {
-                for menu in res.effectiveMenus {
-                    for ingredient in menu.ingredients {
-                        result.append((ingredient, menu.name, res.isModified))
-                    }
-                }
-            }
-
-        case .pattern:
-            guard let pattern = selectedPattern else { break }
-
+        // 1. Base Pattern Extraction
+        if let pattern = config.selectedPattern {
             for dayIndex in 0..<pattern.durationDays {
+                guard config.selectedDayIndices.contains(dayIndex) else { continue }
                 guard let patternDay = pattern.days.first(where: { $0.dayIndex == dayIndex }) else { continue }
 
                 let meals: [(MealType, [Menu])] = [
@@ -80,10 +51,65 @@ struct ShoppingListView: View {
             }
         }
 
+        // 2. Extra Sources Extraction
+        for source in config.extraSources {
+            switch source {
+            case .date(let date):
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "M/d"
+                let dateLabel = dateFormatter.string(from: date)
+
+                let diffResults = DiffCalculator.calculateDiff(
+                    for: date,
+                    pattern: activePattern,
+                    startDate: activePattern?.startDate ?? activePattern?.createdAt ?? Date(),
+                    customBreakfast: nil,
+                    customLunch: nil,
+                    customDinner: nil
+                )
+
+                for res in diffResults {
+                    for menu in res.effectiveMenus {
+                        for ingredient in menu.ingredients {
+                            let label = "[\(dateLabel)] \(menu.name)"
+                            result.append((ingredient, label, res.isModified))
+                        }
+                    }
+                }
+
+            case .pattern(let pattern):
+                for patternDay in pattern.days {
+                    let allMenus = patternDay.breakfastMenus + patternDay.lunchMenus + patternDay.dinnerMenus
+                    for menu in allMenus {
+                        for ingredient in menu.ingredients {
+                            let label = "[\(pattern.name) Day \(patternDay.dayIndex + 1)] \(menu.name)"
+                            result.append((ingredient, label, false))
+                        }
+                    }
+                }
+
+            case .patternDay(let patternName, let dayIndex, let patternDay):
+                let allMenus = patternDay.breakfastMenus + patternDay.lunchMenus + patternDay.dinnerMenus
+                for menu in allMenus {
+                    for ingredient in menu.ingredients {
+                        let label = "[\(patternName) Day \(dayIndex + 1)] \(menu.name)"
+                        result.append((ingredient, label, false))
+                    }
+                }
+
+            case .menu(let menu):
+                for ingredient in menu.ingredients {
+                    let label = "[Extra] \(menu.name)"
+                    result.append((ingredient, label, false))
+                }
+            }
+        }
+
         return result
     }
 
     private var aggregatedItems: [ShoppingIngredientItem] {
+        let stockedNames = Set(allStockItems.filter { !$0.isOut }.map { $0.name.trimmingCharacters(in: .whitespaces).lowercased() })
         var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool)] = [:]
 
         for item in rawIngredientItems {
@@ -109,14 +135,21 @@ struct ShoppingListView: View {
             }
         }
 
-        return groupedDict.map { (key, value) in
-            let tempIng = Ingredient(name: value.name, quantity: value.quantity, unit: value.unit, category: value.category)
+        return groupedDict.compactMap { (key, value) in
             let sortedMenus = value.menus.sorted().joined(separator: ", ")
+
+            var initialQuantity = value.quantity
+            if stockedNames.contains(value.name.lowercased()) {
+                initialQuantity = max(0, initialQuantity - 1)
+            }
+
+            let finalQuantity = customQuantities[key] ?? initialQuantity
 
             return ShoppingIngredientItem(
                 id: key,
                 ingredientName: value.name,
-                amountText: tempIng.amountText,
+                quantity: finalQuantity,
+                unit: value.unit,
                 category: value.category,
                 menuDetails: sortedMenus,
                 isModifiedMeal: value.isModified
@@ -145,42 +178,25 @@ struct ShoppingListView: View {
 
     var body: some View {
         List {
-            // MARK: - Shopping Period Selector
+            // MARK: - Selected Conditions Summary
             Section {
-                Picker("Target Mode", selection: $shoppingMode) {
-                    ForEach(ShoppingMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                if shoppingMode == .date {
-                    DatePicker("Target Date", selection: $targetDate, displayedComponents: [.date])
-                        .datePickerStyle(.compact)
-                } else {
-                    if allPatterns.isEmpty {
-                        Text("No patterns available")
+                VStack(alignment: .leading, spacing: 6) {
+                    if let pattern = config.selectedPattern {
+                        Label("\(pattern.name) (\(config.selectedDayIndices.count) days)", systemImage: "calendar")
+                            .font(.caption)
                             .foregroundStyle(.secondary)
-                    } else {
-                        Picker("Target Pattern", selection: $selectedPatternID) {
-                            ForEach(allPatterns) { pattern in
-                                HStack {
-                                    Text(pattern.name)
-                                    if pattern.queueOrder == 0 {
-                                        Text("(Active)")
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                                .tag(Optional(pattern.id))
-                            }
-                        }
+                    }
+                    if !config.extraSources.isEmpty {
+                        Label("\(config.extraSources.count) extra additions included", systemImage: "plus.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             } header: {
-                Text("Shopping Period")
+                Text("Target Target Criteria")
             }
 
-            // MARK: - 1. Out of Stock Items
+            // MARK: - Out of Stock Items
             if !outOfStockItems.isEmpty {
                 Section {
                     ForEach(outOfStockItems) { stockItem in
@@ -225,14 +241,12 @@ struct ShoppingListView: View {
                 }
             }
 
-            // MARK: - 2. Aggregated Ingredients List
+            // MARK: - Aggregated Ingredients List
             if aggregatedItems.isEmpty && outOfStockItems.isEmpty {
                 ContentUnavailableView {
                     Label("No Ingredients Needed", systemImage: "cart")
                 } description: {
-                    Text(shoppingMode == .date
-                         ? "No menus set for this date, and no stock items marked as out."
-                         : "No menus set for the selected pattern, and no stock items marked as out.")
+                    Text("No ingredients match the selected setup.")
                         .foregroundStyle(.secondary)
                 }
             } else {
@@ -241,11 +255,15 @@ struct ShoppingListView: View {
                         ForEach(modifiedItems) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
-                                amountText: item.amountText,
+                                quantity: item.quantity,
+                                unit: item.unit,
                                 menuDetails: item.menuDetails,
                                 isModifiedMeal: true,
                                 isChecked: checkedIngredientKeys.contains(item.id),
-                                onToggle: { toggleCheck(for: item.id) }
+                                onToggle: { toggleCheck(for: item.id) },
+                                onQuantityChange: { newQty in
+                                    customQuantities[item.id] = newQty
+                                }
                             )
                         }
                     } header: {
@@ -264,11 +282,15 @@ struct ShoppingListView: View {
                         ForEach(section.items) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
-                                amountText: item.amountText,
+                                quantity: item.quantity,
+                                unit: item.unit,
                                 menuDetails: item.menuDetails,
                                 isModifiedMeal: false,
                                 isChecked: checkedIngredientKeys.contains(item.id),
-                                onToggle: { toggleCheck(for: item.id) }
+                                onToggle: { toggleCheck(for: item.id) },
+                                onQuantityChange: { newQty in
+                                    customQuantities[item.id] = newQty
+                                }
                             )
                         }
                     }
@@ -277,11 +299,6 @@ struct ShoppingListView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Shopping List")
-        .onAppear {
-            if selectedPatternID == nil {
-                selectedPatternID = activePattern?.id ?? allPatterns.first?.id
-            }
-        }
         .toolbar {
             if !checkedIngredientKeys.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -310,7 +327,8 @@ struct ShoppingListView: View {
 struct ShoppingIngredientItem: Identifiable {
     let id: String
     let ingredientName: String
-    let amountText: String
+    let quantity: Double
+    let unit: String
     let category: IngredientCategory
     let menuDetails: String
     let isModifiedMeal: Bool
@@ -324,6 +342,7 @@ struct ShoppingIngredientItem: Identifiable {
     )
     let context = container.mainContext
 
+    // Create Pattern & Days
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true, queueOrder: 0)
     context.insert(pattern)
 
@@ -331,26 +350,32 @@ struct ShoppingIngredientItem: Identifiable {
     let ing2 = Ingredient(name: "Onion", quantity: 2, unit: "pcs", category: .produce)
     let ing3 = Ingredient(name: "Egg", quantity: 4, unit: "pcs", category: .chilledAndDairy)
     let ing4 = Ingredient(name: "Soy Sauce", quantity: 2, unit: "tbsp", category: .pantryAndGrain)
-    let ing5 = Ingredient(name: "Aluminum Foil", quantity: 1, unit: "roll", category: .other)
     
     let menu1 = Menu(name: "Chicken Teriyaki Bowl", category: .main)
     menu1.ingredients = [ing1, ing2, ing4]
 
     let menu2 = Menu(name: "Omelette", category: .main)
-    menu2.ingredients = [ing3, ing5]
+    menu2.ingredients = [ing3]
 
-    let menus = [menu1, menu2]
-    menus.forEach { context.insert($0) }
+    [menu1, menu2].forEach { context.insert($0) }
 
     let day1 = PatternDay(dayIndex: 0, breakfastMenus: [], lunchMenus: [menu1], dinnerMenus: [menu2])
     day1.pattern = pattern
     context.insert(day1)
 
-    let stock1 = StockItem(name: "Pepper", category: .seasoning, isOut: true)
+    // Stock Item
+    let stock1 = StockItem(name: "Black Pepper", category: .seasoning, isOut: true)
     context.insert(stock1)
 
+    // ShoppingListConfig setup
+    let shoppingConfig = ShoppingListConfig(
+        selectedPattern: pattern,
+        selectedDayIndices: [0],
+        extraSources: [.menu(menu1)]
+    )
+
     return NavigationStack {
-        ShoppingListView()
+        ShoppingListView(config: shoppingConfig)
     }
     .modelContainer(container)
 }
