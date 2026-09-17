@@ -2,8 +2,6 @@
 //  ShoppingListView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/08/06.
-//
 
 import SwiftUI
 import SwiftData
@@ -85,7 +83,6 @@ struct ShoppingListView: View {
         return result
     }
 
-    // MARK: - Aggregated Items Property
     private var aggregatedItems: [ShoppingIngredientItem] {
         var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool)] = [:]
 
@@ -136,7 +133,6 @@ struct ShoppingListView: View {
         aggregatedItems.filter { !$0.isModifiedMeal }
     }
 
-    // カテゴリごとにグループ化された標準の食材リスト
     private var standardItemsByCategory: [(category: IngredientCategory, items: [ShoppingIngredientItem])] {
         let grouped = Dictionary(grouping: standardItems, by: { $0.category })
         return IngredientCategory.allCases.compactMap { category in

@@ -27,136 +27,146 @@ struct PatternListView: View {
     }
 
     var body: some View {
-        List {
+        Group {
             if patterns.isEmpty {
                 ContentUnavailableView {
-                    Label("No Meal Patterns", systemImage: "calendar.day.timeline.left")
+                    Label("No Meal Patterns", systemImage: "arrow.triangle.2.circlepath")
                 } description: {
                     Text("Tap + to create a weekly or custom meal cycle pattern.")
                         .foregroundStyle(.secondary)
                 }
             } else {
-                // MARK: - Active & Upcoming Queue Section
-                if !queuedPatterns.isEmpty {
-                    Section {
-                        Toggle(isOn: $isQueueLoopEnabled) {
-                            Label {
-                                Text("Loop Queue Patterns")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            } icon: {
-                                Image(systemName: "repeat")
-                                    .foregroundStyle(isQueueLoopEnabled ? Color.accentColor : .secondary)
+                List {
+                    // MARK: - Active & Upcoming Queue Section
+                    if !queuedPatterns.isEmpty {
+                        Section {
+                            Toggle(isOn: $isQueueLoopEnabled) {
+                                Label {
+                                    Text("Loop Queue Patterns")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                } icon: {
+                                    Image(systemName: "repeat")
+                                        .foregroundStyle(isQueueLoopEnabled ? Color.accentColor : .secondary)
+                                }
                             }
-                        }
 
-                        ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
-                            NavigationLink(destination: PatternDetailView(pattern: pattern)) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        HStack(spacing: 8) {
+                            ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
+                                NavigationLink(destination: PatternDetailView(pattern: pattern)) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack(spacing: 8) {
+                                                Text(pattern.name)
+                                                    .font(.headline)
+                                                    .foregroundStyle(.primary)
+
+                                                if index == 0 {
+                                                    Text("Now Active")
+                                                        .font(.caption2)
+                                                        .fontWeight(.bold)
+                                                        .padding(.horizontal, 6)
+                                                        .padding(.vertical, 2)
+                                                        .background(Color.accentColor)
+                                                        .foregroundStyle(.white)
+                                                        .clipShape(Capsule())
+                                                } else {
+                                                    Text("Next #\(index)")
+                                                        .font(.caption2)
+                                                        .fontWeight(.bold)
+                                                        .padding(.horizontal, 6)
+                                                        .padding(.vertical, 2)
+                                                        .background(Color.secondary.opacity(0.2))
+                                                        .foregroundStyle(.secondary)
+                                                        .clipShape(Capsule())
+                                                }
+                                            }
+
+                                            Text("\(pattern.durationDays) Days Cycle")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                        }
+
+                                        Spacer()
+
+                                        Button {
+                                            removeFromQueue(pattern)
+                                        } label: {
+                                            Image(systemName: "minus.circle.fill")
+                                                .foregroundStyle(.red.opacity(0.8))
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                            .onMove(perform: moveQueuedPatterns)
+                        } header: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "play.square.stack.fill")
+                                    .foregroundStyle(Color.accentColor)
+                                Text("Active & Scheduled Queue")
+                                    .foregroundStyle(Color.accentColor)
+                                    .fontWeight(.bold)
+                            }
+                        } footer: {
+                            Text(isQueueLoopEnabled
+                                 ? "Finished patterns move to the end of the queue automatically."
+                                 : "Drag to reorder upcoming patterns. When the active pattern finishes, the next one starts automatically.")
+                                .font(.caption)
+                        }
+                    }
+
+                    // MARK: - Available Patterns Section
+                    if !unqueuedPatterns.isEmpty {
+                        Section {
+                            ForEach(unqueuedPatterns) { pattern in
+                                NavigationLink(destination: PatternDetailView(pattern: pattern)) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
                                             Text(pattern.name)
                                                 .font(.headline)
                                                 .foregroundStyle(.primary)
 
-                                            if index == 0 {
-                                                Text("Now Active")
-                                                    .font(.caption2)
-                                                    .fontWeight(.bold)
-                                                    .padding(.horizontal, 6)
-                                                    .padding(.vertical, 2)
-                                                    .background(Color.accentColor)
-                                                    .foregroundStyle(.white)
-                                                    .clipShape(Capsule())
-                                            } else {
-                                                Text("Next #\(index)")
-                                                    .font(.caption2)
-                                                    .fontWeight(.bold)
-                                                    .padding(.horizontal, 6)
-                                                    .padding(.vertical, 2)
-                                                    .background(Color.secondary.opacity(0.2))
-                                                    .foregroundStyle(.secondary)
-                                                    .clipShape(Capsule())
-                                            }
+                                            Text("\(pattern.durationDays) Days Cycle")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
                                         }
 
-                                        Text("\(pattern.durationDays) Days Cycle")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                    }
+                                        Spacer()
 
-                                    Spacer()
-
-                                    Button {
-                                        removeFromQueue(pattern)
-                                    } label: {
-                                        Image(systemName: "minus.circle.fill")
-                                            .foregroundStyle(.red.opacity(0.8))
+                                        Button {
+                                            addToQueue(pattern)
+                                        } label: {
+                                            Label("Add to Queue", systemImage: "plus.circle")
+                                                .font(.caption)
+                                                .fontWeight(.medium)
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .tint(.accentColor)
                                     }
-                                    .buttonStyle(.plain)
                                 }
                             }
+                            .onDelete(perform: deleteUnqueuedPatterns)
+                        } header: {
+                            Text("Other Patterns")
                         }
-                        .onMove(perform: moveQueuedPatterns)
-                    } header: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "play.square.stack.fill")
-                                .foregroundStyle(Color.accentColor)
-                            Text("Active & Scheduled Queue")
-                                .foregroundStyle(Color.accentColor)
-                                .fontWeight(.bold)
-                        }
-                    } footer: {
-                        Text(isQueueLoopEnabled
-                             ? "Finished patterns move to the end of the queue automatically."
-                             : "Drag to reorder upcoming patterns. When the active pattern finishes, the next one starts automatically.")
-                            .font(.caption)
                     }
                 }
-
-                // MARK: - Available Patterns Section
-                if !unqueuedPatterns.isEmpty {
-                    Section {
-                        ForEach(unqueuedPatterns) { pattern in
-                            NavigationLink(destination: PatternDetailView(pattern: pattern)) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(pattern.name)
-                                            .font(.headline)
-                                            .foregroundStyle(.primary)
-
-                                        Text("\(pattern.durationDays) Days Cycle")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                    }
-
-                                    Spacer()
-
-                                    Button {
-                                        addToQueue(pattern)
-                                    } label: {
-                                        Label("Add to Queue", systemImage: "plus.circle")
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .tint(.accentColor)
-                                }
-                            }
-                        }
-                        .onDelete(perform: deleteUnqueuedPatterns)
-                    } header: {
-                        Text("Other Patterns")
-                    }
-                }
+                .listStyle(.insetGrouped)
             }
         }
-        .listStyle(.insetGrouped)
         .navigationTitle("Patterns")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                EditButton()
+                NavigationLink {
+                    MenuListView()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "fork.knife")
+                        Text("Menus")
+                    }
+                }
             }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isShowingCreateSheet = true
@@ -170,7 +180,6 @@ struct PatternListView: View {
                 PatternEditorView()
             }
         }
-        // MARK: - 初回Active用の開始日付選択シート
         .sheet(item: $patternToActivate) { pattern in
             ActivateDatePickerSheet(
                 patternName: pattern.name,
@@ -184,11 +193,9 @@ struct PatternListView: View {
 
     private func addToQueue(_ pattern: KondatePattern) {
         if queuedPatterns.isEmpty {
-            // まだActiveなPatternがない場合は日付指定用のシートを表示
             selectedStartDate = Date()
             patternToActivate = pattern
         } else {
-            // すでにQueueがある場合はそのまま追加
             let nextOrder = queuedPatterns.count
             pattern.queueOrder = nextOrder
             pattern.isActive = false
@@ -247,7 +254,6 @@ struct PatternListView: View {
     }
 }
 
-// MARK: - Start Date
 private struct ActivateDatePickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     let patternName: String

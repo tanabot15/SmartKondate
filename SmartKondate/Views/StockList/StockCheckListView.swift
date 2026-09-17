@@ -2,8 +2,6 @@
 //  StockCheckListView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/08/06.
-//
 
 import SwiftUI
 import SwiftData
@@ -14,87 +12,67 @@ struct StockCheckListView: View {
 
     @State private var isShowingAddSheet = false
     @State private var newItemName = ""
-    @State private var newItemCategory: StockCategory = .pantry // String から StockCategory へ変更
+    @State private var newItemCategory: StockCategory = .pantry
 
     var body: some View {
-        List {
-            // MARK: - Shopping List Navigation Section
-            Section {
-                NavigationLink {
-                    ShoppingListView()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "cart.fill")
-                            .font(.title2)
-                            .foregroundStyle(Color.accentColor)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Shopping List")
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                            Text("Check ingredients needed for scheduled meals")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
+        Group {
+            if stockItems.isEmpty {
+                ContentUnavailableView {
+                    Label("No Stock Items", systemImage: "archivebox")
+                } description: {
+                    Text("Tap + to add stock items to manage in your pantry.")
+                        .foregroundStyle(.secondary)
                 }
-            }
+            } else {
+                List {
+                    // MARK: - Stock Items Section
+                    ForEach(StockCategory.allCases) { category in
+                        let itemsInCategory = stockItems.filter { $0.category == category }
+                        if !itemsInCategory.isEmpty {
+                            Section(header: Text(category.rawValue)) {
+                                ForEach(itemsInCategory) { item in
+                                    Button {
+                                        toggleStockStatus(item)
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: item.isOut ? "checkmark.circle.fill" : "circle")
+                                                .foregroundStyle(item.isOut ? Color.accentColor : .secondary)
+                                                .font(.title3)
 
-            // MARK: - Stock Items Section
-            ForEach(StockCategory.allCases) { category in
-                let itemsInCategory = stockItems.filter { $0.category == category }
-                if !itemsInCategory.isEmpty {
-                    Section(header: Text(category.rawValue)) {
-                        ForEach(itemsInCategory) { item in
-                            Button {
-                                toggleStockStatus(item)
-                            } label: {
-                                HStack {
-                                    Image(systemName: item.isOut ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(item.isOut ? Color.accentColor : .secondary)
-                                        .font(.title3)
+                                            Text(item.name)
+                                                .foregroundStyle(.primary)
 
-                                    Text(item.name)
-                                        .foregroundStyle(.primary)
+                                            Spacer()
 
-                                    Spacer()
-
-                                    if item.isOut {
-                                        Text("Need to Buy")
-                                            .font(.caption2)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.orange.opacity(0.15))
-                                            .foregroundStyle(.orange)
-                                            .clipShape(Capsule())
+                                            if item.isOut {
+                                                Text("Need to Buy")
+                                                    .font(.caption2)
+                                                    .padding(.horizontal, 6)
+                                                    .padding(.vertical, 2)
+                                                    .background(Color.orange.opacity(0.15))
+                                                    .foregroundStyle(.orange)
+                                                    .clipShape(Capsule())
+                                            }
+                                        }
                                     }
+                                }
+                                .onDelete { offsets in
+                                    deleteItems(at: offsets, in: itemsInCategory)
                                 }
                             }
                         }
-                        .onDelete { offsets in
-                            deleteItems(at: offsets, in: itemsInCategory)
-                        }
                     }
                 }
+                .listStyle(.insetGrouped)
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Stock")
+        .navigationTitle("Stock Checklist")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 12) {
-                    NavigationLink {
-                        ShoppingListView()
-                    } label: {
-                        Image(systemName: "cart")
-                    }
-
-                    Button {
-                        isShowingAddSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
+                Button {
+                    isShowingAddSheet = true
+                } label: {
+                    Image(systemName: "plus")
                 }
             }
         }
@@ -141,7 +119,6 @@ struct StockCheckListView: View {
         let trimmed = newItemName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         
-        // newItemCategory (StockCategory) をそのまま渡す
         let item = StockItem(name: trimmed, category: newItemCategory, isOut: true)
         modelContext.insert(item)
         resetInput()

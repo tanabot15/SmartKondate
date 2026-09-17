@@ -2,8 +2,6 @@
 //  DashboardView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/08/06.
-//
 
 import SwiftUI
 import SwiftData
@@ -32,79 +30,80 @@ struct DashboardView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                if queuedPatterns.isEmpty {
-                    ContentUnavailableView {
-                        Label("No Scheduled Patterns", systemImage: "calendar.badge.exclamationmark")
-                    } description: {
-                        Text("Please add patterns to the Queue in the Patterns tab.")
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 40)
-                } else {
-                    ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
-                        let patternStartDate = startDate(for: index)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            // MARK: - Pattern Section Header
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack(spacing: 8) {
-                                    Text(pattern.name)
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundStyle(.primary)
+        Group {
+            if queuedPatterns.isEmpty {
+                ContentUnavailableView {
+                    Label("No Scheduled Patterns", systemImage: "arrow.triangle.2.circlepath")
+                } description: {
+                    Text("Add patterns to the queue in the Patterns tab.")
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
+                            let patternStartDate = startDate(for: index)
+                            
+                            VStack(alignment: .leading, spacing: 12) {
+                                // MARK: - Pattern Section Header
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 8) {
+                                        Text(pattern.name)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundStyle(.primary)
 
-                                    if index == 0 {
-                                        Text("Now Active")
-                                            .font(.caption2)
-                                            .fontWeight(.bold)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 3)
-                                            .background(Color.accentColor)
-                                            .foregroundStyle(.white)
-                                            .clipShape(Capsule())
-                                    } else {
-                                        Text("Queue #\(index)")
-                                            .font(.caption2)
-                                            .fontWeight(.bold)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 3)
-                                            .background(Color.secondary.opacity(0.2))
-                                            .foregroundStyle(.secondary)
-                                            .clipShape(Capsule())
+                                        if index == 0 {
+                                            Text("Now Active")
+                                                .font(.caption2)
+                                                .fontWeight(.bold)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 3)
+                                                .background(Color.accentColor)
+                                                .foregroundStyle(.white)
+                                                .clipShape(Capsule())
+                                        } else {
+                                            Text("Queue #\(index)")
+                                                .font(.caption2)
+                                                .fontWeight(.bold)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 3)
+                                                .background(Color.secondary.opacity(0.2))
+                                                .foregroundStyle(.secondary)
+                                                .clipShape(Capsule())
+                                        }
                                     }
+
+                                    Text("\(pattern.durationDays) Days Cycle")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
+                                .background(Color(.secondarySystemGroupedBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                                Text("\(pattern.durationDays) Days Cycle")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color(.secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                // MARK: - Days List in Pattern
+                                ForEach(0..<pattern.durationDays, id: \.self) { dayIndex in
+                                    let date = Calendar.current.date(byAdding: .day, value: dayIndex, to: patternStartDate) ?? patternStartDate
+                                    let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern)
 
-                            // MARK: - Days List in Pattern
-                            ForEach(0..<pattern.durationDays, id: \.self) { dayIndex in
-                                let date = Calendar.current.date(byAdding: .day, value: dayIndex, to: patternStartDate) ?? patternStartDate
-                                let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern)
-
-                                MealCardView(
-                                    dayIndex: dayIndex,
-                                    date: date,
-                                    diffResults: diffResults,
-                                    availableMenus: availableMenus,
-                                    onSelectMenus: { mealType, newMenus in
-                                        updateCustomMenus(patternID: pattern.id, dayIndex: dayIndex, mealType: mealType, with: newMenus)
-                                    }
-                                )
+                                    MealCardView(
+                                        dayIndex: dayIndex,
+                                        date: date,
+                                        diffResults: diffResults,
+                                        availableMenus: availableMenus,
+                                        onSelectMenus: { mealType, newMenus in
+                                            updateCustomMenus(patternID: pattern.id, dayIndex: dayIndex, mealType: mealType, with: newMenus)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+                    .padding()
                 }
             }
-            .padding()
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Dashboard")

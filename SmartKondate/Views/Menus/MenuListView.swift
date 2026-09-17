@@ -2,8 +2,6 @@
 //  MenuListView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/08/06.
-//
 
 import SwiftUI
 import SwiftData
@@ -13,7 +11,7 @@ struct MenuListView: View {
     @Query(sort: \Menu.createdAt, order: .reverse) private var menus: [Menu]
     
     @State private var searchText = ""
-    @State private var selectedCategory: MenuCategory? = nil // nil を「すべて」として扱う
+    @State private var selectedCategory: MenuCategory? = nil
     @State private var isShowingEditor = false
     @State private var selectedMenuForEdit: Menu?
     
@@ -133,7 +131,7 @@ struct MenuListView: View {
 
     let menu1 = Menu(
         name: "Toast & Fried Eggs",
-        category: .other, // "Breakfast" から .other 等の定義済Enumへ修正
+        category: .other,
         source: "Breakfast Cookbook p.15"
     )
     let ing1 = Ingredient(name: "Bread", quantity: 2, unit: "slices")
@@ -142,7 +140,7 @@ struct MenuListView: View {
 
     let menu2 = Menu(
         name: "Chicken Teriyaki Bowl",
-        category: .main, // StringからMenuCategoryへ修正
+        category: .main,
         source: "https://example.com/recipes/teriyaki"
     )
     let ing3 = Ingredient(name: "Chicken Thigh", quantity: 150, unit: "g")

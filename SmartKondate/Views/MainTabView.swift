@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  MainTabView.swift
 //  SmartKondate
 //
 //  Created by Kenichiro Suzuki on 2026/08/06.
@@ -16,7 +16,7 @@ struct MainTabView: View {
     enum Tab {
         case dashboard
         case patterns
-        case menus
+        case shopping
         case stock
         case settings
     }
@@ -35,23 +35,23 @@ struct MainTabView: View {
                 PatternListView()
             }
             .tabItem {
-                Label("Patterns", systemImage: "calendar.day.timeline.left")
+                Label("Patterns", systemImage: "slider.horizontal.2.rectangle.and.arrow.trianglehead.2.clockwise.rotate.90")
             }
             .tag(Tab.patterns)
             
             NavigationStack {
-                MenuListView()
+                ShoppingListView()
             }
             .tabItem {
-                Label("Menus", systemImage: "fork.knife")
+                Label("Shopping", systemImage: "cart.fill")
             }
-            .tag(Tab.menus)
+            .tag(Tab.shopping)
             
             NavigationStack {
                 StockCheckListView()
             }
             .tabItem {
-                Label("Stock", systemImage: "checklist")
+                Label("Stock", systemImage: "refrigerator.fill")
             }
             .tag(Tab.stock)
             
@@ -63,7 +63,6 @@ struct MainTabView: View {
             }
             .tag(Tab.settings)
         }
-        // OnboardingView
         .fullScreenCover(isPresented: Binding(
             get: { !hasCompletedOnboarding },
             set: { hasCompletedOnboarding = !$0 }
