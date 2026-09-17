@@ -27,9 +27,7 @@ final class Ingredient {
     var quantity: Double = 0.0
     var unit: String = ""
     var category: IngredientCategory = IngredientCategory.other
-    
     var menu: Menu?
-
     var amountText: String {
         guard quantity > 0 else { return "" }
         let formattedQuantity = quantity.truncatingRemainder(dividingBy: 1) == 0

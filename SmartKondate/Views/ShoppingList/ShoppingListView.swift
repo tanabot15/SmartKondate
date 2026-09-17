@@ -85,16 +85,16 @@ struct ShoppingListView: View {
         return result
     }
 
-    // MARK: - 同じ材料・単位を足し合わせるグループ化プロパティ
+    // MARK: - Aggregated Items Property
     private var aggregatedItems: [ShoppingIngredientItem] {
-        var groupedDict: [String: (name: String, quantity: Double, unit: String, menus: Set<String>, isModified: Bool)] = [:]
+        var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool)] = [:]
 
         for item in rawIngredientItems {
             let name = item.ingredient.name.trimmingCharacters(in: .whitespaces)
             guard !name.isEmpty else { continue }
             
             let unit = item.ingredient.unit.trimmingCharacters(in: .whitespaces)
-            let groupKey = "\(name.lowercased())_\(unit.lowercased())_\(item.isModified)"
+            let groupKey = "\(name.lowercased())_\(unit.lowercased())_\(item.ingredient.category.rawValue)_\(item.isModified)"
 
             if var existing = groupedDict[groupKey] {
                 existing.quantity += item.ingredient.quantity
@@ -105,6 +105,7 @@ struct ShoppingListView: View {
                     name: name,
                     quantity: item.ingredient.quantity,
                     unit: unit,
+                    category: item.ingredient.category,
                     menus: [item.menuName],
                     isModified: item.isModified
                 )
@@ -112,13 +113,14 @@ struct ShoppingListView: View {
         }
 
         return groupedDict.map { (key, value) in
-            let tempIng = Ingredient(name: value.name, quantity: value.quantity, unit: value.unit)
+            let tempIng = Ingredient(name: value.name, quantity: value.quantity, unit: value.unit, category: value.category)
             let sortedMenus = value.menus.sorted().joined(separator: ", ")
 
             return ShoppingIngredientItem(
                 id: key,
                 ingredientName: value.name,
                 amountText: tempIng.amountText,
+                category: value.category,
                 menuDetails: sortedMenus,
                 isModifiedMeal: value.isModified
             )
@@ -132,6 +134,17 @@ struct ShoppingListView: View {
 
     private var standardItems: [ShoppingIngredientItem] {
         aggregatedItems.filter { !$0.isModifiedMeal }
+    }
+
+    // カテゴリごとにグループ化された標準の食材リスト
+    private var standardItemsByCategory: [(category: IngredientCategory, items: [ShoppingIngredientItem])] {
+        let grouped = Dictionary(grouping: standardItems, by: { $0.category })
+        return IngredientCategory.allCases.compactMap { category in
+            if let items = grouped[category], !items.isEmpty {
+                return (category: category, items: items)
+            }
+            return nil
+        }
     }
 
     var body: some View {
@@ -250,9 +263,9 @@ struct ShoppingListView: View {
                     }
                 }
 
-                if !standardItems.isEmpty {
-                    Section(header: Text(shoppingMode == .date ? "Standard Meal Ingredients" : "Pattern Ingredients")) {
-                        ForEach(standardItems) { item in
+                ForEach(standardItemsByCategory, id: \.category) { section in
+                    Section(header: Text(section.category.rawValue)) {
+                        ForEach(section.items) { item in
                             DiffIngredientRow(
                                 ingredientName: item.ingredientName,
                                 amountText: item.amountText,
@@ -302,6 +315,7 @@ struct ShoppingIngredientItem: Identifiable {
     let id: String
     let ingredientName: String
     let amountText: String
+    let category: IngredientCategory
     let menuDetails: String
     let isModifiedMeal: Bool
 }
@@ -317,16 +331,17 @@ struct ShoppingIngredientItem: Identifiable {
     let pattern = KondatePattern(name: "Standard Weekly", durationDays: 7, isActive: true, queueOrder: 0)
     context.insert(pattern)
 
-    let ing1 = Ingredient(name: "Chicken Thigh", quantity: 300, unit: "g")
-    let ing2 = Ingredient(name: "Onion", quantity: 2, unit: "pcs")
-    let ing3 = Ingredient(name: "Egg", quantity: 4, unit: "pcs")
+    let ing1 = Ingredient(name: "Chicken Thigh", quantity: 300, unit: "g", category: .meatAndFish)
+    let ing2 = Ingredient(name: "Onion", quantity: 2, unit: "pcs", category: .produce)
+    let ing3 = Ingredient(name: "Egg", quantity: 4, unit: "pcs", category: .chilledAndDairy)
+    let ing4 = Ingredient(name: "Soy Sauce", quantity: 2, unit: "tbsp", category: .pantryAndGrain)
+    let ing5 = Ingredient(name: "Aluminum Foil", quantity: 1, unit: "roll", category: .other)
     
-    // category を Enum 型 (MenuCategory) に変更
     let menu1 = Menu(name: "Chicken Teriyaki Bowl", category: .main)
-    menu1.ingredients = [ing1, ing2]
+    menu1.ingredients = [ing1, ing2, ing4]
 
     let menu2 = Menu(name: "Omelette", category: .main)
-    menu2.ingredients = [ing3]
+    menu2.ingredients = [ing3, ing5]
 
     let menus = [menu1, menu2]
     menus.forEach { context.insert($0) }
@@ -335,12 +350,8 @@ struct ShoppingIngredientItem: Identifiable {
     day1.pattern = pattern
     context.insert(day1)
 
-    // category を Enum 型 (StockCategory) に変更
-    let stock1 = StockItem(name: "Egg", category: .pantry, isOut: false)
-    let stock2 = StockItem(name: "Soy Sauce", category: .seasoning, isOut: true)
-
-    let stocks = [stock1, stock2]
-    stocks.forEach { context.insert($0) }
+    let stock1 = StockItem(name: "Pepper", category: .seasoning, isOut: true)
+    context.insert(stock1)
 
     return NavigationStack {
         ShoppingListView()

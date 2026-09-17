@@ -35,16 +35,12 @@ struct SettingsView: View {
                 .pickerStyle(.menu)
             }
 
-            // MARK: - 2. Data Transfer (JSON Export / Import)
-            Section(header: Text("Backup & Sharing")) {
-
-            }
-
-            // MARK: - 3. Data Management
+            // MARK: - 2. Data Management
             Section(header: Text("Data Management")) {
                 // Preset data
                 HStack {
-                    Text("Restore Preset")
+                    Label("Restore Preset", systemImage: "arrow.counterclockwise")
+                        .foregroundStyle(.primary)
                     Spacer()
                     SwiftUI.Menu {
                         ForEach(PresetType.allCases) { preset in
@@ -62,30 +58,33 @@ struct SettingsView: View {
                         .foregroundStyle(.tint)
                     }
                 }
-
-                // Delete Data
-                Button(role: .destructive) {
-                    isShowingDeleteConfirmation = true
-                } label: {
-                    Text("Delete All Data")
-                }
                 
                 // Export Data
                 Button {
                     exportData()
                 } label: {
-                    Text("Export Data")
+                    Label("Export Data", systemImage: "square.and.arrow.up")
+                        .foregroundStyle(.primary)
                 }
 
                 // Import Data
                 Button {
                     isShowingFileImporter = true
                 } label: {
-                    Text("Import Data")
+                    Label("Import Data", systemImage: "square.and.arrow.down")
+                        .foregroundStyle(.primary)
+                }
+                
+                // Delete Data
+                Button(role: .destructive) {
+                    isShowingDeleteConfirmation = true
+                } label: {
+                    Label("Delete All Data", systemImage: "trash")
+                        .foregroundStyle(.red)
                 }
             }
 
-            // MARK: - 4. App Info
+            // MARK: - 3. App Info
             Section(header: Text("About")) {
                 HStack {
                     Text("Version")
