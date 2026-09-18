@@ -20,81 +20,88 @@ struct DiffIngredientRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // MARK: - Check Status
-            Button(action: onToggle) {
-                Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isChecked ? Color.accentColor : Color.secondary)
-            }
-            .buttonStyle(.plain)
+            checkButton
+            detailsView
+            Spacer()
+            quantityBadgeButton
+        }
+        .padding(.vertical, 2)
+    }
 
-            // MARK: - Ingredient Details
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(ingredientName)
-                        .font(.body)
-                        .fontWeight(isModifiedMeal ? .bold : .regular)
-                        .foregroundStyle(isChecked ? .secondary : .primary)
-                        .strikethrough(isChecked)
+    // MARK: - Subviews for Compiler Optimization
+    private var checkButton: some View {
+        Button(action: onToggle) {
+            Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
+                .font(.title3)
+                .foregroundStyle(isChecked ? Color.accentColor : Color.secondary)
+        }
+        .buttonStyle(.plain)
+    }
 
-                    if isModifiedMeal {
-                        Text("Changed")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.accentColor.opacity(0.15))
-                            .foregroundStyle(Color.accentColor)
-                            .clipShape(Capsule())
-                    }
+    private var detailsView: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Text(ingredientName)
+                    .font(.body)
+                    .fontWeight(isModifiedMeal ? .bold : .regular)
+                    .foregroundStyle(isChecked ? .secondary : .primary)
+                    .strikethrough(isChecked)
+
+                if isModifiedMeal {
+                    Text("Changed")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.accentColor.opacity(0.15))
+                        .foregroundStyle(Color.accentColor)
+                        .clipShape(Capsule())
                 }
+            }
 
-                if !menuDetails.isEmpty {
-                    Text(menuDetails)
-                        .font(.caption)
+            if !menuDetails.isEmpty {
+                Text(menuDetails)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var quantityBadgeButton: some View {
+        Button {
+            editingText = formatQuantity(quantity)
+            showEditPopover = true
+        } label: {
+            HStack(spacing: 3) {
+                Text(formatQuantity(quantity))
+                    .font(.body)
+                    .fontWeight(.bold)
+                
+                if !unit.isEmpty {
+                    Text(unit)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
             }
-
-            Spacer()
-
-            // MARK: - Tap to Edit Quantity (Clean Badge Style)
-            Button {
-                editingText = formatQuantity(quantity)
-                showEditPopover = true
-            } label: {
-                HStack(spacing: 3) {
-                    Text(formatQuantity(quantity))
-                        .font(.body)
-                        .fontWeight(.bold)
-                    
-                    if !unit.isEmpty {
-                        Text(unit)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .foregroundStyle(isChecked ? .secondary : Color.accentColor)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color(.tertiarySystemFill))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-            .popover(isPresented: $showEditPopover) {
-                QuantityEditPopover(
-                    ingredientName: ingredientName,
-                    unit: unit,
-                    quantityText: $editingText,
-                    onSave: { newQty in
-                        onQuantityChange(newQty)
-                        showEditPopover = false
-                    }
-                )
-                .presentationCompactAdaptation(.popover)
-            }
+            .foregroundStyle(isChecked ? .secondary : Color.accentColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Color(.tertiarySystemFill))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .padding(.vertical, 2)
+        .buttonStyle(.plain)
+        .popover(isPresented: $showEditPopover) {
+            QuantityEditPopover(
+                ingredientName: ingredientName,
+                unit: unit,
+                quantityText: $editingText,
+                onSave: { newQty in
+                    onQuantityChange(newQty)
+                    showEditPopover = false
+                }
+            )
+            .presentationCompactAdaptation(.popover)
+        }
     }
 
     private func formatQuantity(_ val: Double) -> String {
@@ -115,7 +122,6 @@ private struct QuantityEditPopover: View {
 
     @FocusState private var isTextFieldFocused: Bool
 
-    // 単位に応じた最適なステップ幅の算出
     private var stepAmount: Double {
         let u = unit.lowercased().trimmingCharacters(in: .whitespaces)
         if u == "g" || u == "ml" {
@@ -134,52 +140,8 @@ private struct QuantityEditPopover: View {
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)
 
-            // MARK: - Unified Input ( - [TextField] + )
-            HStack(spacing: 12) {
-                Button {
-                    adjustAmount(by: -stepAmount)
-                } label: {
-                    Image(systemName: "minus")
-                        .font(.body.bold())
-                        .frame(width: 36, height: 36)
-                        .background(Color(.secondarySystemFill))
-                        .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
+            inputStepperRow
 
-                HStack(spacing: 4) {
-                    TextField("0", text: $quantityText)
-                        .keyboardType(.decimalPad)
-                        .focused($isTextFieldFocused)
-                        .multilineTextAlignment(.center)
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .frame(minWidth: 50, maxWidth: 90)
-
-                    if !unit.isEmpty {
-                        Text(unit)
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color(.tertiarySystemFill))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                Button {
-                    adjustAmount(by: stepAmount)
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.body.bold())
-                        .frame(width: 36, height: 36)
-                        .background(Color(.secondarySystemFill))
-                        .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
-            }
-
-            // MARK: - Save Action
             Button {
                 if let val = Double(quantityText) {
                     onSave(max(0, val))
@@ -197,6 +159,52 @@ private struct QuantityEditPopover: View {
         .frame(minWidth: 220)
         .onAppear {
             isTextFieldFocused = true
+        }
+    }
+
+    private var inputStepperRow: some View {
+        HStack(spacing: 12) {
+            Button {
+                adjustAmount(by: -stepAmount)
+            } label: {
+                Image(systemName: "minus")
+                    .font(.body.bold())
+                    .frame(width: 36, height: 36)
+                    .background(Color(.secondarySystemFill))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            HStack(spacing: 4) {
+                TextField("0", text: $quantityText)
+                    .keyboardType(.decimalPad)
+                    .focused($isTextFieldFocused)
+                    .multilineTextAlignment(.center)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .frame(minWidth: 50, maxWidth: 90)
+
+                if !unit.isEmpty {
+                    Text(unit)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(.tertiarySystemFill))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            Button {
+                adjustAmount(by: stepAmount)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.body.bold())
+                    .frame(width: 36, height: 36)
+                    .background(Color(.secondarySystemFill))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
         }
     }
 

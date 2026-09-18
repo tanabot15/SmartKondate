@@ -127,6 +127,15 @@ struct ShoppingSetupView: View {
             }
         }
         .navigationTitle("Shopping List Setup")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    SavedShoppingListView()
+                } label: {
+                    Image(systemName: "folder")
+                }
+            }
+        }
         .onAppear {
             if selectedPatternID == nil {
                 selectedPatternID = activePattern?.id ?? allPatterns.first?.id
@@ -278,40 +287,13 @@ private struct AddSourcePopoverView: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self,
+        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self, SavedShoppingList.self, SavedIngredientItem.self,
         configurations: config
     )
     let context = container.mainContext
 
-    // 1. Create Patterns
     let pattern1 = KondatePattern(name: "Standard Weekly Plan", durationDays: 7, isActive: true, queueOrder: 0)
-    let pattern2 = KondatePattern(name: "Low Carb Weekend", durationDays: 3, isActive: false, queueOrder: 1)
     context.insert(pattern1)
-    context.insert(pattern2)
-
-    // 2. Create Ingredients & Menus
-    let ingPork = Ingredient(name: "Pork Belly", quantity: 250, unit: "g", category: .meatAndFish)
-    let ingCabbage = Ingredient(name: "Cabbage", quantity: 0.5, unit: "head", category: .produce)
-    let ingMiso = Ingredient(name: "Miso Paste", quantity: 2, unit: "tbsp", category: .pantryAndGrain)
-    
-    let menuStirFry = Menu(name: "Pork & Cabbage Stir-Fry", category: .main)
-    menuStirFry.ingredients = [ingPork, ingCabbage, ingMiso]
-
-    let ingSalmon = Ingredient(name: "Salmon Fillet", quantity: 2, unit: "pcs", category: .meatAndFish)
-    let ingRice = Ingredient(name: "Rice", quantity: 2, unit: "cups", category: .pantryAndGrain)
-
-    let menuSalmon = Menu(name: "Grilled Salmon Rice", category: .main)
-    menuSalmon.ingredients = [ingSalmon, ingRice]
-
-    [menuStirFry, menuSalmon].forEach { context.insert($0) }
-
-    // 3. Create Pattern Days
-    let day1 = PatternDay(dayIndex: 0, breakfastMenus: [], lunchMenus: [menuSalmon], dinnerMenus: [menuStirFry])
-    day1.pattern = pattern1
-    let day2 = PatternDay(dayIndex: 1, breakfastMenus: [], lunchMenus: [menuStirFry], dinnerMenus: [])
-    day2.pattern = pattern1
-
-    [day1, day2].forEach { context.insert($0) }
 
     return NavigationStack {
         ShoppingSetupView()

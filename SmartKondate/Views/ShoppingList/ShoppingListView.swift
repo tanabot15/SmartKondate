@@ -10,11 +10,14 @@ struct ShoppingListView: View {
     let config: ShoppingListConfig
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query private var allStockItems: [StockItem]
 
     @State private var checkedIngredientKeys: Set<String> = []
     @State private var customQuantities: [String: Double] = [:]
+    @State private var showCopiedToast = false
+    @State private var showSavedToast = false
 
     private var activePattern: KondatePattern? {
         allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
@@ -28,7 +31,6 @@ struct ShoppingListView: View {
     private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool)] {
         var result: [(Ingredient, String, Bool)] = []
 
-        // 1. Base Pattern Extraction
         if let pattern = config.selectedPattern {
             for dayIndex in 0..<pattern.durationDays {
                 guard config.selectedDayIndices.contains(dayIndex) else { continue }
@@ -51,7 +53,6 @@ struct ShoppingListView: View {
             }
         }
 
-        // 2. Extra Sources Extraction
         for source in config.extraSources {
             switch source {
             case .date(let date):
@@ -166,149 +167,300 @@ struct ShoppingListView: View {
         aggregatedItems.filter { !$0.isModifiedMeal }
     }
 
-    private var standardItemsByCategory: [(category: IngredientCategory, items: [ShoppingIngredientItem])] {
-        let grouped = Dictionary(grouping: standardItems, by: { $0.category })
-        return IngredientCategory.allCases.compactMap { category in
+    private var standardItemsByCategory: [ShoppingCategoryGroup] {
+        let grouped: [IngredientCategory: [ShoppingIngredientItem]] = Dictionary(grouping: standardItems, by: { $0.category })
+        var result: [ShoppingCategoryGroup] = []
+        
+        for category in IngredientCategory.allCases {
             if let items = grouped[category], !items.isEmpty {
-                return (category: category, items: items)
+                result.append(ShoppingCategoryGroup(category: category, items: items))
             }
-            return nil
         }
+        return result
+    }
+
+    // MARK: - Exportable Plain Text Generation
+    private var formattedTextForSharing: String {
+        var text = "【買い物リスト】\n"
+
+        if let pattern = config.selectedPattern {
+            text += "対象: \(pattern.name) (\(config.selectedDayIndices.count)日分)\n"
+        }
+        text += "\n"
+
+        if !outOfStockItems.isEmpty {
+            text += "■ 不足中の在庫 (要補充)\n"
+            for stock in outOfStockItems {
+                text += "・\(stock.name)\n"
+            }
+            text += "\n"
+        }
+
+        if !modifiedItems.isEmpty {
+            text += "■ 変更・追加メニュー分\n"
+            for item in modifiedItems {
+                let qtyStr = formatQuantity(item.quantity)
+                let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                text += "・\(item.ingredientName): \(qtyStr)\(unitStr)\n"
+            }
+            text += "\n"
+        }
+
+        for group in standardItemsByCategory {
+            text += "■ \(group.category.rawValue)\n"
+            for item in group.items {
+                let qtyStr = formatQuantity(item.quantity)
+                let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                text += "・\(item.ingredientName): \(qtyStr)\(unitStr)\n"
+            }
+            text += "\n"
+        }
+
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var body: some View {
-        List {
-            // MARK: - Selected Conditions Summary
-            Section {
-                VStack(alignment: .leading, spacing: 6) {
-                    if let pattern = config.selectedPattern {
-                        Label("\(pattern.name) (\(config.selectedDayIndices.count) days)", systemImage: "calendar")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    if !config.extraSources.isEmpty {
-                        Label("\(config.extraSources.count) extra additions included", systemImage: "plus.circle")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+        ZStack {
+            List {
+                summarySection
+                
+                if !outOfStockItems.isEmpty {
+                    outOfStockSection
                 }
-            } header: {
-                Text("Target Target Criteria")
-            }
 
-            // MARK: - Out of Stock Items
-            if !outOfStockItems.isEmpty {
-                Section {
-                    ForEach(outOfStockItems) { stockItem in
-                        Button {
-                            toggleStockBought(stockItem)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "circle")
-                                    .font(.title3)
-                                    .foregroundStyle(Color.secondary)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(stockItem.name)
-                                        .font(.body)
-                                        .foregroundStyle(.primary)
-
-                                    Text(stockItem.category.rawValue)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer()
-
-                                Text("Stock Out")
-                                    .font(.caption2)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.orange.opacity(0.15))
-                                    .foregroundStyle(.orange)
-                                    .clipShape(Capsule())
-                            }
-                        }
+                if aggregatedItems.isEmpty && outOfStockItems.isEmpty {
+                    emptyStateSection
+                } else {
+                    if !modifiedItems.isEmpty {
+                        modifiedItemsSection
                     }
-                } header: {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                        Text("Out of Stock (Refill Needed)")
-                            .foregroundStyle(.orange)
-                            .fontWeight(.bold)
-                    }
+
+                    standardItemsSections
                 }
             }
+            .listStyle(.insetGrouped)
 
-            // MARK: - Aggregated Ingredients List
-            if aggregatedItems.isEmpty && outOfStockItems.isEmpty {
-                ContentUnavailableView {
-                    Label("No Ingredients Needed", systemImage: "cart")
-                } description: {
-                    Text("No ingredients match the selected setup.")
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                if !modifiedItems.isEmpty {
-                    Section {
-                        ForEach(modifiedItems) { item in
-                            DiffIngredientRow(
-                                ingredientName: item.ingredientName,
-                                quantity: item.quantity,
-                                unit: item.unit,
-                                menuDetails: item.menuDetails,
-                                isModifiedMeal: true,
-                                isChecked: checkedIngredientKeys.contains(item.id),
-                                onToggle: { toggleCheck(for: item.id) },
-                                onQuantityChange: { newQty in
-                                    customQuantities[item.id] = newQty
-                                }
-                            )
-                        }
-                    } header: {
-                        HStack {
-                            Image(systemName: "sparkles")
-                                .foregroundStyle(Color.accentColor)
-                            Text("Modified / Added Meal Ingredients")
-                                .foregroundStyle(Color.accentColor)
-                                .fontWeight(.bold)
-                        }
-                    }
-                }
-
-                ForEach(standardItemsByCategory, id: \.category) { section in
-                    Section(header: Text(section.category.rawValue)) {
-                        ForEach(section.items) { item in
-                            DiffIngredientRow(
-                                ingredientName: item.ingredientName,
-                                quantity: item.quantity,
-                                unit: item.unit,
-                                menuDetails: item.menuDetails,
-                                isModifiedMeal: false,
-                                isChecked: checkedIngredientKeys.contains(item.id),
-                                onToggle: { toggleCheck(for: item.id) },
-                                onQuantityChange: { newQty in
-                                    customQuantities[item.id] = newQty
-                                }
-                            )
-                        }
-                    }
-                }
+            if showCopiedToast {
+                toastView(message: "Copied to clipboard", icon: "checkmark.circle.fill", color: .green)
+            } else if showSavedToast {
+                toastView(message: "Saved to Shopping Lists", icon: "square.and.arrow.down.fill", color: .blue)
             }
         }
-        .listStyle(.insetGrouped)
         .navigationTitle("Shopping List")
         .toolbar {
             if !checkedIngredientKeys.isEmpty {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Clear Checks") {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Clear") {
                         checkedIngredientKeys.removeAll()
                     }
-                    .font(.subheadline)
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    saveShoppingList()
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                ShareLink(item: formattedTextForSharing) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    copyToClipboard()
+                } label: {
+                    Image(systemName: "doc.on.doc")
                 }
             }
         }
+    }
+
+    private func copyToClipboard() {
+        UIPasteboard.general.string = formattedTextForSharing
+        withAnimation {
+            showCopiedToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation {
+                showCopiedToast = false
+            }
+        }
+    }
+
+    // MARK: - Save Action
+    private func saveShoppingList() {
+        let titleName = config.selectedPattern?.name ?? "Shopping List"
+        let title = "\(titleName) (\(Date().formatted(date: .numeric, time: .omitted)))"
+        
+        let savedList = SavedShoppingList(title: title)
+        
+        var savedItems: [SavedIngredientItem] = []
+        
+        for item in aggregatedItems {
+            let savedItem = SavedIngredientItem(
+                name: item.ingredientName,
+                quantity: item.quantity,
+                unit: item.unit,
+                categoryRawValue: item.category.rawValue,
+                menuDetails: item.menuDetails,
+                isChecked: checkedIngredientKeys.contains(item.id),
+                isModifiedMeal: item.isModifiedMeal
+            )
+            savedItem.shoppingList = savedList
+            savedItems.append(savedItem)
+        }
+        
+        savedList.items = savedItems
+        modelContext.insert(savedList)
+        
+        withAnimation {
+            showSavedToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation {
+                showSavedToast = false
+            }
+        }
+    }
+
+    // MARK: - Subviews & Builder Methods
+    private var summarySection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                if let pattern = config.selectedPattern {
+                    Label("\(pattern.name) (\(config.selectedDayIndices.count) days)", systemImage: "calendar")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if !config.extraSources.isEmpty {
+                    Label("\(config.extraSources.count) extra additions included", systemImage: "plus.circle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text("Target Criteria")
+        }
+    }
+
+    private var outOfStockSection: some View {
+        Section {
+            ForEach(outOfStockItems) { stockItem in
+                Button {
+                    toggleStockBought(stockItem)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "circle")
+                            .font(.title3)
+                            .foregroundStyle(Color.secondary)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(stockItem.name)
+                                .font(.body)
+                                .foregroundStyle(.primary)
+
+                            Text(stockItem.category.rawValue)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Text("Stock Out")
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.orange.opacity(0.15))
+                            .foregroundStyle(.orange)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+        } header: {
+            HStack {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                Text("Out of Stock (Refill Needed)")
+                    .foregroundStyle(.orange)
+                    .fontWeight(.bold)
+            }
+        }
+    }
+
+    private var emptyStateSection: some View {
+        ContentUnavailableView {
+            Label("No Ingredients Needed", systemImage: "cart")
+        } description: {
+            Text("No ingredients match the selected setup.")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var modifiedItemsSection: some View {
+        Section {
+            ForEach(modifiedItems) { item in
+                ingredientRow(for: item, isModified: true)
+            }
+        } header: {
+            HStack {
+                Image(systemName: "sparkles")
+                    .foregroundStyle(Color.accentColor)
+                Text("Modified / Added Meal Ingredients")
+                    .foregroundStyle(Color.accentColor)
+                    .fontWeight(.bold)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var standardItemsSections: some View {
+        ForEach(standardItemsByCategory) { group in
+            Section(header: Text(group.category.rawValue)) {
+                ForEach(group.items) { item in
+                    ingredientRow(for: item, isModified: false)
+                }
+            }
+        }
+    }
+
+    private func ingredientRow(for item: ShoppingIngredientItem, isModified: Bool) -> some View {
+        DiffIngredientRow(
+            ingredientName: item.ingredientName,
+            quantity: item.quantity,
+            unit: item.unit,
+            menuDetails: item.menuDetails,
+            isModifiedMeal: isModified,
+            isChecked: checkedIngredientKeys.contains(item.id),
+            onToggle: { toggleCheck(for: item.id) },
+            onQuantityChange: { newQty in
+                customQuantities[item.id] = newQty
+            }
+        )
+    }
+
+    private func toastView(message: String, icon: String, color: Color) -> some View {
+        VStack {
+            Spacer()
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                Text(message)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+            .shadow(radius: 4)
+            .padding(.bottom, 20)
+        }
+        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     private func toggleCheck(for key: String) {
@@ -322,6 +474,21 @@ struct ShoppingListView: View {
     private func toggleStockBought(_ item: StockItem) {
         item.isOut = false
     }
+
+    private func formatQuantity(_ val: Double) -> String {
+        if val.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", val)
+        } else {
+            return String(format: "%.1f", val)
+        }
+    }
+}
+
+// MARK: - Helper Structs
+struct ShoppingCategoryGroup: Identifiable {
+    var id: String { category.rawValue }
+    let category: IngredientCategory
+    let items: [ShoppingIngredientItem]
 }
 
 struct ShoppingIngredientItem: Identifiable {

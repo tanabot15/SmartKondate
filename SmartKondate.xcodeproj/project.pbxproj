@@ -47,6 +47,9 @@
 		D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */; };
 		D9BA15E7305BBFD6008B3FC5 /* ShoppingListConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */; };
 		D9BA15E9305BC000008B3FC5 /* ShoppingSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */; };
+		D9BA15EB305CF56D008B3FC5 /* SavedShoppingList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15EA305CF56D008B3FC5 /* SavedShoppingList.swift */; };
+		D9BA15ED305CF6B5008B3FC5 /* SavedShoppingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15EC305CF6B5008B3FC5 /* SavedShoppingListView.swift */; };
+		D9BA15EF305D571F008B3FC5 /* SavedShoppingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9BA15EE305D571F008B3FC5 /* SavedShoppingDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +117,9 @@
 		D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBackupService.swift; sourceTree = "<group>"; };
 		D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingListConfig.swift; sourceTree = "<group>"; };
 		D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingSetupView.swift; sourceTree = "<group>"; };
+		D9BA15EA305CF56D008B3FC5 /* SavedShoppingList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedShoppingList.swift; sourceTree = "<group>"; };
+		D9BA15EC305CF6B5008B3FC5 /* SavedShoppingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedShoppingListView.swift; sourceTree = "<group>"; };
+		D9BA15EE305D571F008B3FC5 /* SavedShoppingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedShoppingDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -254,6 +260,9 @@
 				D9AF18B13024C74300C39DB7 /* DiffIngredientRow.swift */,
 				D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */,
 				D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */,
+				D9BA15EA305CF56D008B3FC5 /* SavedShoppingList.swift */,
+				D9BA15EC305CF6B5008B3FC5 /* SavedShoppingListView.swift */,
+				D9BA15EE305D571F008B3FC5 /* SavedShoppingDetailView.swift */,
 			);
 			path = ShoppingList;
 			sourceTree = "<group>";
@@ -441,12 +450,15 @@
 				D9AF18C03024C7C400C39DB7 /* DiffCalculator.swift in Sources */,
 				D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */,
 				D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */,
+				D9BA15ED305CF6B5008B3FC5 /* SavedShoppingListView.swift in Sources */,
 				D9AF18A63024C6F500C39DB7 /* PatternListView.swift in Sources */,
 				D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */,
 				D9AF186D3024C0DD00C39DB7 /* MainTabView.swift in Sources */,
+				D9BA15EF305D571F008B3FC5 /* SavedShoppingDetailView.swift in Sources */,
 				D9BA15DC30565C61008B3FC5 /* KondateBackupDTO.swift in Sources */,
 				D9BA15E9305BC000008B3FC5 /* ShoppingSetupView.swift in Sources */,
 				D9AF18BA3024C76C00C39DB7 /* OnboardingView.swift in Sources */,
+				D9BA15EB305CF56D008B3FC5 /* SavedShoppingList.swift in Sources */,
 				D9AF186E3024C0DD00C39DB7 /* SmartKondateApp.swift in Sources */,
 				D9AF18AE3024C72700C39DB7 /* MenuDetailEditorView.swift in Sources */,
 			);
