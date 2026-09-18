@@ -490,6 +490,7 @@ struct PresetDataService {
             StockItem(name: "コチュジャン", category: .seasoning),
             StockItem(name: "コンソメ", category: .seasoning),
             StockItem(name: "鶏ガラスープ", category: .seasoning),
+            StockItem(name: "焼肉のタレ", category: .seasoning),
 
             // Household
             StockItem(name: "クレラップ", category: .household),
@@ -535,6 +536,8 @@ struct PresetDataService {
         }
 
         let rawIngredients: [RawIngredient] = [
+            RawIngredient(menuName: "トースト", name: "食パン", quantity: 0.5, unit: "袋", source: nil),
+            RawIngredient(menuName: "ヨーグルト", name: "ヨーグルト", quantity: 0.5, unit: "個", source: nil),
             RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "生鮭", quantity: 3, unit: "切", source: "うたまる親子 p.55"),
             RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "しめじ", quantity: 1, unit: "パック", source: "うたまる親子 p.55"),
             RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "ほうれん草", quantity: 0.3, unit: "束", source: "うたまる親子 p.55"),
@@ -729,6 +732,8 @@ struct PresetDataService {
 
         // MARK: - Patterns Setup
         struct DayData {
+            let breakfastMain: String?
+            let breakfastSide: String?
             let lunchMain: String
             let lunchSide: String?
             let lunchSoup: String?
@@ -739,34 +744,37 @@ struct PresetDataService {
 
         let patternDefinitions: [(name: String, days: [DayData])] = [
             ("Pattern A", [
-                DayData(lunchMain: "オムライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "プルコギ", dinnerSide: "アンチョビキャベツ", dinnerSoup: nil),
-                DayData(lunchMain: "ポークケチャップ", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "チキンソテー（トマト）", dinnerSide: "ひじきの煮物", dinnerSoup: nil),
-                DayData(lunchMain: "カオマンガイ", lunchSide: nil, lunchSoup: nil, dinnerMain: "麻婆豆腐", dinnerSide: "トマトサラダ", dinnerSoup: nil),
-                DayData(lunchMain: "チヂミ", lunchSide: nil, lunchSoup: "じゃがいものポタージュ", dinnerMain: "豚肉トマト煮込み", dinnerSide: "ほうれん草としらすのおひたし", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "オムライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "プルコギ", dinnerSide: "アンチョビキャベツ", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ポークケチャップ", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "チキンソテー（トマト）", dinnerSide: "ひじきの煮物", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "カオマンガイ", lunchSide: nil, lunchSoup: nil, dinnerMain: "麻婆豆腐", dinnerSide: "トマトサラダ", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "チヂミ", lunchSide: nil, lunchSoup: "じゃがいものポタージュ", dinnerMain: "豚肉トマト煮込み", dinnerSide: "ほうれん草としらすのおひたし", dinnerSoup: nil)
             ]),
             ("Pattern B", [
-                DayData(lunchMain: "ミートソースパスタ", lunchSide: nil, lunchSoup: nil, dinnerMain: "スコップコロッケ", dinnerSide: "なす味噌炒め", dinnerSoup: nil),
-                DayData(lunchMain: "ささみユッケ丼", lunchSide: nil, lunchSoup: "にんじんのポタージュ", dinnerMain: "豚肉とトマト重ね蒸し", dinnerSide: "にんじんしりしり", dinnerSoup: nil),
-                DayData(lunchMain: "ツナトマトパスタ", lunchSide: "外食・テイクアウト", lunchSoup: nil, dinnerMain: "簡単トマト煮込みハンバーグ", dinnerSide: "かぼちゃの煮物", dinnerSoup: nil),
-                DayData(lunchMain: "お好み焼き", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "豚生姜焼き", dinnerSide: "トマトのマリネサラダ", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ミートソースパスタ", lunchSide: nil, lunchSoup: nil, dinnerMain: "スコップコロッケ", dinnerSide: "なす味噌炒め", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ささみユッケ丼", lunchSide: nil, lunchSoup: "にんじんのポタージュ", dinnerMain: "豚肉とトマト重ね蒸し", dinnerSide: "にんじんしりしり", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ツナトマトパスタ", lunchSide: "外食・テイクアウト", lunchSoup: nil, dinnerMain: "簡単トマト煮込みハンバーグ", dinnerSide: "かぼちゃの煮物", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "お好み焼き", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "豚生姜焼き", dinnerSide: "トマトのマリネサラダ", dinnerSoup: nil)
             ]),
             ("Pattern C", [
-                DayData(lunchMain: "親子丼", lunchSide: nil, lunchSoup: nil, dinnerMain: "野菜たっぷりカレーライス", dinnerSide: "エビサラダ", dinnerSoup: nil),
-                DayData(lunchMain: "炒飯", lunchSide: nil, lunchSoup: "ミネストローネ", dinnerMain: "大葉とチーズのミルフィーユカツ", dinnerSide: "ブロッコリーとしらすのおかか和え", dinnerSoup: nil),
-                DayData(lunchMain: "ガパオライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "鶏の唐揚げ", dinnerSide: "カプレーゼ", dinnerSoup: nil),
-                DayData(lunchMain: "リゾット", lunchSide: nil, lunchSoup: "豆腐とわかめの味噌汁", dinnerMain: "ユーリンチー", dinnerSide: "切り干し大根の煮物", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "親子丼", lunchSide: nil, lunchSoup: nil, dinnerMain: "野菜たっぷりカレーライス", dinnerSide: "エビサラダ", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "炒飯", lunchSide: nil, lunchSoup: "ミネストローネ", dinnerMain: "大葉とチーズのミルフィーユカツ", dinnerSide: "ブロッコリーとしらすのおかか和え", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ガパオライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "鶏の唐揚げ", dinnerSide: "カプレーゼ", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "リゾット", lunchSide: nil, lunchSoup: "豆腐とわかめの味噌汁", dinnerMain: "ユーリンチー", dinnerSide: "切り干し大根の煮物", dinnerSoup: nil)
             ]),
             ("Pattern D", [
-                DayData(lunchMain: "ビビンバ", lunchSide: nil, lunchSoup: nil, dinnerMain: "肉じゃが", dinnerSide: "豆苗とツナの和風炒め", dinnerSoup: nil),
-                DayData(lunchMain: "よだれどり", lunchSide: nil, lunchSoup: "トマトと卵のスープ", dinnerMain: "豆腐入り月見つくね", dinnerSide: "焼きびたし", dinnerSoup: nil),
-                DayData(lunchMain: "マカロニグラタン", lunchSide: nil, lunchSoup: nil, dinnerMain: "たらのムニエル", dinnerSide: "アンチョビブロッコリー", dinnerSoup: nil),
-                DayData(lunchMain: "外食・テイクアウト", lunchSide: nil, lunchSoup: "外食・テイクアウト", dinnerMain: "外食・テイクアウト", dinnerSide: "ほうれん草とにんじんのナムル", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ビビンバ", lunchSide: nil, lunchSoup: nil, dinnerMain: "肉じゃが", dinnerSide: "豆苗とツナの和風炒め", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "よだれどり", lunchSide: nil, lunchSoup: "トマトと卵のスープ", dinnerMain: "豆腐入り月見つくね", dinnerSide: "焼きびたし", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "マカロニグラタン", lunchSide: nil, lunchSoup: nil, dinnerMain: "たらのムニエル", dinnerSide: "アンチョビブロッコリー", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "外食・テイクアウト", lunchSide: nil, lunchSoup: "外食・テイクアウト", dinnerMain: "外食・テイクアウト", dinnerSide: "ほうれん草とにんじんのナムル", dinnerSoup: nil)
             ])
         ]
 
         // 1. Create and Cache Menus based on Patterns
         for pDef in patternDefinitions {
             for dayData in pDef.days {
+                if let bMain = dayData.breakfastMain { _ = getOrCreateMenu(name: bMain, category: .main) }
+                if let bSide = dayData.breakfastSide { _ = getOrCreateMenu(name: bSide, category: .side) }
+
                 _ = getOrCreateMenu(name: dayData.lunchMain, category: .main)
                 if let side = dayData.lunchSide { _ = getOrCreateMenu(name: side, category: .side) }
                 if let soup = dayData.lunchSoup { _ = getOrCreateMenu(name: soup, category: .soup) }
@@ -806,6 +814,14 @@ struct PresetDataService {
             context.insert(pattern)
 
             for (dayIndex, dayData) in pDef.days.enumerated() {
+                var breakfastMenus: [Menu] = []
+                if let bMain = dayData.breakfastMain {
+                    breakfastMenus.append(getOrCreateMenu(name: bMain, category: .main))
+                }
+                if let bSide = dayData.breakfastSide {
+                    breakfastMenus.append(getOrCreateMenu(name: bSide, category: .side))
+                }
+
                 var lunchMenus: [Menu] = [getOrCreateMenu(name: dayData.lunchMain, category: .main)]
                 if let side = dayData.lunchSide {
                     lunchMenus.append(getOrCreateMenu(name: side, category: .side))
@@ -824,7 +840,7 @@ struct PresetDataService {
 
                 let patternDay = PatternDay(
                     dayIndex: dayIndex,
-                    breakfastMenus: [],
+                    breakfastMenus: breakfastMenus,
                     lunchMenus: lunchMenus,
                     dinnerMenus: dinnerMenus
                 )
