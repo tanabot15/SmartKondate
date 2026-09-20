@@ -2,8 +2,6 @@
 //  ShoppingSetupView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/09/17.
-//
 
 import SwiftUI
 import SwiftData
@@ -38,27 +36,21 @@ struct ShoppingSetupView: View {
 
     var body: some View {
         Form {
-            // MARK: - 1. Base Pattern & Days Configuration
-            Section {
+            // Base pattern & days selection
+            Section(header: Text("Base Pattern Setup")) {
                 if allPatterns.isEmpty {
-                    Text("No patterns available")
-                        .foregroundStyle(.secondary)
+                    Text("No patterns available").foregroundStyle(.secondary)
                 } else {
                     Picker("Base Pattern", selection: $selectedPatternID) {
                         ForEach(allPatterns) { pattern in
                             HStack {
                                 Text(pattern.name)
-                                if pattern.queueOrder == 0 {
-                                    Text("(Active)")
-                                        .foregroundStyle(.secondary)
-                                }
+                                if pattern.queueOrder == 0 { Text("(Active)").foregroundStyle(.secondary) }
                             }
                             .tag(Optional(pattern.id))
                         }
                     }
-                    .onChange(of: selectedPatternID) { _, _ in
-                        resetEnabledDays()
-                    }
+                    .onChange(of: selectedPatternID) { _, _ in resetEnabledDays() }
 
                     if let pattern = selectedPattern {
                         DisclosureGroup("Include Days (\(enabledDayIndices.count)/\(pattern.durationDays))") {
@@ -66,38 +58,29 @@ struct ShoppingSetupView: View {
                                 Toggle(isOn: Binding(
                                     get: { enabledDayIndices.contains(dayIdx) },
                                     set: { isEnabled in
-                                        if isEnabled {
-                                            enabledDayIndices.insert(dayIdx)
-                                        } else {
-                                            enabledDayIndices.remove(dayIdx)
-                                        }
+                                        if isEnabled { enabledDayIndices.insert(dayIdx) }
+                                        else { enabledDayIndices.remove(dayIdx) }
                                     }
                                 )) {
-                                    Text("Day \(dayIdx + 1)")
-                                        .font(.subheadline)
+                                    Text("Day \(dayIdx + 1)").font(.subheadline)
                                 }
                             }
                         }
                     }
                 }
-            } header: {
-                Text("Base Pattern Setup")
             }
 
-            // MARK: - 2. Extra Additions
-            Section {
+            // Extra items/menus additions
+            Section(header: Text("Extra Additions")) {
                 ForEach(extraSources) { source in
                     HStack {
-                        Image(systemName: source.iconName)
-                            .foregroundStyle(Color.accentColor)
-                        Text(source.displayTitle)
-                            .font(.subheadline)
+                        Image(systemName: source.iconName).foregroundStyle(Color.accentColor)
+                        Text(source.displayTitle).font(.subheadline)
                         Spacer()
                         Button {
                             extraSources.removeAll { $0.id == source.id }
                         } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .foregroundStyle(.red)
+                            Image(systemName: "minus.circle.fill").foregroundStyle(.red)
                         }
                         .buttonStyle(.plain)
                     }
@@ -106,8 +89,7 @@ struct ShoppingSetupView: View {
                 Button {
                     showAddSourcePopover = true
                 } label: {
-                    Label("Add Date, Pattern or Menu", systemImage: "plus.circle")
-                        .font(.subheadline)
+                    Label("Add Date, Pattern or Menu", systemImage: "plus.circle").font(.subheadline)
                 }
                 .popover(isPresented: $showAddSourcePopover) {
                     AddSourcePopoverView(
@@ -122,16 +104,12 @@ struct ShoppingSetupView: View {
                     )
                     .presentationCompactAdaptation(.popover)
                 }
-            } header: {
-                Text("Extra Additions")
             }
         }
         .navigationTitle("Shopping List Setup")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    SavedShoppingListView()
-                } label: {
+                NavigationLink(destination: SavedShoppingListView()) {
                     Image(systemName: "folder")
                 }
             }
@@ -143,13 +121,10 @@ struct ShoppingSetupView: View {
             resetEnabledDays()
         }
         .safeAreaInset(edge: .bottom) {
-            NavigationLink {
-                ShoppingListView(config: currentConfig)
-            } label: {
+            NavigationLink(destination: ShoppingListView(config: currentConfig)) {
                 HStack {
                     Image(systemName: "cart.fill")
-                    Text("Generate Shopping List")
-                        .fontWeight(.bold)
+                    Text("Generate Shopping List").fontWeight(.bold)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -209,16 +184,12 @@ private struct AddSourcePopoverView: View {
                 } else {
                     Picker("Select Pattern", selection: $selectedPattern) {
                         Text("Select...").tag(Optional<KondatePattern>.none)
-                        ForEach(allPatterns) { p in
-                            Text(p.name).tag(Optional(p))
-                        }
+                        ForEach(allPatterns) { p in Text(p.name).tag(Optional(p)) }
                     }
                     .pickerStyle(.menu)
 
                     Button("Add Entire Pattern") {
-                        if let p = selectedPattern {
-                            onAdd(.pattern(p))
-                        }
+                        if let p = selectedPattern { onAdd(.pattern(p)) }
                     }
                     .disabled(selectedPattern == nil)
                     .fontWeight(.bold)
@@ -231,9 +202,7 @@ private struct AddSourcePopoverView: View {
                 } else {
                     Picker("Select Pattern", selection: $selectedPattern) {
                         Text("Select...").tag(Optional<KondatePattern>.none)
-                        ForEach(allPatterns) { p in
-                            Text(p.name).tag(Optional(p))
-                        }
+                        ForEach(allPatterns) { p in Text(p.name).tag(Optional(p)) }
                     }
                     .pickerStyle(.menu)
 
@@ -262,16 +231,12 @@ private struct AddSourcePopoverView: View {
                 } else {
                     Picker("Select Menu", selection: $selectedMenu) {
                         Text("Select...").tag(Optional<Menu>.none)
-                        ForEach(allMenus) { m in
-                            Text(m.name).tag(Optional(m))
-                        }
+                        ForEach(allMenus) { m in Text(m.name).tag(Optional(m)) }
                     }
                     .pickerStyle(.menu)
 
                     Button("Add Single Menu") {
-                        if let m = selectedMenu {
-                            onAdd(.menu(m))
-                        }
+                        if let m = selectedMenu { onAdd(.menu(m)) }
                     }
                     .disabled(selectedMenu == nil)
                     .fontWeight(.bold)

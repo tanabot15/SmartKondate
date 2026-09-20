@@ -2,11 +2,10 @@
 //  ShoppingListConfig.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/09/17.
-//
 
 import Foundation
 
+// Additional source options for shopping list generation
 enum ExtraSourceType: String, CaseIterable, Identifiable {
     case date = "Date"
     case pattern = "Pattern"
@@ -16,6 +15,7 @@ enum ExtraSourceType: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+// Representing an added extra menu or pattern item
 enum ExtraSourceItem: Hashable, Identifiable {
     case date(Date)
     case pattern(KondatePattern)
@@ -24,27 +24,21 @@ enum ExtraSourceItem: Hashable, Identifiable {
 
     var id: String {
         switch self {
-        case .date(let date):
-            return "date_\(date.timeIntervalSince1970)"
-        case .pattern(let pattern):
-            return "pattern_\(pattern.id.uuidString)"
-        case .patternDay(let patternName, let dayIndex, _):
-            return "day_\(patternName)_\(dayIndex)"
-        case .menu(let menu):
-            return "menu_\(menu.id.uuidString)"
+        case .date(let date): return "date_\(date.timeIntervalSince1970)"
+        case .pattern(let pattern): return "pattern_\(pattern.id.uuidString)"
+        case .patternDay(let name, let index, _): return "day_\(name)_\(index)"
+        case .menu(let menu): return "menu_\(menu.id.uuidString)"
         }
     }
 
     var displayTitle: String {
         switch self {
         case .date(let date):
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            return formatter.string(from: date)
+            return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none)
         case .pattern(let pattern):
             return "Pattern: \(pattern.name)"
-        case .patternDay(let patternName, let dayIndex, _):
-            return "\(patternName) - Day \(dayIndex + 1)"
+        case .patternDay(let name, let index, _):
+            return "\(name) - Day \(index + 1)"
         case .menu(let menu):
             return "Menu: \(menu.name)"
         }
@@ -60,6 +54,7 @@ enum ExtraSourceItem: Hashable, Identifiable {
     }
 }
 
+// Configuration passed into ShoppingListView
 struct ShoppingListConfig {
     var selectedPattern: KondatePattern?
     var selectedDayIndices: Set<Int> = []

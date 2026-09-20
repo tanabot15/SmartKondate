@@ -2,8 +2,6 @@
 //  SavedShoppingDetailView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/09/18.
-//
 
 import SwiftUI
 import SwiftData
@@ -18,12 +16,14 @@ struct SavedShoppingDetailView: View {
     @State private var showCopiedToast = false
     @State private var showCompleteAlert = false
 
+    // Group saved items by category
     private var groupedItemsByCategory: [(category: String, items: [SavedIngredientItem])] {
         let grouped = Dictionary(grouping: shoppingList.items, by: { $0.categoryRawValue })
         return grouped.map { (category: $0.key, items: $0.value) }
             .sorted { $0.category < $1.category }
     }
 
+    // Exportable plain text content
     private var formattedTextForSharing: String {
         var text = "【\(shoppingList.title)】\n\n"
         for group in groupedItemsByCategory {
@@ -43,7 +43,25 @@ struct SavedShoppingDetailView: View {
 
     var body: some View {
         ZStack {
-            shoppingListView
+            List {
+                ForEach(groupedItemsByCategory, id: \.category) { group in
+                    Section(header: Text(group.category)) {
+                        ForEach(group.items) { item in
+                            DiffIngredientRow(
+                                ingredientName: item.name,
+                                quantity: item.quantity,
+                                unit: item.unit,
+                                menuDetails: item.menuDetails,
+                                isModifiedMeal: false,
+                                isChecked: item.isChecked,
+                                onToggle: { item.isChecked.toggle() },
+                                onQuantityChange: { item.quantity = $0 }
+                            )
+                        }
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
             
             if showCopiedToast {
                 toastView(message: "Copied to clipboard", icon: "checkmark.circle.fill", color: .green)
@@ -59,17 +77,13 @@ struct SavedShoppingDetailView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    copyToClipboard()
-                } label: {
+                Button(action: copyToClipboard) {
                     Image(systemName: "doc.on.doc")
                 }
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showCompleteAlert = true
-                } label: {
+                Button { showCompleteAlert = true } label: {
                     Image(systemName: "checkmark.circle.fill")
                 }
             }
@@ -87,47 +101,11 @@ struct SavedShoppingDetailView: View {
         }
     }
 
-    // MARK: - Subviews for Compiler Optimization
-    private var shoppingListView: some View {
-        List {
-            ForEach(groupedItemsByCategory, id: \.category) { group in
-                Section(header: Text(group.category)) {
-                    ForEach(group.items) { item in
-                        savedItemRow(item)
-                    }
-                }
-            }
-        }
-        .listStyle(.insetGrouped)
-    }
-
-    @ViewBuilder
-    private func savedItemRow(_ item: SavedIngredientItem) -> some View {
-        DiffIngredientRow(
-            ingredientName: item.name,
-            quantity: item.quantity,
-            unit: item.unit,
-            menuDetails: item.menuDetails,
-            isModifiedMeal: false,
-            isChecked: item.isChecked,
-            onToggle: {
-                item.isChecked.toggle()
-            },
-            onQuantityChange: { newQty in
-                item.quantity = newQty
-            }
-        )
-    }
-
     private func copyToClipboard() {
         UIPasteboard.general.string = formattedTextForSharing
-        withAnimation {
-            showCopiedToast = true
-        }
+        withAnimation { showCopiedToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation {
-                showCopiedToast = false
-            }
+            withAnimation { showCopiedToast = false }
         }
     }
 
@@ -145,11 +123,8 @@ struct SavedShoppingDetailView: View {
         VStack {
             Spacer()
             HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundStyle(color)
-                Text(message)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                Image(systemName: icon).foregroundStyle(color)
+                Text(message).font(.subheadline).fontWeight(.medium)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)

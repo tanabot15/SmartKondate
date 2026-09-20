@@ -102,7 +102,10 @@ private enum WidgetDataFetcher {
         
         let calendar = Calendar.current
         let startOfTarget = calendar.startOfDay(for: date)
-        let startOfBase = calendar.startOfDay(for: activePattern.createdAt)
+        
+        let baseDate = activePattern.startDate ?? activePattern.createdAt
+        let startOfBase = calendar.startOfDay(for: baseDate)
+        
         let dayDifference = calendar.dateComponents([.day], from: startOfBase, to: startOfTarget).day ?? 0
         
         let remainder = dayDifference % activePattern.durationDays

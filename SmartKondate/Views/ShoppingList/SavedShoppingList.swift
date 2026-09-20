@@ -2,12 +2,11 @@
 //  SavedShoppingList.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/09/18.
-//
 
 import Foundation
 import SwiftData
 
+// Persistent entity representing a saved shopping list
 @Model
 final class SavedShoppingList {
     var id: UUID
@@ -25,6 +24,7 @@ final class SavedShoppingList {
     }
 }
 
+// Persistent entity representing an ingredient item in a saved list
 @Model
 final class SavedIngredientItem {
     var id: UUID

@@ -27,26 +27,19 @@ struct ShoppingListView: View {
         allStockItems.filter { $0.isOut }
     }
 
-    // MARK: - Combined Ingredient Extraction Logic
+    // Extract raw ingredients based on configuration
     private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool)] {
         var result: [(Ingredient, String, Bool)] = []
 
         if let pattern = config.selectedPattern {
-            for dayIndex in 0..<pattern.durationDays {
-                guard config.selectedDayIndices.contains(dayIndex) else { continue }
+            for dayIndex in config.selectedDayIndices {
                 guard let patternDay = pattern.days.first(where: { $0.dayIndex == dayIndex }) else { continue }
-
-                let meals: [(MealType, [Menu])] = [
-                    (.breakfast, patternDay.breakfastMenus),
-                    (.lunch, patternDay.lunchMenus),
-                    (.dinner, patternDay.dinnerMenus)
-                ]
-
-                for (_, menus) in meals {
+                let meals = [patternDay.breakfastMenus, patternDay.lunchMenus, patternDay.dinnerMenus]
+                
+                for menus in meals {
                     for menu in menus {
                         for ingredient in menu.ingredients {
-                            let label = "Day \(dayIndex + 1): \(menu.name)"
-                            result.append((ingredient, label, false))
+                            result.append((ingredient, "Day \(dayIndex + 1): \(menu.name)", false))
                         }
                     }
                 }
@@ -56,52 +49,40 @@ struct ShoppingListView: View {
         for source in config.extraSources {
             switch source {
             case .date(let date):
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "M/d"
-                let dateLabel = dateFormatter.string(from: date)
-
+                let dateLabel = date.formatted(.dateTime.month().day())
                 let diffResults = DiffCalculator.calculateDiff(
                     for: date,
                     pattern: activePattern,
                     startDate: activePattern?.startDate ?? activePattern?.createdAt ?? Date(),
-                    customBreakfast: nil,
-                    customLunch: nil,
-                    customDinner: nil
+                    customBreakfast: nil, customLunch: nil, customDinner: nil
                 )
-
                 for res in diffResults {
                     for menu in res.effectiveMenus {
                         for ingredient in menu.ingredients {
-                            let label = "[\(dateLabel)] \(menu.name)"
-                            result.append((ingredient, label, res.isModified))
+                            result.append((ingredient, "[\(dateLabel)] \(menu.name)", res.isModified))
                         }
                     }
                 }
 
             case .pattern(let pattern):
-                for patternDay in pattern.days {
-                    let allMenus = patternDay.breakfastMenus + patternDay.lunchMenus + patternDay.dinnerMenus
-                    for menu in allMenus {
+                for day in pattern.days {
+                    for menu in day.breakfastMenus + day.lunchMenus + day.dinnerMenus {
                         for ingredient in menu.ingredients {
-                            let label = "[\(pattern.name) Day \(patternDay.dayIndex + 1)] \(menu.name)"
-                            result.append((ingredient, label, false))
+                            result.append((ingredient, "[\(pattern.name) Day \(day.dayIndex + 1)] \(menu.name)", false))
                         }
                     }
                 }
 
-            case .patternDay(let patternName, let dayIndex, let patternDay):
-                let allMenus = patternDay.breakfastMenus + patternDay.lunchMenus + patternDay.dinnerMenus
-                for menu in allMenus {
+            case .patternDay(let name, let dayIndex, let day):
+                for menu in day.breakfastMenus + day.lunchMenus + day.dinnerMenus {
                     for ingredient in menu.ingredients {
-                        let label = "[\(patternName) Day \(dayIndex + 1)] \(menu.name)"
-                        result.append((ingredient, label, false))
+                        result.append((ingredient, "[\(name) Day \(dayIndex + 1)] \(menu.name)", false))
                     }
                 }
 
             case .menu(let menu):
                 for ingredient in menu.ingredients {
-                    let label = "[Extra] \(menu.name)"
-                    result.append((ingredient, label, false))
+                    result.append((ingredient, "[Extra] \(menu.name)", false))
                 }
             }
         }
@@ -109,6 +90,7 @@ struct ShoppingListView: View {
         return result
     }
 
+    // Aggregate ingredients by name and unit
     private var aggregatedItems: [ShoppingIngredientItem] {
         let stockedNames = Set(allStockItems.filter { !$0.isOut }.map { $0.name.trimmingCharacters(in: .whitespaces).lowercased() })
         var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool)] = [:]
@@ -125,25 +107,16 @@ struct ShoppingListView: View {
                 existing.menus.insert(item.menuName)
                 groupedDict[groupKey] = existing
             } else {
-                groupedDict[groupKey] = (
-                    name: name,
-                    quantity: item.ingredient.quantity,
-                    unit: unit,
-                    category: item.ingredient.category,
-                    menus: [item.menuName],
-                    isModified: item.isModified
-                )
+                groupedDict[groupKey] = (name, item.ingredient.quantity, unit, item.ingredient.category, [item.menuName], item.isModified)
             }
         }
 
         return groupedDict.compactMap { (key, value) in
             let sortedMenus = value.menus.sorted().joined(separator: ", ")
-
             var initialQuantity = value.quantity
             if stockedNames.contains(value.name.lowercased()) {
                 initialQuantity = max(0, initialQuantity - 1)
             }
-
             let finalQuantity = customQuantities[key] ?? initialQuantity
 
             return ShoppingIngredientItem(
@@ -159,30 +132,20 @@ struct ShoppingListView: View {
         .sorted { $0.ingredientName < $1.ingredientName }
     }
 
-    private var modifiedItems: [ShoppingIngredientItem] {
-        aggregatedItems.filter { $0.isModifiedMeal }
-    }
-
-    private var standardItems: [ShoppingIngredientItem] {
-        aggregatedItems.filter { !$0.isModifiedMeal }
-    }
+    private var modifiedItems: [ShoppingIngredientItem] { aggregatedItems.filter { $0.isModifiedMeal } }
+    private var standardItems: [ShoppingIngredientItem] { aggregatedItems.filter { !$0.isModifiedMeal } }
 
     private var standardItemsByCategory: [ShoppingCategoryGroup] {
-        let grouped: [IngredientCategory: [ShoppingIngredientItem]] = Dictionary(grouping: standardItems, by: { $0.category })
-        var result: [ShoppingCategoryGroup] = []
-        
-        for category in IngredientCategory.allCases {
-            if let items = grouped[category], !items.isEmpty {
-                result.append(ShoppingCategoryGroup(category: category, items: items))
-            }
+        let grouped = Dictionary(grouping: standardItems, by: { $0.category })
+        return IngredientCategory.allCases.compactMap { category in
+            guard let items = grouped[category], !items.isEmpty else { return nil }
+            return ShoppingCategoryGroup(category: category, items: items)
         }
-        return result
     }
 
-    // MARK: - Exportable Plain Text Generation
+    // Export text generation
     private var formattedTextForSharing: String {
         var text = "【買い物リスト】\n"
-
         if let pattern = config.selectedPattern {
             text += "対象: \(pattern.name) (\(config.selectedDayIndices.count)日分)\n"
         }
@@ -190,9 +153,7 @@ struct ShoppingListView: View {
 
         if !outOfStockItems.isEmpty {
             text += "■ 不足中の在庫 (要補充)\n"
-            for stock in outOfStockItems {
-                text += "・\(stock.name)\n"
-            }
+            for stock in outOfStockItems { text += "・\(stock.name)\n" }
             text += "\n"
         }
 
@@ -234,7 +195,6 @@ struct ShoppingListView: View {
                     if !modifiedItems.isEmpty {
                         modifiedItemsSection
                     }
-
                     standardItemsSections
                 }
             }
@@ -250,30 +210,21 @@ struct ShoppingListView: View {
         .toolbar {
             if !checkedIngredientKeys.isEmpty {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Clear") {
-                        checkedIngredientKeys.removeAll()
-                    }
+                    Button("Clear") { checkedIngredientKeys.removeAll() }
                 }
             }
-
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    saveShoppingList()
-                } label: {
+                Button(action: saveShoppingList) {
                     Image(systemName: "square.and.arrow.down")
                 }
             }
-
             ToolbarItem(placement: .topBarTrailing) {
                 ShareLink(item: formattedTextForSharing) {
                     Image(systemName: "square.and.arrow.up")
                 }
             }
-
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    copyToClipboard()
-                } label: {
+                Button(action: copyToClipboard) {
                     Image(systemName: "doc.on.doc")
                 }
             }
@@ -282,27 +233,19 @@ struct ShoppingListView: View {
 
     private func copyToClipboard() {
         UIPasteboard.general.string = formattedTextForSharing
-        withAnimation {
-            showCopiedToast = true
-        }
+        withAnimation { showCopiedToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation {
-                showCopiedToast = false
-            }
+            withAnimation { showCopiedToast = false }
         }
     }
 
-    // MARK: - Save Action
     private func saveShoppingList() {
         let titleName = config.selectedPattern?.name ?? "Shopping List"
         let title = "\(titleName) (\(Date().formatted(date: .numeric, time: .omitted)))"
-        
         let savedList = SavedShoppingList(title: title)
         
-        var savedItems: [SavedIngredientItem] = []
-        
-        for item in aggregatedItems {
-            let savedItem = SavedIngredientItem(
+        savedList.items = aggregatedItems.map { item in
+            SavedIngredientItem(
                 name: item.ingredientName,
                 quantity: item.quantity,
                 unit: item.unit,
@@ -311,26 +254,20 @@ struct ShoppingListView: View {
                 isChecked: checkedIngredientKeys.contains(item.id),
                 isModifiedMeal: item.isModifiedMeal
             )
-            savedItem.shoppingList = savedList
-            savedItems.append(savedItem)
         }
         
-        savedList.items = savedItems
         modelContext.insert(savedList)
+        try? modelContext.save()
         
-        withAnimation {
-            showSavedToast = true
-        }
+        withAnimation { showSavedToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation {
-                showSavedToast = false
-            }
+            withAnimation { showSavedToast = false }
         }
     }
 
-    // MARK: - Subviews & Builder Methods
+    // MARK: - Subviews
     private var summarySection: some View {
-        Section {
+        Section(header: Text("Target Criteria")) {
             VStack(alignment: .leading, spacing: 6) {
                 if let pattern = config.selectedPattern {
                     Label("\(pattern.name) (\(config.selectedDayIndices.count) days)", systemImage: "calendar")
@@ -343,8 +280,6 @@ struct ShoppingListView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-        } header: {
-            Text("Target Criteria")
         }
     }
 
@@ -352,7 +287,7 @@ struct ShoppingListView: View {
         Section {
             ForEach(outOfStockItems) { stockItem in
                 Button {
-                    toggleStockBought(stockItem)
+                    stockItem.isOut = false
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "circle")
@@ -417,7 +352,6 @@ struct ShoppingListView: View {
         }
     }
 
-    @ViewBuilder
     private var standardItemsSections: some View {
         ForEach(standardItemsByCategory) { group in
             Section(header: Text(group.category.rawValue)) {
@@ -436,10 +370,14 @@ struct ShoppingListView: View {
             menuDetails: item.menuDetails,
             isModifiedMeal: isModified,
             isChecked: checkedIngredientKeys.contains(item.id),
-            onToggle: { toggleCheck(for: item.id) },
-            onQuantityChange: { newQty in
-                customQuantities[item.id] = newQty
-            }
+            onToggle: {
+                if checkedIngredientKeys.contains(item.id) {
+                    checkedIngredientKeys.remove(item.id)
+                } else {
+                    checkedIngredientKeys.insert(item.id)
+                }
+            },
+            onQuantityChange: { newQty in customQuantities[item.id] = newQty }
         )
     }
 
@@ -447,11 +385,8 @@ struct ShoppingListView: View {
         VStack {
             Spacer()
             HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundStyle(color)
-                Text(message)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                Image(systemName: icon).foregroundStyle(color)
+                Text(message).font(.subheadline).fontWeight(.medium)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -463,28 +398,12 @@ struct ShoppingListView: View {
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
-    private func toggleCheck(for key: String) {
-        if checkedIngredientKeys.contains(key) {
-            checkedIngredientKeys.remove(key)
-        } else {
-            checkedIngredientKeys.insert(key)
-        }
-    }
-
-    private func toggleStockBought(_ item: StockItem) {
-        item.isOut = false
-    }
-
     private func formatQuantity(_ val: Double) -> String {
-        if val.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(format: "%.0f", val)
-        } else {
-            return String(format: "%.1f", val)
-        }
+        val.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", val) : String(format: "%.1f", val)
     }
 }
 
-// MARK: - Helper Structs
+// MARK: - Helper Models
 struct ShoppingCategoryGroup: Identifiable {
     var id: String { category.rawValue }
     let category: IngredientCategory

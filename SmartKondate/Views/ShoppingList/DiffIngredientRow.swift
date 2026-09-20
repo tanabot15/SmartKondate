@@ -28,7 +28,7 @@ struct DiffIngredientRow: View {
         .padding(.vertical, 2)
     }
 
-    // MARK: - Subviews for Compiler Optimization
+    // MARK: - Subviews
     private var checkButton: some View {
         Button(action: onToggle) {
             Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
@@ -105,15 +105,11 @@ struct DiffIngredientRow: View {
     }
 
     private func formatQuantity(_ val: Double) -> String {
-        if val.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(format: "%.0f", val)
-        } else {
-            return String(format: "%.1f", val)
-        }
+        val.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", val) : String(format: "%.1f", val)
     }
 }
 
-// MARK: - Quantity Edit Popover Component
+// MARK: - Quantity Edit Popover
 private struct QuantityEditPopover: View {
     let ingredientName: String
     let unit: String
@@ -123,13 +119,10 @@ private struct QuantityEditPopover: View {
     @FocusState private var isTextFieldFocused: Bool
 
     private var stepAmount: Double {
-        let u = unit.lowercased().trimmingCharacters(in: .whitespaces)
-        if u == "g" || u == "ml" {
-            return 50.0
-        } else if u == "kg" || u == "l" {
-            return 0.1
-        } else {
-            return 1.0
+        switch unit.lowercased().trimmingCharacters(in: .whitespaces) {
+        case "g", "ml": return 50.0
+        case "kg", "l": return 0.1
+        default: return 1.0
         }
     }
 

@@ -39,69 +39,77 @@ struct DashboardView: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
-                            let patternStartDate = startDate(for: index)
-                            
-                            VStack(alignment: .leading, spacing: 12) {
-                                // MARK: - Pattern Section Header
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack(spacing: 8) {
-                                        Text(pattern.name)
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                            .foregroundStyle(.primary)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
+                                let patternStartDate = startDate(for: index)
+                                
+                                VStack(alignment: .leading, spacing: 12) {
+                                    // MARK: - Pattern Section Header
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack(spacing: 8) {
+                                            Text(pattern.name)
+                                                .font(.title2)
+                                                .fontWeight(.bold)
+                                                .foregroundStyle(.primary)
 
-                                        if index == 0 {
-                                            Text("Now Active")
-                                                .font(.caption2)
-                                                .fontWeight(.bold)
-                                                .padding(.horizontal, 8)
-                                                .padding(.vertical, 3)
-                                                .background(Color.accentColor)
-                                                .foregroundStyle(.white)
-                                                .clipShape(Capsule())
-                                        } else {
-                                            Text("Queue #\(index)")
-                                                .font(.caption2)
-                                                .fontWeight(.bold)
-                                                .padding(.horizontal, 8)
-                                                .padding(.vertical, 3)
-                                                .background(Color.secondary.opacity(0.2))
-                                                .foregroundStyle(.secondary)
-                                                .clipShape(Capsule())
+                                            if index == 0 {
+                                                Text("Now Active")
+                                                    .font(.caption2)
+                                                    .fontWeight(.bold)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 3)
+                                                    .background(Color.accentColor)
+                                                    .foregroundStyle(.white)
+                                                    .clipShape(Capsule())
+                                            } else {
+                                                Text("Queue #\(index)")
+                                                    .font(.caption2)
+                                                    .fontWeight(.bold)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 3)
+                                                    .background(Color.secondary.opacity(0.2))
+                                                    .foregroundStyle(.secondary)
+                                                    .clipShape(Capsule())
+                                            }
                                         }
+
+                                        Text("\(pattern.durationDays) Days Cycle")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
                                     }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
+                                    .background(Color(.secondarySystemGroupedBackground))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                                    Text("\(pattern.durationDays) Days Cycle")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(Color(.secondarySystemGroupedBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    // MARK: - Days List in Pattern
+                                    ForEach(0..<pattern.durationDays, id: \.self) { dayIndex in
+                                        let date = Calendar.current.date(byAdding: .day, value: dayIndex, to: patternStartDate) ?? patternStartDate
+                                        let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern)
+                                        let isToday = Calendar.current.isDateInToday(date)
 
-                                // MARK: - Days List in Pattern
-                                ForEach(0..<pattern.durationDays, id: \.self) { dayIndex in
-                                    let date = Calendar.current.date(byAdding: .day, value: dayIndex, to: patternStartDate) ?? patternStartDate
-                                    let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern)
-
-                                    MealCardView(
-                                        dayIndex: dayIndex,
-                                        date: date,
-                                        diffResults: diffResults,
-                                        availableMenus: availableMenus,
-                                        onSelectMenus: { mealType, newMenus in
-                                            updateCustomMenus(patternID: pattern.id, dayIndex: dayIndex, mealType: mealType, with: newMenus)
-                                        }
-                                    )
+                                        MealCardView(
+                                            dayIndex: dayIndex,
+                                            date: date,
+                                            diffResults: diffResults,
+                                            availableMenus: availableMenus,
+                                            onSelectMenus: { mealType, newMenus in
+                                                updateCustomMenus(patternID: pattern.id, dayIndex: dayIndex, mealType: mealType, with: newMenus)
+                                            },
+                                            isToday: isToday
+                                        )
+                                        .id("card_\(pattern.id)_\(dayIndex)")
+                                    }
                                 }
                             }
                         }
+                        .padding()
                     }
-                    .padding()
+                    .onAppear {
+                        scrollToToday(proxy: proxy)
+                    }
                 }
             }
         }
@@ -110,6 +118,26 @@ struct DashboardView: View {
         .onAppear {
             checkAndAdvanceQueue()
             WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    private func scrollToToday(proxy: ScrollViewProxy) {
+        let calendar = Calendar.current
+        for index in 0..<queuedPatterns.count {
+            let pattern = queuedPatterns[index]
+            let pStartDate = startDate(for: index)
+            
+            for dayIndex in 0..<pattern.durationDays {
+                if let date = calendar.date(byAdding: .day, value: dayIndex, to: pStartDate),
+                   calendar.isDateInToday(date) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation {
+                            proxy.scrollTo("card_\(pattern.id)_\(dayIndex)", anchor: .top)
+                        }
+                    }
+                    return
+                }
+            }
         }
     }
 
@@ -209,58 +237,38 @@ struct DashboardView: View {
         let ingBread = Ingredient(name: "Bread", quantity: 2, unit: "slices")
         let ingEgg = Ingredient(name: "Egg", quantity: 2, unit: "pcs")
         let ingChicken = Ingredient(name: "Chicken Thigh", quantity: 300, unit: "g")
-        let ingRice = Ingredient(name: "Rice", quantity: 1, unit: "bowl")
-        let ingOnion = Ingredient(name: "Onion", quantity: 1, unit: "pc")
-
-        let stockBread = StockItem(name: "Bread", category: .pantry)
-        let stockEgg = StockItem(name: "Egg", category: .pantry)
-
-        context.insert(stockBread)
-        context.insert(stockEgg)
 
         let menuToast = Menu(name: "Toast & Fried Eggs", category: .main, source: "Cookbook p.12")
         menuToast.ingredients = [ingBread, ingEgg]
 
         let menuTeriyaki = Menu(name: "Chicken Teriyaki Bowl", category: .main, source: "https://example.com/teriyaki")
-        menuTeriyaki.ingredients = [ingChicken, ingRice]
-
-        let menuCurry = Menu(name: "Japanese Curry", category: .main, source: "Family Recipe")
-        menuCurry.ingredients = [ingChicken, ingOnion]
+        menuTeriyaki.ingredients = [ingChicken]
 
         context.insert(menuToast)
         context.insert(menuTeriyaki)
-        context.insert(menuCurry)
+
+        // 今日の日付を起点（Day 2を今日に設定して動作確認可能）
+        let today = Date()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today)!
 
         let pattern1 = KondatePattern(
             name: "Standard Weekly",
             durationDays: 3,
             isActive: true,
             queueOrder: 0,
-            startDate: Date()
-        )
-        
-        let pattern2 = KondatePattern(
-            name: "Healthy Weekend",
-            durationDays: 2,
-            isActive: false,
-            queueOrder: 1,
-            startDate: nil
+            startDate: yesterday
         )
 
         context.insert(pattern1)
-        context.insert(pattern2)
 
-        let day1 = PatternDay(dayIndex: 0, breakfastMenus: [menuToast], lunchMenus: [menuTeriyaki], dinnerMenus: [menuCurry])
+        let day1 = PatternDay(dayIndex: 0, breakfastMenus: [menuToast], lunchMenus: [], dinnerMenus: [menuTeriyaki])
         day1.pattern = pattern1
 
-        let day2 = PatternDay(dayIndex: 1, breakfastMenus: [menuToast], lunchMenus: [], dinnerMenus: [menuTeriyaki])
+        let day2 = PatternDay(dayIndex: 1, breakfastMenus: [menuToast], lunchMenus: [menuTeriyaki], dinnerMenus: [])
         day2.pattern = pattern1
 
-        let day3 = PatternDay(dayIndex: 2, breakfastMenus: [], lunchMenus: [menuCurry], dinnerMenus: [])
+        let day3 = PatternDay(dayIndex: 2, breakfastMenus: [], lunchMenus: [], dinnerMenus: [menuTeriyaki])
         day3.pattern = pattern1
-
-        let p2Day1 = PatternDay(dayIndex: 0, breakfastMenus: [menuToast], lunchMenus: [menuCurry], dinnerMenus: [])
-        p2Day1.pattern = pattern2
 
         return container
     }

@@ -2,8 +2,6 @@
 //  SavedShoppingListView.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/09/18.
-//
 
 import SwiftUI
 import SwiftData
@@ -24,9 +22,7 @@ struct SavedShoppingListView: View {
             } else {
                 List {
                     ForEach(savedLists) { list in
-                        NavigationLink {
-                            SavedShoppingDetailView(shoppingList: list)
-                        } label: {
+                        NavigationLink(destination: SavedShoppingDetailView(shoppingList: list)) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(list.title)
                                     .font(.headline)
@@ -52,8 +48,7 @@ struct SavedShoppingListView: View {
 
     private func deleteLists(at offsets: IndexSet) {
         for index in offsets {
-            let listToDelete = savedLists[index]
-            modelContext.delete(listToDelete)
+            modelContext.delete(savedLists[index])
         }
     }
 }

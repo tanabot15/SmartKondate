@@ -14,6 +14,7 @@ struct MealCardView: View {
     let diffResults: [MealDiffResult]
     let availableMenus: [Menu]
     let onSelectMenus: (MealType, [Menu]?) -> Void
+    var isToday: Bool = false
 
     @State private var editingMealType: MealType?
     @State private var selectedMenuForEdit: Menu?
@@ -26,15 +27,27 @@ struct MealCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            // Header: Day & Date
-            HStack {
+            // Header: Day & Date & Today Badge
+            HStack(spacing: 8) {
                 Text("Day \(dayIndex + 1)")
                     .font(.headline)
                     .foregroundStyle(.primary)
 
                 Text(dateString)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .fontWeight(isToday ? .bold : .regular)
+                    .foregroundStyle(isToday ? Color.accentColor : .secondary)
+
+                if isToday {
+                    Text("TODAY")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(Capsule())
+                }
 
                 Spacer()
             }
@@ -112,65 +125,99 @@ struct MealCardView: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(isToday ? Color.accentColor.opacity(0.06) : Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isToday ? Color.accentColor : Color.clear, lineWidth: 2)
+        )
         .sheet(item: $editingMealType) { mealType in
-            let currentResult = diffResults.first { $0.mealType == mealType }
-            NavigationStack {
-                List {
-                    Section {
-                        Button("Clear All") {
-                            onSelectMenus(mealType, nil)
-                            editingMealType = nil
-                        }
-                        .foregroundStyle(.red)
-                    }
-
-                    Section(header: Text("Available Menus")) {
-                        ForEach(availableMenus) { menu in
-                            Button {
-                                let current = currentResult?.effectiveMenus ?? []
-                                var updated = current
-                                if let idx = updated.firstIndex(where: { $0.id == menu.id }) {
-                                    updated.remove(at: idx)
-                                } else {
-                                    updated.append(menu)
-                                }
-                                onSelectMenus(mealType, updated)
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(menu.name)
-                                            .foregroundStyle(.primary)
-                                        Text(menu.category.rawValue)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    if currentResult?.effectiveMenus.contains(where: { $0.id == menu.id }) == true {
-                                        Image(systemName: "checkmark")
-                                            .foregroundStyle(Color.accentColor)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .navigationTitle("\(mealType.rawValue) Menu")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Done") {
-                            editingMealType = nil
-                        }
-                    }
-                }
-            }
+            MealEditorSheet(
+                mealType: mealType,
+                diffResult: diffResults.first { $0.mealType == mealType },
+                availableMenus: availableMenus,
+                onSelectMenus: onSelectMenus,
+                onDismiss: { editingMealType = nil }
+            )
             .presentationDetents([.medium, .large])
         }
         .sheet(item: $selectedMenuForEdit) { menu in
             NavigationStack {
                 MenuDetailEditorView(menuToEdit: menu)
+            }
+        }
+    }
+}
+
+// MARK: - Meal Editor Sheet Component
+private struct MealEditorSheet: View {
+    let mealType: MealType
+    let diffResult: MealDiffResult?
+    let availableMenus: [Menu]
+    let onSelectMenus: (MealType, [Menu]?) -> Void
+    let onDismiss: () -> Void
+
+    private var currentMenus: [Menu] {
+        diffResult?.effectiveMenus ?? []
+    }
+
+    private func isSelected(_ menu: Menu) -> Bool {
+        currentMenus.contains(where: { $0.id == menu.id })
+    }
+
+    private func toggleMenu(_ menu: Menu) {
+        var updated = currentMenus
+        if let index = updated.firstIndex(where: { $0.id == menu.id }) {
+            updated.remove(at: index)
+        } else {
+            updated.append(menu)
+        }
+        onSelectMenus(mealType, updated)
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Button("Clear All") {
+                        onSelectMenus(mealType, nil)
+                        onDismiss()
+                    }
+                    .foregroundStyle(.red)
+                }
+
+                Section(header: Text("Available Menus")) {
+                    ForEach(availableMenus) { menu in
+                        Button {
+                            toggleMenu(menu)
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(menu.name)
+                                        .foregroundStyle(.primary)
+                                    Text(menu.category.rawValue)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+
+                                if isSelected(menu) {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("\(mealType.rawValue) Menu")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") {
+                        onDismiss()
+                    }
+                }
             }
         }
     }
@@ -240,14 +287,34 @@ private struct FlowMenuView: View {
     let diffResults = [breakfastResult, lunchResult, dinnerResult]
 
     return ScrollView {
-        VStack(spacing: 16) {
-            MealCardView(
-                dayIndex: 0,
-                date: Date(),
-                diffResults: diffResults,
-                availableMenus: menus,
-                onSelectMenus: { mealType, newMenus in }
-            )
+        VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Today's Card Preview")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                MealCardView(
+                    dayIndex: 0,
+                    date: Date(),
+                    diffResults: diffResults,
+                    availableMenus: menus,
+                    onSelectMenus: { _, _ in },
+                    isToday: true
+                )
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Standard Day Card Preview")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                MealCardView(
+                    dayIndex: 1,
+                    date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
+                    diffResults: diffResults,
+                    availableMenus: menus,
+                    onSelectMenus: { _, _ in },
+                    isToday: false
+                )
+            }
         }
         .padding()
     }
