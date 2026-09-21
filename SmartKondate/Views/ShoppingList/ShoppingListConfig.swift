@@ -9,7 +9,7 @@ import Foundation
 enum ExtraSourceType: String, CaseIterable, Identifiable {
     case date = "Date"
     case pattern = "Pattern"
-    case patternDay = "Pattern Day"
+    case patternDay = "Day"
     case menu = "Menu"
 
     var id: String { rawValue }
@@ -41,15 +41,6 @@ enum ExtraSourceItem: Hashable, Identifiable {
             return "\(name) - Day \(index + 1)"
         case .menu(let menu):
             return "Menu: \(menu.name)"
-        }
-    }
-
-    var iconName: String {
-        switch self {
-        case .date: return "calendar"
-        case .pattern: return "arrow.triangle.2.circlepath"
-        case .patternDay: return "square.stack"
-        case .menu: return "fork.knife"
         }
     }
 }

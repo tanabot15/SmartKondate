@@ -74,7 +74,8 @@ struct ShoppingSetupView: View {
             Section(header: Text("Extra Additions")) {
                 ForEach(extraSources) { source in
                     HStack {
-                        Image(systemName: source.iconName).foregroundStyle(Color.accentColor)
+                        Image(systemName: "circle")
+                            .foregroundStyle(.primary)
                         Text(source.displayTitle).font(.subheadline)
                         Spacer()
                         Button {

@@ -243,9 +243,10 @@ struct ShoppingListView: View {
         let titleName = config.selectedPattern?.name ?? "Shopping List"
         let title = "\(titleName) (\(Date().formatted(date: .numeric, time: .omitted)))"
         let savedList = SavedShoppingList(title: title)
+        modelContext.insert(savedList)
         
-        savedList.items = aggregatedItems.map { item in
-            SavedIngredientItem(
+        for item in aggregatedItems {
+            let savedItem = SavedIngredientItem(
                 name: item.ingredientName,
                 quantity: item.quantity,
                 unit: item.unit,
@@ -254,14 +255,20 @@ struct ShoppingListView: View {
                 isChecked: checkedIngredientKeys.contains(item.id),
                 isModifiedMeal: item.isModifiedMeal
             )
+            modelContext.insert(savedItem)
+            savedItem.shoppingList = savedList
         }
         
-        modelContext.insert(savedList)
-        try? modelContext.save()
-        
-        withAnimation { showSavedToast = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation { showSavedToast = false }
+        do {
+            try modelContext.save()
+            print(" Successfully saved shopping list to SwiftData.")
+            
+            withAnimation { showSavedToast = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                withAnimation { showSavedToast = false }
+            }
+        } catch {
+            print(" Failed to save shopping list: \(error)")
         }
     }
 

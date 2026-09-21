@@ -206,6 +206,7 @@
 				D9AF18D13024C89E00C39DB7 /* KondatePattern.swift */,
 				D9AF18D33024C8A700C39DB7 /* PatternDay.swift */,
 				D9AF18D53024C8AE00C39DB7 /* StockItem.swift */,
+				D9BA15EA305CF56D008B3FC5 /* SavedShoppingList.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -260,7 +261,6 @@
 				D9AF18B13024C74300C39DB7 /* DiffIngredientRow.swift */,
 				D9BA15E6305BBFD6008B3FC5 /* ShoppingListConfig.swift */,
 				D9BA15E8305BC000008B3FC5 /* ShoppingSetupView.swift */,
-				D9BA15EA305CF56D008B3FC5 /* SavedShoppingList.swift */,
 				D9BA15EC305CF6B5008B3FC5 /* SavedShoppingListView.swift */,
 				D9BA15EE305D571F008B3FC5 /* SavedShoppingDetailView.swift */,
 			);
