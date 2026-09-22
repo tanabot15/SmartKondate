@@ -18,6 +18,7 @@ struct ShoppingListView: View {
     @State private var customQuantities: [String: Double] = [:]
     @State private var showCopiedToast = false
     @State private var showSavedToast = false
+    @State private var toastMessage = ""
 
     private var activePattern: KondatePattern? {
         allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
@@ -143,7 +144,7 @@ struct ShoppingListView: View {
         }
     }
 
-    // Export text generation
+    // Export text generation (All Items)
     private var formattedTextForSharing: String {
         var text = "【Shopping List】\n"
         if let pattern = config.selectedPattern {
@@ -180,6 +181,43 @@ struct ShoppingListView: View {
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // Export text generation (Unchecked / Pending Items Only)
+    private var uncheckedItemsFormattedText: String {
+        var text = "【Pending Items List】\n"
+
+        // Unchecked modified ingredients
+        let uncheckedModified = modifiedItems.filter { !checkedIngredientKeys.contains($0.id) }
+        if !uncheckedModified.isEmpty {
+            text += "■ Recipe Ingredients\n"
+            for item in uncheckedModified {
+                let qtyStr = formatQuantity(item.quantity)
+                let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                text += "・\(item.ingredientName) \(qtyStr)\(unitStr)\n"
+            }
+            text += "\n"
+        }
+
+        // Unchecked standard ingredients by category
+        for group in standardItemsByCategory {
+            let uncheckedGroupItems = group.items.filter { !checkedIngredientKeys.contains($0.id) }
+            if !uncheckedGroupItems.isEmpty {
+                text += "■ \(group.category.rawValue)\n"
+                for item in uncheckedGroupItems {
+                    let qtyStr = formatQuantity(item.quantity)
+                    let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                    text += "・\(item.ingredientName) \(qtyStr)\(unitStr)\n"
+                }
+                text += "\n"
+            }
+        }
+
+        let result = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if result == "【Pending Items List】" {
+            return "【Pending Items List】\nAll items have been purchased."
+        }
+        return result
+    }
+
     var body: some View {
         ZStack {
             List {
@@ -201,38 +239,47 @@ struct ShoppingListView: View {
             .listStyle(.insetGrouped)
 
             if showCopiedToast {
-                toastView(message: "Copied to clipboard", icon: "checkmark.circle.fill", color: .green)
+                toastView(message: toastMessage, icon: "checkmark.circle.fill", color: .green)
             } else if showSavedToast {
-                toastView(message: "Saved to Shopping Lists", icon: "square.and.arrow.down.fill", color: .blue)
+                toastView(message: "Saved to app", icon: "square.and.arrow.down.fill", color: .blue)
             }
         }
         .navigationTitle("Shopping List")
         .toolbar {
-            if !checkedIngredientKeys.isEmpty {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Clear") { checkedIngredientKeys.removeAll() }
+            // Top Bar Leading: Clear Button with Icon & Label
+            ToolbarItemGroup(placement: .topBarLeading) {
+                if !checkedIngredientKeys.isEmpty {
+                    Button {
+                        checkedIngredientKeys.removeAll()
+                    } label: {
+                        Image(systemName: "checkmark.circle.badge.xmark")
+                        Text("Clear")
+                    }
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
+
+            // Top Bar Trailing: Save, Share Full List, & Copy Pending Items
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 Button(action: saveShoppingList) {
                     Image(systemName: "square.and.arrow.down")
                 }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
+
                 ShareLink(item: formattedTextForSharing) {
                     Image(systemName: "square.and.arrow.up")
                 }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: copyToClipboard) {
+
+                Button {
+                    copyToClipboard(text: uncheckedItemsFormattedText, message: "Copied pending items")
+                } label: {
                     Image(systemName: "doc.on.doc")
                 }
             }
         }
     }
 
-    private func copyToClipboard() {
-        UIPasteboard.general.string = formattedTextForSharing
+    private func copyToClipboard(text: String, message: String) {
+        UIPasteboard.general.string = text
+        toastMessage = message
         withAnimation { showCopiedToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             withAnimation { showCopiedToast = false }
@@ -261,8 +308,6 @@ struct ShoppingListView: View {
         
         do {
             try modelContext.save()
-            print(" Successfully saved shopping list to SwiftData.")
-            
             withAnimation { showSavedToast = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 withAnimation { showSavedToast = false }
