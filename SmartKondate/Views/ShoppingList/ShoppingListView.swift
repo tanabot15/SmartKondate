@@ -145,20 +145,20 @@ struct ShoppingListView: View {
 
     // Export text generation
     private var formattedTextForSharing: String {
-        var text = "【買い物リスト】\n"
+        var text = "【Shopping List】\n"
         if let pattern = config.selectedPattern {
-            text += "対象: \(pattern.name) (\(config.selectedDayIndices.count)日分)\n"
+            text += "Target: \(pattern.name) (\(config.selectedDayIndices.count) days)\n"
         }
         text += "\n"
 
         if !outOfStockItems.isEmpty {
-            text += "■ 不足中の在庫 (要補充)\n"
+            text += "■ Out of Stock (Refill Needed)\n"
             for stock in outOfStockItems { text += "・\(stock.name)\n" }
             text += "\n"
         }
 
         if !modifiedItems.isEmpty {
-            text += "■ 変更・追加メニュー分\n"
+            text += "■ Modified / Added Meal Ingredients\n"
             for item in modifiedItems {
                 let qtyStr = formatQuantity(item.quantity)
                 let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"

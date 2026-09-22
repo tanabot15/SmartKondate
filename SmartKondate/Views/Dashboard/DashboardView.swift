@@ -87,7 +87,7 @@ struct DashboardView: View {
                                     // MARK: - Days List in Pattern
                                     ForEach(0..<pattern.durationDays, id: \.self) { dayIndex in
                                         let date = Calendar.current.date(byAdding: .day, value: dayIndex, to: patternStartDate) ?? patternStartDate
-                                        let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern)
+                                        let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern, patternStartDate: patternStartDate)
                                         let isToday = Calendar.current.isDateInToday(date)
 
                                         MealCardView(
@@ -141,7 +141,7 @@ struct DashboardView: View {
         }
     }
 
-    private func getDiffResults(for date: Date, dayIndex: Int, pattern: KondatePattern) -> [MealDiffResult] {
+    private func getDiffResults(for date: Date, dayIndex: Int, pattern: KondatePattern, patternStartDate: Date) -> [MealDiffResult] {
         let breakfast = customMenuDict["\(pattern.id)_\(dayIndex)_\(MealType.breakfast.rawValue)"]
         let lunch = customMenuDict["\(pattern.id)_\(dayIndex)_\(MealType.lunch.rawValue)"]
         let dinner = customMenuDict["\(pattern.id)_\(dayIndex)_\(MealType.dinner.rawValue)"]
@@ -149,7 +149,7 @@ struct DashboardView: View {
         return DiffCalculator.calculateDiff(
             for: date,
             pattern: pattern,
-            startDate: pattern.startDate ?? pattern.createdAt,
+            startDate: patternStartDate,
             customBreakfast: breakfast,
             customLunch: lunch,
             customDinner: dinner
