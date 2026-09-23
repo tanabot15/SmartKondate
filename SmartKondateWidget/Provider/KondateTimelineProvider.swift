@@ -90,39 +90,53 @@ private enum WidgetDataFetcher {
         
         let context = container.mainContext
         
+        // 1. DashboardView と同じく queueOrder 順にキューを取得
         let descriptor = FetchDescriptor<KondatePattern>(
-            predicate: #Predicate { $0.isActive == true }
+            predicate: #Predicate { $0.queueOrder != nil },
+            sortBy: [SortDescriptor(\.queueOrder, order: .forward)]
         )
         
-        guard let activePattern = try? context.fetch(descriptor).first,
-              activePattern.durationDays > 0,
-              !activePattern.days.isEmpty else {
+        guard let queuedPatterns = try? context.fetch(descriptor), !queuedPatterns.isEmpty else {
+            return nil
+        }
+        
+        guard let firstPattern = queuedPatterns.first,
+              let baseStartDate = firstPattern.startDate else {
             return nil
         }
         
         let calendar = Calendar.current
-        let startOfTarget = calendar.startOfDay(for: date)
+        let startOfToday = calendar.startOfDay(for: date)
         
-        let baseDate = activePattern.startDate ?? activePattern.createdAt
-        let startOfBase = calendar.startOfDay(for: baseDate)
-        
-        let dayDifference = calendar.dateComponents([.day], from: startOfBase, to: startOfTarget).day ?? 0
-        
-        let remainder = dayDifference % activePattern.durationDays
-        let dayIndex = remainder >= 0 ? remainder : remainder + activePattern.durationDays
-        
-        if let targetDay = activePattern.days.first(where: { $0.dayIndex == dayIndex }) {
-            return SimpleKondateEntry(
-                date: date,
-                patternName: activePattern.name,
-                dayText: "Day \(dayIndex + 1)",
-                breakfastMain: extractMain(from: targetDay.breakfastMenus),
-                breakfastSub: extractSub(from: targetDay.breakfastMenus),
-                lunchMain: extractMain(from: targetDay.lunchMenus),
-                lunchSub: extractSub(from: targetDay.lunchMenus),
-                dinnerMain: extractMain(from: targetDay.dinnerMenus),
-                dinnerSub: extractSub(from: targetDay.dinnerMenus)
-            )
+        // 2. DashboardView logic
+        for index in 0..<queuedPatterns.count {
+            let pattern = queuedPatterns[index]
+            
+            // patternIndex までの累積日数を計算 (DashboardView の startDate(for:) と同じ)
+            let offsetDays = queuedPatterns.prefix(index).reduce(0) { $0 + $1.durationDays }
+            guard let patternStartDate = calendar.date(byAdding: .day, value: offsetDays, to: baseStartDate) else { continue }
+            
+            // このパターンの期間中に「今日」が含まれるか判定
+            for dayIndex in 0..<pattern.durationDays {
+                if let dayDate = calendar.date(byAdding: .day, value: dayIndex, to: patternStartDate),
+                   calendar.isDate(dayDate, inSameDayAs: startOfToday) {
+                    
+                    // 該当する PatternDay からメニュー情報を取得
+                    if let targetDay = pattern.days.first(where: { $0.dayIndex == dayIndex }) {
+                        return SimpleKondateEntry(
+                            date: date,
+                            patternName: pattern.name,
+                            dayText: "Day \(dayIndex + 1)",
+                            breakfastMain: extractMain(from: targetDay.breakfastMenus),
+                            breakfastSub: extractSub(from: targetDay.breakfastMenus),
+                            lunchMain: extractMain(from: targetDay.lunchMenus),
+                            lunchSub: extractSub(from: targetDay.lunchMenus),
+                            dinnerMain: extractMain(from: targetDay.dinnerMenus),
+                            dinnerSub: extractSub(from: targetDay.dinnerMenus)
+                        )
+                    }
+                }
+            }
         }
         
         return nil
