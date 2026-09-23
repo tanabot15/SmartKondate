@@ -6,6 +6,13 @@
 import SwiftUI
 import SwiftData
 
+enum ShoppingCheckMode: String, CaseIterable, Identifiable {
+    case standard = "Standard"
+    case unbuyable = "Unbuyable"
+    
+    var id: String { rawValue }
+}
+
 struct ShoppingListView: View {
     let config: ShoppingListConfig
 
@@ -14,6 +21,7 @@ struct ShoppingListView: View {
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query private var allStockItems: [StockItem]
 
+    @State private var checkMode: ShoppingCheckMode = .standard
     @State private var checkedIngredientKeys: Set<String> = []
     @State private var customQuantities: [String: Double] = [:]
     @State private var showCopiedToast = false
@@ -218,9 +226,29 @@ struct ShoppingListView: View {
         return result
     }
 
+    // Export text generation (Unbuyable / Checked Items in Unbuyable Mode Only)
+    private var unbuyableItemsFormattedText: String {
+        var text = "【Unbuyable Items】\n"
+        let unbuyableItems = aggregatedItems.filter { checkedIngredientKeys.contains($0.id) }
+        
+        if unbuyableItems.isEmpty {
+            return "【Unbuyable Items】\nNo items marked as unbuyable."
+        }
+
+        for item in unbuyableItems {
+            let qtyStr = formatQuantity(item.quantity)
+            let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+            text += "・\(item.ingredientName) \(qtyStr)\(unitStr)\n"
+        }
+
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var body: some View {
         ZStack {
             List {
+                modeSelectionSection
+                
                 summarySection
                 
                 if !outOfStockItems.isEmpty {
@@ -246,7 +274,7 @@ struct ShoppingListView: View {
         }
         .navigationTitle("Shopping List")
         .toolbar {
-            // Top Bar Leading: Clear Button with Icon & Label
+            // Top Bar Leading: Clear Button
             ToolbarItemGroup(placement: .topBarLeading) {
                 if !checkedIngredientKeys.isEmpty {
                     Button {
@@ -258,7 +286,7 @@ struct ShoppingListView: View {
                 }
             }
 
-            // Top Bar Trailing: Save, Share Full List, & Copy Pending Items
+            // Top Bar Trailing: Save, Share Full List, & Copy Mode Specific List
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button(action: saveShoppingList) {
                     Image(systemName: "square.and.arrow.down")
@@ -269,7 +297,11 @@ struct ShoppingListView: View {
                 }
 
                 Button {
-                    copyToClipboard(text: uncheckedItemsFormattedText, message: "Copied pending items")
+                    if checkMode == .standard {
+                        copyToClipboard(text: uncheckedItemsFormattedText, message: "Copied pending items")
+                    } else {
+                        copyToClipboard(text: unbuyableItemsFormattedText, message: "Copied unbuyable items")
+                    }
                 } label: {
                     Image(systemName: "doc.on.doc")
                 }
@@ -318,6 +350,43 @@ struct ShoppingListView: View {
     }
 
     // MARK: - Subviews
+    private var modeSelectionSection: some View {
+        Section {
+            VStack(spacing: 10) {
+                Picker("Check Mode", selection: $checkMode) {
+                    ForEach(ShoppingCheckMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                HStack {
+                    if checkMode == .standard {
+                        Text("Check items as you buy them")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Check items that are unbuyable")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(checkedIngredientKeys.isEmpty ? "Select All" : "Deselect All") {
+                        if checkedIngredientKeys.isEmpty {
+                            checkedIngredientKeys = Set(aggregatedItems.map { $0.id })
+                        } else {
+                            checkedIngredientKeys.removeAll()
+                        }
+                    }
+                    .font(.caption)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
     private var summarySection: some View {
         Section(header: Text("Target Criteria")) {
             VStack(alignment: .leading, spacing: 6) {
@@ -422,6 +491,7 @@ struct ShoppingListView: View {
             menuDetails: item.menuDetails,
             isModifiedMeal: isModified,
             isChecked: checkedIngredientKeys.contains(item.id),
+            isUnbuyableMode: checkMode == .unbuyable,
             onToggle: {
                 if checkedIngredientKeys.contains(item.id) {
                     checkedIngredientKeys.remove(item.id)

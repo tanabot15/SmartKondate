@@ -12,6 +12,7 @@ struct DiffIngredientRow: View {
     let menuDetails: String
     let isModifiedMeal: Bool
     let isChecked: Bool
+    var isUnbuyableMode: Bool = false
     let onToggle: () -> Void
     let onQuantityChange: (Double) -> Void
 
@@ -31,9 +32,15 @@ struct DiffIngredientRow: View {
     // MARK: - Subviews
     private var checkButton: some View {
         Button(action: onToggle) {
-            Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
-                .font(.title3)
-                .foregroundStyle(isChecked ? Color.accentColor : Color.secondary)
+            if isUnbuyableMode {
+                Image(systemName: isChecked ? "xmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isChecked ? Color.red : Color.secondary)
+            } else {
+                Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isChecked ? Color.accentColor : Color.secondary)
+            }
         }
         .buttonStyle(.plain)
     }
@@ -44,8 +51,8 @@ struct DiffIngredientRow: View {
                 Text(ingredientName)
                     .font(.body)
                     .fontWeight(isModifiedMeal ? .bold : .regular)
-                    .foregroundStyle(isChecked ? .secondary : .primary)
-                    .strikethrough(isChecked)
+                    .foregroundStyle(isChecked ? (isUnbuyableMode ? .red : .secondary) : .primary)
+                    .strikethrough(isChecked && !isUnbuyableMode) // 買えなかったモード時は打消し線を引かない
 
                 if isModifiedMeal {
                     Text("Changed")
@@ -229,7 +236,8 @@ private struct QuantityEditPopover: View {
             unit: "pcs",
             menuDetails: "Grilled Salmon (Custom)",
             isModifiedMeal: true,
-            isChecked: false,
+            isChecked: true,
+            isUnbuyableMode: true,
             onToggle: {},
             onQuantityChange: { _ in }
         )
