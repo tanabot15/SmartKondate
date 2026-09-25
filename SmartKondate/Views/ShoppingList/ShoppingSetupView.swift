@@ -9,6 +9,7 @@ import SwiftData
 struct ShoppingSetupView: View {
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query(sort: \Menu.createdAt, order: .reverse) private var allMenus: [Menu]
+    @Query(sort: \SavedShoppingList.createdAt, order: .reverse) private var savedLists: [SavedShoppingList]
     
     @State private var selectedPatternID: UUID?
     @State private var enabledDayIndices: Set<Int> = []
@@ -110,8 +111,17 @@ struct ShoppingSetupView: View {
         .navigationTitle("Shopping List Setup")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(destination: SavedShoppingListView()) {
-                    Image(systemName: "folder")
+                if let latestList = savedLists.first {
+                    NavigationLink(destination: SavedShoppingView(shoppingList: latestList)) {
+                        Image(systemName: "cart.fill.badge.questionmark")
+                            .renderingMode(.template)
+                            .font(.body)
+                    }
+                } else {
+                    Image(systemName: "cart.fill.badge.questionmark")
+                        .renderingMode(.template)
+                        .font(.body)
+                        .foregroundStyle(.tertiary)
                 }
             }
         }

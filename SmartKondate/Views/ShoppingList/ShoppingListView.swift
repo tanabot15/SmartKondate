@@ -20,13 +20,19 @@ struct ShoppingListView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query private var allStockItems: [StockItem]
+    @Query(sort: \SavedShoppingList.createdAt, order: .reverse) private var savedLists: [SavedShoppingList]
 
     @State private var checkMode: ShoppingCheckMode = .standard
     @State private var checkedIngredientKeys: Set<String> = []
     @State private var customQuantities: [String: Double] = [:]
     @State private var showCopiedToast = false
-    @State private var showSavedToast = false
     @State private var toastMessage = ""
+    
+    @State private var showSaveTitleAlert = false
+    @State private var showOverwriteAlert = false
+    @State private var inputListTitle = ""
+    @State private var activeSavedList: SavedShoppingList?
+    @State private var navigateToDetail = false
 
     private var activePattern: KondatePattern? {
         allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
@@ -36,7 +42,6 @@ struct ShoppingListView: View {
         allStockItems.filter { $0.isOut }
     }
 
-    // Extract raw ingredients based on configuration
     private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool)] {
         var result: [(Ingredient, String, Bool)] = []
 
@@ -99,7 +104,6 @@ struct ShoppingListView: View {
         return result
     }
 
-    // Aggregate ingredients by name and unit
     private var aggregatedItems: [ShoppingIngredientItem] {
         let stockedNames = Set(allStockItems.filter { !$0.isOut }.map { $0.name.trimmingCharacters(in: .whitespaces).lowercased() })
         var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool)] = [:]
@@ -152,7 +156,6 @@ struct ShoppingListView: View {
         }
     }
 
-    // Export text generation (All Items)
     private var formattedTextForSharing: String {
         var text = "【Shopping List】\n"
         if let pattern = config.selectedPattern {
@@ -189,11 +192,9 @@ struct ShoppingListView: View {
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    // Export text generation (Unchecked / Pending Items Only)
     private var uncheckedItemsFormattedText: String {
         var text = "【Pending Items List】\n"
 
-        // Unchecked modified ingredients
         let uncheckedModified = modifiedItems.filter { !checkedIngredientKeys.contains($0.id) }
         if !uncheckedModified.isEmpty {
             text += "■ Recipe Ingredients\n"
@@ -205,7 +206,6 @@ struct ShoppingListView: View {
             text += "\n"
         }
 
-        // Unchecked standard ingredients by category
         for group in standardItemsByCategory {
             let uncheckedGroupItems = group.items.filter { !checkedIngredientKeys.contains($0.id) }
             if !uncheckedGroupItems.isEmpty {
@@ -226,7 +226,6 @@ struct ShoppingListView: View {
         return result
     }
 
-    // Export text generation (Unbuyable / Checked Items in Unbuyable Mode Only)
     private var unbuyableItemsFormattedText: String {
         var text = "【Unbuyable Items】\n"
         let unbuyableItems = aggregatedItems.filter { checkedIngredientKeys.contains($0.id) }
@@ -248,7 +247,6 @@ struct ShoppingListView: View {
         ZStack {
             List {
                 modeSelectionSection
-                
                 summarySection
                 
                 if !outOfStockItems.isEmpty {
@@ -268,13 +266,15 @@ struct ShoppingListView: View {
 
             if showCopiedToast {
                 toastView(message: toastMessage, icon: "checkmark.circle.fill", color: .green)
-            } else if showSavedToast {
-                toastView(message: "Saved to app", icon: "square.and.arrow.down.fill", color: .blue)
             }
         }
         .navigationTitle("Shopping List")
+        .navigationDestination(isPresented: $navigateToDetail) {
+            if let targetList = activeSavedList {
+                SavedShoppingView(shoppingList: targetList)
+            }
+        }
         .toolbar {
-            // Top Bar Leading: Clear Button
             ToolbarItemGroup(placement: .topBarLeading) {
                 if !checkedIngredientKeys.isEmpty {
                     Button {
@@ -286,9 +286,8 @@ struct ShoppingListView: View {
                 }
             }
 
-            // Top Bar Trailing: Save, Share Full List, & Copy Mode Specific List
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button(action: saveShoppingList) {
+                Button(action: handleSaveListPressed) {
                     Image(systemName: "square.and.arrow.down")
                 }
 
@@ -307,6 +306,23 @@ struct ShoppingListView: View {
                 }
             }
         }
+        .alert("Overwrite Existing List?", isPresented: $showOverwriteAlert) {
+            Button("Overwrite", role: .destructive) {
+                showSaveTitleAlert = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will replace your previously saved shopping list with the current one.")
+        }
+        .alert("Save Shopping List", isPresented: $showSaveTitleAlert) {
+            TextField("List Title", text: $inputListTitle)
+            Button("Save") {
+                executeSaveList(title: inputListTitle)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Enter a title for your shopping list.")
+        }
     }
 
     private func copyToClipboard(text: String, message: String) {
@@ -318,13 +334,36 @@ struct ShoppingListView: View {
         }
     }
 
-    private func saveShoppingList() {
-        let titleName = config.selectedPattern?.name ?? "Shopping List"
-        let title = "\(titleName) (\(Date().formatted(date: .numeric, time: .omitted)))"
-        let savedList = SavedShoppingList(title: title)
+    private func handleSaveListPressed() {
+        let defaultName = config.selectedPattern?.name ?? "Shopping List"
+        inputListTitle = "\(defaultName) (\(Date().formatted(date: .numeric, time: .omitted)))"
+        
+        if !savedLists.isEmpty {
+            showOverwriteAlert = true
+        } else {
+            showSaveTitleAlert = true
+        }
+    }
+
+    private func executeSaveList(title: String) {
+        for oldList in savedLists {
+            modelContext.delete(oldList)
+        }
+
+        let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Shopping List" : title
+        let savedList = SavedShoppingList(title: finalTitle)
         modelContext.insert(savedList)
         
-        for item in aggregatedItems {
+        let itemsToSave: [ShoppingIngredientItem] = aggregatedItems.filter { item in
+            let isChecked = checkedIngredientKeys.contains(item.id)
+            if checkMode == .standard {
+                return !isChecked
+            } else {
+                return isChecked
+            }
+        }
+
+        for item in itemsToSave {
             let savedItem = SavedIngredientItem(
                 name: item.ingredientName,
                 quantity: item.quantity,
@@ -340,12 +379,10 @@ struct ShoppingListView: View {
         
         do {
             try modelContext.save()
-            withAnimation { showSavedToast = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                withAnimation { showSavedToast = false }
-            }
+            self.activeSavedList = savedList
+            self.navigateToDetail = true
         } catch {
-            print(" Failed to save shopping list: \(error)")
+            print("Failed to save shopping list: \(error)")
         }
     }
 
