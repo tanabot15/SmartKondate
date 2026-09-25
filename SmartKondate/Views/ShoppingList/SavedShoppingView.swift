@@ -6,7 +6,7 @@
 import SwiftUI
 import SwiftData
 
-struct SavedShoppingDetailView: View {
+struct SavedShoppingView: View {
     @Bindable var shoppingList: SavedShoppingList
 
     @Environment(\.modelContext) private var modelContext
@@ -161,7 +161,7 @@ struct SavedShoppingDetailView: View {
     context.insert(stockItem)
 
     return NavigationStack {
-        SavedShoppingDetailView(shoppingList: list)
+        SavedShoppingView(shoppingList: list)
     }
     .modelContainer(container)
 }
