@@ -113,6 +113,7 @@ private struct MealSectionRows: View {
     @Binding var menus: [Menu]
     let availableMenus: [Menu]
 
+    @State private var isShowingMainSheet = false
     @State private var isShowingSubSheet = false
 
     // Mainカテゴリのメニュー（単一）
@@ -140,24 +141,18 @@ private struct MealSectionRows: View {
 
                 Spacer()
 
-                Picker("Main", selection: Binding(
-                    get: { mainSelection },
-                    set: { newMain in
-                        var updated = menus.filter { $0.category != .main }
-                        if let newMain = newMain {
-                            updated.append(newMain)
-                        }
-                        menus = updated
-                    }
-                )) {
-                    Text("None").tag(Menu?.none)
-                    Divider()
-                    ForEach(availableMenus.filter { $0.category == .main }) { menu in
-                        Text(menu.name).tag(Menu?.some(menu))
+                Button {
+                    isShowingMainSheet = true
+                } label: {
+                    if let mainSelection {
+                        Text(mainSelection.name)
+                            .foregroundStyle(.primary)
+                    } else {
+                        Text("None")
+                            .foregroundStyle(.secondary)
                     }
                 }
-                .pickerStyle(.menu)
-                .labelsHidden()
+                .font(.subheadline)
             }
 
             Divider()
@@ -186,13 +181,25 @@ private struct MealSectionRows: View {
             }
         }
         .padding(.vertical, 4)
+        .sheet(isPresented: $isShowingMainSheet) {
+            MenuPickerSheet(
+                title: "\(mealTitle) - Main",
+                candidateMenus: availableMenus.filter { $0.category == .main },
+                selectedMenus: mainSelection.map { [$0] } ?? [],
+                isSingleSelection: true,
+                onSave: { updatedMains in
+                    let currentSubs = menus.filter { $0.category != .main }
+                    menus = updatedMains + currentSubs
+                }
+            )
+        }
         .sheet(isPresented: $isShowingSubSheet) {
-            SubMenuPickerSheet(
-                mealTitle: mealTitle,
-                allSubMenus: availableMenus.filter { $0.category != .main },
-                selectedSubMenus: selectedSubMenus,
+            MenuPickerSheet(
+                title: "\(mealTitle) - Side & Soup",
+                candidateMenus: availableMenus.filter { $0.category != .main },
+                selectedMenus: selectedSubMenus,
+                isSingleSelection: false,
                 onSave: { updatedSubs in
-                    // Main は残したまま、Subメニュー群を差し替える
                     let currentMain = menus.filter { $0.category == .main }
                     menus = currentMain + updatedSubs
                 }
@@ -201,37 +208,57 @@ private struct MealSectionRows: View {
     }
 }
 
-// MARK: - SubMenuPickerSheet
-private struct SubMenuPickerSheet: View {
+// MARK: - MenuPickerSheet (Main / Sub 共通メニュー選択シート)
+private struct MenuPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
-    let mealTitle: String
-    let allSubMenus: [Menu]
-    @State var selectedSubMenus: [Menu]
+    let title: String
+    let candidateMenus: [Menu]
+    @State private var selectedMenus: [Menu]
+    let isSingleSelection: Bool
     let onSave: ([Menu]) -> Void
 
-    init(mealTitle: String, allSubMenus: [Menu], selectedSubMenus: [Menu], onSave: @escaping ([Menu]) -> Void) {
-        self.mealTitle = mealTitle
-        self.allSubMenus = allSubMenus
-        self._selectedSubMenus = State(initialValue: selectedSubMenus)
+    @State private var searchText = ""
+
+    init(
+        title: String,
+        candidateMenus: [Menu],
+        selectedMenus: [Menu],
+        isSingleSelection: Bool,
+        onSave: @escaping ([Menu]) -> Void
+    ) {
+        self.title = title
+        self.candidateMenus = candidateMenus
+        self._selectedMenus = State(initialValue: selectedMenus)
+        self.isSingleSelection = isSingleSelection
         self.onSave = onSave
+    }
+
+    private var filteredMenus: [Menu] {
+        if searchText.isEmpty {
+            return candidateMenus
+        } else {
+            return candidateMenus.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
     }
 
     var body: some View {
         NavigationStack {
             List {
-                if allSubMenus.isEmpty {
+                if candidateMenus.isEmpty {
                     ContentUnavailableView(
-                        "No Side or Soup Available",
+                        "No Menus Available",
                         systemImage: "fork.knife",
-                        description: Text("Register Side/Soup items in Menus first.")
+                        description: Text("Register items in Menus first.")
                     )
+                } else if filteredMenus.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
                 } else {
-                    ForEach(allSubMenus) { menu in
+                    ForEach(filteredMenus) { menu in
                         Button {
                             toggleSelection(menu)
                         } label: {
                             HStack {
-                                VStack(alignment: .leading) {
+                                VStack(alignment: .leading, spacing: 2) {
                                     Text(menu.name)
                                         .foregroundStyle(.primary)
                                     Text(menu.category.rawValue)
@@ -239,9 +266,10 @@ private struct SubMenuPickerSheet: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                if selectedSubMenus.contains(where: { $0.id == menu.id }) {
+                                if selectedMenus.contains(where: { $0.id == menu.id }) {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(Color.accentColor)
+                                        .fontWeight(.semibold)
                                 }
                             }
                         }
@@ -249,15 +277,16 @@ private struct SubMenuPickerSheet: View {
                     }
                 }
             }
-            .navigationTitle("\(mealTitle) - Side & Soup")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, prompt: "Search menus")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        onSave(selectedSubMenus)
+                        onSave(selectedMenus)
                         dismiss()
                     }
                 }
@@ -267,10 +296,18 @@ private struct SubMenuPickerSheet: View {
     }
 
     private func toggleSelection(_ menu: Menu) {
-        if let index = selectedSubMenus.firstIndex(where: { $0.id == menu.id }) {
-            selectedSubMenus.remove(at: index)
+        if isSingleSelection {
+            if selectedMenus.contains(where: { $0.id == menu.id }) {
+                selectedMenus.removeAll()
+            } else {
+                selectedMenus = [menu]
+            }
         } else {
-            selectedSubMenus.append(menu)
+            if let index = selectedMenus.firstIndex(where: { $0.id == menu.id }) {
+                selectedMenus.remove(at: index)
+            } else {
+                selectedMenus.append(menu)
+            }
         }
     }
 }

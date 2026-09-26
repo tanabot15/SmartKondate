@@ -346,45 +346,50 @@ struct ShoppingListView: View {
     }
 
     private func executeSaveList(title: String) {
-        for oldList in savedLists {
-            modelContext.delete(oldList)
-        }
+            for oldList in savedLists {
+                modelContext.delete(oldList)
+            }
 
-        let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Shopping List" : title
-        let savedList = SavedShoppingList(title: finalTitle)
-        modelContext.insert(savedList)
-        
-        let itemsToSave: [ShoppingIngredientItem] = aggregatedItems.filter { item in
-            let isChecked = checkedIngredientKeys.contains(item.id)
-            if checkMode == .standard {
-                return !isChecked
-            } else {
-                return isChecked
+            let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Shopping List" : title
+            let savedList = SavedShoppingList(title: finalTitle)
+            modelContext.insert(savedList)
+            
+            let itemsToSave: [ShoppingIngredientItem] = aggregatedItems.filter { item in
+                let isChecked = checkedIngredientKeys.contains(item.id)
+                if checkMode == .standard {
+                    return !isChecked
+                } else {
+                    return isChecked
+                }
+            }
+
+            for item in itemsToSave {
+                let savedItem = SavedIngredientItem(
+                    name: item.ingredientName,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    categoryRawValue: item.category.rawValue,
+                    menuDetails: item.menuDetails,
+                    isChecked: checkedIngredientKeys.contains(item.id),
+                    isModifiedMeal: item.isModifiedMeal
+                )
+                modelContext.insert(savedItem)
+                
+                savedItem.shoppingList = savedList
+                savedList.items.append(savedItem)
+            }
+            
+            do {
+                try modelContext.save()
+                
+                DispatchQueue.main.async {
+                    self.activeSavedList = savedList
+                    self.navigateToDetail = true
+                }
+            } catch {
+                print("Failed to save shopping list: \(error)")
             }
         }
-
-        for item in itemsToSave {
-            let savedItem = SavedIngredientItem(
-                name: item.ingredientName,
-                quantity: item.quantity,
-                unit: item.unit,
-                categoryRawValue: item.category.rawValue,
-                menuDetails: item.menuDetails,
-                isChecked: checkedIngredientKeys.contains(item.id),
-                isModifiedMeal: item.isModifiedMeal
-            )
-            modelContext.insert(savedItem)
-            savedItem.shoppingList = savedList
-        }
-        
-        do {
-            try modelContext.save()
-            self.activeSavedList = savedList
-            self.navigateToDetail = true
-        } catch {
-            print("Failed to save shopping list: \(error)")
-        }
-    }
 
     // MARK: - Subviews
     private var modeSelectionSection: some View {
