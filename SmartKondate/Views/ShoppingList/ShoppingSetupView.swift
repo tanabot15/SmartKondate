@@ -111,8 +111,10 @@ struct ShoppingSetupView: View {
         .navigationTitle("Shopping List Setup")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if let latestList = savedLists.first {
-                    NavigationLink(destination: SavedShoppingView(shoppingList: latestList)) {
+                if let latestList = savedLists.first, !latestList.isDeleted {
+                    NavigationLink {
+                        SavedShoppingView(shoppingList: latestList)
+                    } label: {
                         Image(systemName: "cart.fill.badge.questionmark")
                             .renderingMode(.template)
                             .font(.body)
