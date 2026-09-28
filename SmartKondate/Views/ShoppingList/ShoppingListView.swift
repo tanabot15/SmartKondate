@@ -20,19 +20,12 @@ struct ShoppingListView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query private var allStockItems: [StockItem]
-    @Query(sort: \SavedShoppingList.createdAt, order: .reverse) private var savedLists: [SavedShoppingList]
 
     @State private var checkMode: ShoppingCheckMode = .standard
     @State private var checkedIngredientKeys: Set<String> = []
     @State private var customQuantities: [String: Double] = [:]
     @State private var showCopiedToast = false
     @State private var toastMessage = ""
-    
-    @State private var showSaveTitleAlert = false
-    @State private var showOverwriteAlert = false
-    @State private var inputListTitle = ""
-    @State private var activeSavedList: SavedShoppingList?
-    @State private var navigateToDetail = false
 
     private var activePattern: KondatePattern? {
         allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
@@ -269,11 +262,6 @@ struct ShoppingListView: View {
             }
         }
         .navigationTitle("Shopping List")
-        .navigationDestination(isPresented: $navigateToDetail) {
-            if let targetList = activeSavedList {
-                SavedShoppingView(shoppingList: targetList)
-            }
-        }
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) {
                 if !checkedIngredientKeys.isEmpty {
@@ -287,10 +275,6 @@ struct ShoppingListView: View {
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button(action: handleSaveListPressed) {
-                    Image(systemName: "square.and.arrow.down")
-                }
-
                 ShareLink(item: formattedTextForSharing) {
                     Image(systemName: "square.and.arrow.up")
                 }
@@ -306,23 +290,6 @@ struct ShoppingListView: View {
                 }
             }
         }
-        .alert("Overwrite Existing List?", isPresented: $showOverwriteAlert) {
-            Button("Overwrite", role: .destructive) {
-                showSaveTitleAlert = true
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This will replace your previously saved shopping list with the current one.")
-        }
-        .alert("Save Shopping List", isPresented: $showSaveTitleAlert) {
-            TextField("List Title", text: $inputListTitle)
-            Button("Save") {
-                executeSaveList(title: inputListTitle)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Enter a title for your shopping list.")
-        }
     }
 
     private func copyToClipboard(text: String, message: String) {
@@ -331,59 +298,6 @@ struct ShoppingListView: View {
         withAnimation { showCopiedToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             withAnimation { showCopiedToast = false }
-        }
-    }
-
-    private func handleSaveListPressed() {
-        let defaultName = config.selectedPattern?.name ?? "Shopping List"
-        inputListTitle = "\(defaultName) (\(Date().formatted(date: .numeric, time: .omitted)))"
-        
-        if !savedLists.isEmpty {
-            showOverwriteAlert = true
-        } else {
-            showSaveTitleAlert = true
-        }
-    }
-
-    private func executeSaveList(title: String) {
-        for oldList in savedLists {
-            modelContext.delete(oldList)
-        }
-
-        let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Shopping List" : title
-        let savedList = SavedShoppingList(title: finalTitle)
-        modelContext.insert(savedList)
-        
-        let itemsToSave: [ShoppingIngredientItem] = aggregatedItems.filter { item in
-            let isChecked = checkedIngredientKeys.contains(item.id)
-            return checkMode == .standard ? !isChecked : isChecked
-        }
-
-        for item in itemsToSave {
-            let savedItem = SavedIngredientItem(
-                name: item.ingredientName,
-                quantity: item.quantity,
-                unit: item.unit,
-                categoryRawValue: item.category.rawValue,
-                menuDetails: item.menuDetails,
-                isChecked: checkedIngredientKeys.contains(item.id),
-                isModifiedMeal: item.isModifiedMeal
-            )
-            modelContext.insert(savedItem)
-            savedItem.shoppingList = savedList
-            savedList.items.append(savedItem)
-        }
-        
-        do {
-            try modelContext.save()
-            
-            showOverwriteAlert = false
-            showSaveTitleAlert = false
-            
-            self.activeSavedList = savedList
-            self.navigateToDetail = true
-        } catch {
-            print("Failed to save shopping list: \(error)")
         }
     }
 

@@ -9,7 +9,6 @@ import SwiftData
 struct ShoppingSetupView: View {
     @Query(sort: \KondatePattern.createdAt, order: .reverse) private var allPatterns: [KondatePattern]
     @Query(sort: \Menu.createdAt, order: .reverse) private var allMenus: [Menu]
-    @Query(sort: \SavedShoppingList.createdAt, order: .reverse) private var savedLists: [SavedShoppingList]
     
     @State private var selectedPatternID: UUID?
     @State private var enabledDayIndices: Set<Int> = []
@@ -109,24 +108,6 @@ struct ShoppingSetupView: View {
             }
         }
         .navigationTitle("Shopping List Setup")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if let latestList = savedLists.first, !latestList.isDeleted {
-                    NavigationLink {
-                        SavedShoppingView(shoppingList: latestList)
-                    } label: {
-                        Image(systemName: "cart.fill.badge.questionmark")
-                            .renderingMode(.template)
-                            .font(.body)
-                    }
-                } else {
-                    Image(systemName: "cart.fill.badge.questionmark")
-                        .renderingMode(.template)
-                        .font(.body)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-        }
         .onAppear {
             if selectedPatternID == nil {
                 selectedPatternID = activePattern?.id ?? allPatterns.first?.id
@@ -265,7 +246,7 @@ private struct AddSourcePopoverView: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self, SavedShoppingList.self, SavedIngredientItem.self,
+        for: KondatePattern.self, PatternDay.self, Menu.self, Ingredient.self, StockItem.self,
         configurations: config
     )
     let context = container.mainContext

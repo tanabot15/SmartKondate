@@ -19,8 +19,6 @@ struct SmartKondateApp: App {
             PatternDay.self,
             KondatePattern.self,
             StockItem.self,
-            SavedShoppingList.self,
-            SavedIngredientItem.self
         ])
 
         let modelConfiguration = ModelConfiguration(
