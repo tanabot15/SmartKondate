@@ -108,6 +108,13 @@ struct ShoppingSetupView: View {
             }
         }
         .navigationTitle("Shopping List Setup")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: SavedShoppingView()) {
+                    Image(systemName: "folder.fill")
+                }
+            }
+        }
         .onAppear {
             if selectedPatternID == nil {
                 selectedPatternID = activePattern?.id ?? allPatterns.first?.id

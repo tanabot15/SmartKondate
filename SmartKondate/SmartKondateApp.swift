@@ -2,8 +2,6 @@
 //  SmartKondateApp.swift
 //  SmartKondate
 //
-//  Created by Kenichiro Suzuki on 2026/08/06.
-//
 
 import SwiftUI
 import SwiftData
@@ -19,6 +17,8 @@ struct SmartKondateApp: App {
             PatternDay.self,
             KondatePattern.self,
             StockItem.self,
+            SavedShoppingList.self,
+            SavedIngredientItem.self,
         ])
 
         let modelConfiguration = ModelConfiguration(

@@ -275,6 +275,13 @@ struct ShoppingListView: View {
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
+                // Save button
+                Button {
+                    saveCurrentShoppingList()
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+
                 ShareLink(item: formattedTextForSharing) {
                     Image(systemName: "square.and.arrow.up")
                 }
@@ -289,6 +296,29 @@ struct ShoppingListView: View {
                     Image(systemName: "doc.on.doc")
                 }
             }
+        }
+    }
+
+    private func saveCurrentShoppingList() {
+        let title = config.selectedPattern?.name ?? "Shopping List (\(Date().formatted(date: .numeric, time: .omitted)))"
+        
+        let savedItems = aggregatedItems.map { item in
+            SavedIngredientItem(
+                name: item.ingredientName,
+                quantity: item.quantity,
+                unit: item.unit,
+                category: item.category,
+                isChecked: checkedIngredientKeys.contains(item.id)
+            )
+        }
+
+        let newList = SavedShoppingList(title: title, items: savedItems)
+        modelContext.insert(newList)
+
+        toastMessage = "Shopping list saved"
+        withAnimation { showCopiedToast = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation { showCopiedToast = false }
         }
     }
 
