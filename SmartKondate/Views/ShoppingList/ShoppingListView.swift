@@ -165,8 +165,16 @@ struct ShoppingListView: View {
         text += "\n"
 
         if !outOfStockItems.isEmpty {
-            text += "■ Out of Stock (Refill Needed)\n"
-            for stock in outOfStockItems { text += "・\(stock.name)\n" }
+            text += "■ Stock Items (Refill Needed)\n"
+            for category in StockCategory.allCases {
+                let itemsInCategory = outOfStockItems.filter { $0.category == category }
+                if !itemsInCategory.isEmpty {
+                    text += " [\(category.rawValue)]\n"
+                    for stock in itemsInCategory {
+                        text += " ・\(stock.name)\n"
+                    }
+                }
+            }
             text += "\n"
         }
 
@@ -180,12 +188,15 @@ struct ShoppingListView: View {
             text += "\n"
         }
 
-        for group in standardItemsByCategory {
-            text += "■ \(group.category.rawValue)\n"
-            for item in group.items {
-                let qtyStr = formatQuantity(item.quantity)
-                let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                text += "・\(item.ingredientName): \(qtyStr)\(unitStr)\n"
+        if !standardItemsByCategory.isEmpty {
+            text += "■ Ingredients\n"
+            for group in standardItemsByCategory {
+                text += " [\(group.category.rawValue)]\n"
+                for item in group.items {
+                    let qtyStr = formatQuantity(item.quantity)
+                    let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                    text += " ・\(item.ingredientName): \(qtyStr)\(unitStr)\n"
+                }
             }
             text += "\n"
         }
@@ -341,28 +352,49 @@ struct ShoppingListView: View {
             for list in existingLists {
                 modelContext.delete(list)
             }
+
+            let newList = SavedShoppingList(title: finalTitle, items: [])
+            modelContext.insert(newList)
+
+            let recipeItems = aggregatedItems.map { item in
+                SavedIngredientItem(
+                    name: item.ingredientName,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    category: item.category,
+                    stockCategory: nil,
+                    isChecked: checkedIngredientKeys.contains(item.id),
+                    isOutOfStock: false,
+                    dayIndex: item.dayIndex,
+                    list: newList
+                )
+            }
+
+            let stockOutSavedItems = outOfStockItems.map { stock in
+                SavedIngredientItem(
+                    name: stock.name,
+                    quantity: 0.0,
+                    unit: "",
+                    category: .other,
+                    stockCategory: stock.category,
+                    isChecked: false,
+                    isOutOfStock: true,
+                    dayIndex: nil,
+                    list: newList
+                )
+            }
+
+            newList.items = recipeItems + stockOutSavedItems
+
+            try modelContext.save()
+
+            toastMessage = "Shopping list saved"
+            withAnimation { showCopiedToast = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                withAnimation { showCopiedToast = false }
+            }
         } catch {
-            print("Failed to clear previous saved lists: \(error)")
-        }
-
-        let savedItems = aggregatedItems.map { item in
-            SavedIngredientItem(
-                name: item.ingredientName,
-                quantity: item.quantity,
-                unit: item.unit,
-                category: item.category,
-                isChecked: checkedIngredientKeys.contains(item.id),
-                dayIndex: item.dayIndex
-            )
-        }
-
-        let newList = SavedShoppingList(title: finalTitle, items: savedItems)
-        modelContext.insert(newList)
-
-        toastMessage = "Shopping list saved"
-        withAnimation { showCopiedToast = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation { showCopiedToast = false }
+            print("Failed to save shopping list: \(error)")
         }
     }
 
@@ -432,42 +464,49 @@ struct ShoppingListView: View {
 
     private var outOfStockSection: some View {
         Section {
-            ForEach(outOfStockItems) { stockItem in
-                Button {
-                    stockItem.isOut = false
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "circle")
-                            .font(.title3)
-                            .foregroundStyle(Color.secondary)
+            ForEach(StockCategory.allCases) { category in
+                let itemsInCategory = outOfStockItems.filter { $0.category == category }
+                if !itemsInCategory.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(category.rawValue)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(stockItem.name)
-                                .font(.body)
-                                .foregroundStyle(.primary)
+                        ForEach(itemsInCategory) { stockItem in
+                            Button {
+                                stockItem.isOut = false
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "circle")
+                                        .font(.title3)
+                                        .foregroundStyle(Color.secondary)
 
-                            Text(stockItem.category.rawValue)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                                    Text(stockItem.name)
+                                        .font(.body)
+                                        .foregroundStyle(.primary)
 
-                        Spacer()
+                                    Spacer()
 
-                        Text("Stock Out")
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
+                                    Text("Stock Out")
+                                        .font(.caption2)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.orange.opacity(0.15))
+                                        .foregroundStyle(.orange)
+                                        .clipShape(Capsule())
+                                }
+                            }
                             .padding(.vertical, 2)
-                            .background(Color.orange.opacity(0.15))
-                            .foregroundStyle(.orange)
-                            .clipShape(Capsule())
+                        }
                     }
                 }
             }
         } header: {
             HStack {
-                Image(systemName: "exclamationmark.triangle.fill")
+                Image(systemName: "archivebox.fill")
                     .foregroundStyle(.orange)
-                Text("Out of Stock (Refill Needed)")
+                Text("Stock Items")
                     .foregroundStyle(.orange)
                     .fontWeight(.bold)
             }
@@ -500,11 +539,27 @@ struct ShoppingListView: View {
     }
 
     private var standardItemsSections: some View {
-        ForEach(standardItemsByCategory) { group in
-            Section(header: Text(group.category.rawValue)) {
-                ForEach(group.items) { item in
-                    ingredientRow(for: item, isModified: false)
+        Section {
+            ForEach(standardItemsByCategory) { group in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(group.category.rawValue)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+
+                    ForEach(group.items) { item in
+                        ingredientRow(for: item, isModified: false)
+                    }
                 }
+                .padding(.vertical, 2)
+            }
+        } header: {
+            HStack {
+                Image(systemName: "leaf.fill")
+                    .foregroundStyle(Color.accentColor)
+                Text("Ingredients")
+                    .foregroundStyle(Color.accentColor)
+                    .fontWeight(.bold)
             }
         }
     }
