@@ -447,7 +447,6 @@ struct PresetDataService {
         let stockItems = [
             // Pantry
             StockItem(name: "豆乳", category: .pantry),
-            StockItem(name: "牛乳", category: .pantry),
             StockItem(name: "チーズ", category: .pantry),
             StockItem(name: "バナナ", category: .pantry),
             StockItem(name: "プチトマト", category: .pantry),
@@ -458,7 +457,9 @@ struct PresetDataService {
             StockItem(name: "小麦粉", category: .pantry),
             StockItem(name: "片栗粉", category: .pantry),
             StockItem(name: "パン粉", category: .pantry),
-            StockItem(name: "お好み焼き粉", category: .pantry),
+            StockItem(name: "バナナ", category: .pantry),
+            StockItem(name: "ミニトマト", category: .pantry),
+            StockItem(name: "幼児チーズ", category: .pantry),
 
             // Seasoning
             StockItem(name: "酒", category: .seasoning),
@@ -540,7 +541,7 @@ struct PresetDataService {
             RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "生鮭", quantity: 3, unit: "切", category: .meatAndFish, source: "うたまる親子 p.55"),
             RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "しめじ", quantity: 1, unit: "パック", category: .produce, source: "うたまる親子 p.55"),
             RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "ほうれん草", quantity: 0.3, unit: "束", category: .produce, source: "うたまる親子 p.55"),
-            RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "牛乳", quantity: 280, unit: "ml", category: .chilledAndDairy, source: "うたまる親子 p.55"),
+            RawIngredient(menuName: "鮭とキノコのクリーム煮", name: "牛乳", quantity: 300, unit: "ml", category: .chilledAndDairy, source: "うたまる親子 p.55"),
             RawIngredient(menuName: "チキンソテー（トマト）", name: "鶏もも肉", quantity: 300, unit: "g", category: .meatAndFish, source: "ハツ江おばあちゃん p.26＆33"),
             RawIngredient(menuName: "チキンソテー（トマト）", name: "トマト缶", quantity: 0.5, unit: "パック", category: .pantryAndGrain, source: "ハツ江おばあちゃん p.26＆33"),
             RawIngredient(menuName: "チキンソテー（トマト）", name: "玉ねぎ", quantity: 0.25, unit: "個", category: .produce, source: "ハツ江おばあちゃん p.26＆33"),
@@ -603,6 +604,11 @@ struct PresetDataService {
             RawIngredient(menuName: "スコップコロッケ", name: "合いびき肉", quantity: 200, unit: "g", category: .meatAndFish, source: "うたまる親子 p.30"),
             RawIngredient(menuName: "スコップコロッケ", name: "じゃがいも", quantity: 4, unit: "個", category: .produce, source: "うたまる親子 p.30"),
             RawIngredient(menuName: "スコップコロッケ", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.30"),
+            RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "合いびき肉", quantity: 300, unit: "g", category: .produce, source: "うたまる親子 p.24"),
+            RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "豆腐", quantity: 160, unit: "g", category: .produce, source: "うたまる親子 p.24"),
+            RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.24"),
+            RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "しめじ", quantity: 1, unit: "パック", category: .produce, source: "うたまる親子 p.24"),
+
             RawIngredient(menuName: "ひじきの煮物", name: "芽ひじき", quantity: 11, unit: "g", category: .pantryAndGrain, source: "うたまる親子 p.133"),
             RawIngredient(menuName: "ひじきの煮物", name: "にんじん", quantity: 0.5, unit: "本", category: .produce, source: "うたまる親子 p.133"),
             RawIngredient(menuName: "ひじきの煮物", name: "ちくわ", quantity: 1, unit: "本", category: .chilledAndDairy, source: "うたまる親子 p.133"),
@@ -748,15 +754,15 @@ struct PresetDataService {
         let patternDefinitions: [(name: String, days: [DayData])] = [
             ("Pattern A", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "オムライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "プルコギ", dinnerSide: "アンチョビキャベツ", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ポークケチャップ", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "チキンソテー（トマト）", dinnerSide: "ひじきの煮物", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ポークケチャップ", lunchSide: nil, lunchSoup: "じゃがいものポタージュ", dinnerMain: "チキンソテー（トマト）", dinnerSide: "ひじきの煮物", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "カオマンガイ", lunchSide: nil, lunchSoup: nil, dinnerMain: "麻婆豆腐", dinnerSide: "トマトサラダ", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "チヂミ", lunchSide: nil, lunchSoup: "じゃがいものポタージュ", dinnerMain: "豚肉トマト煮込み", dinnerSide: "ほうれん草としらすのおひたし", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "チヂミ", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "豚肉トマト煮込み", dinnerSide: "ほうれん草としらすのおひたし", dinnerSoup: nil)
             ]),
             ("Pattern B", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ミートソースパスタ", lunchSide: nil, lunchSoup: nil, dinnerMain: "スコップコロッケ", dinnerSide: "なす味噌炒め", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ささみユッケ丼", lunchSide: nil, lunchSoup: "にんじんのポタージュ", dinnerMain: "豚肉とトマト重ね蒸し", dinnerSide: "にんじんしりしり", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ツナトマトパスタ", lunchSide: "外食・テイクアウト", lunchSoup: nil, dinnerMain: "簡単トマト煮込みハンバーグ", dinnerSide: "かぼちゃの煮物", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "お好み焼き", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "豚生姜焼き", dinnerSide: "トマトのマリネサラダ", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ささみユッケ丼", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "豚肉とトマト重ね蒸し", dinnerSide: "にんじんしりしり", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ツナトマトパスタ", lunchSide: "外食・テイクアウト", lunchSoup: nil, dinnerMain: "和風あんかけ豆腐ハンバーグ", dinnerSide: "かぼちゃの煮物", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "お好み焼き", lunchSide: nil, lunchSoup: "にんじんのポタージュ", dinnerMain: "豚生姜焼き", dinnerSide: "トマトのマリネサラダ", dinnerSoup: nil)
             ]),
             ("Pattern C", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "親子丼", lunchSide: nil, lunchSoup: nil, dinnerMain: "野菜たっぷりカレーライス", dinnerSide: "エビサラダ", dinnerSoup: nil),
