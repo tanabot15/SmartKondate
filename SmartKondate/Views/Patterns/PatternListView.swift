@@ -235,6 +235,21 @@ struct PatternListView: View {
         
         WidgetCenter.shared.reloadAllTimelines()
     }
+    
+    private func refreshNotificationSchedule() {
+        let daysBefore = UserDefaults.standard.integer(forKey: "reminderDaysBefore")
+        let hour = UserDefaults.standard.integer(forKey: "reminderHour")
+        let isEnabled = UserDefaults.standard.bool(forKey: "enablePatternSwitchReminder")
+
+        if isEnabled {
+            let activePattern = queuedPatterns.first(where: { $0.isActive })
+            NotificationManager.shared.scheduleNextPatternReminder(
+                activePattern: activePattern,
+                daysBefore: daysBefore == 0 ? 2 : daysBefore,
+                notificationHour: hour == 0 ? 19 : hour
+            )
+        }
+    }
 
     private func reindexQueue() {
         for (index, pattern) in queuedPatterns.enumerated() {

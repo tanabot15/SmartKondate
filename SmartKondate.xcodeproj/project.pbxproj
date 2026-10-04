@@ -10,6 +10,7 @@
 		D910C5693070BBCC00489582 /* SavedShoppingList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D910C5683070BBCC00489582 /* SavedShoppingList.swift */; };
 		D910C56A3070BBCC00489582 /* SavedShoppingList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D910C5683070BBCC00489582 /* SavedShoppingList.swift */; };
 		D910C56C3070BBEB00489582 /* SavedShoppingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D910C56B3070BBEB00489582 /* SavedShoppingView.swift */; };
+		D910C574307210DF00489582 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D910C573307210DF00489582 /* NotificationManager.swift */; };
 		D9AF186D3024C0DD00C39DB7 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF186A3024C0DD00C39DB7 /* MainTabView.swift */; };
 		D9AF186E3024C0DD00C39DB7 /* SmartKondateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF186B3024C0DD00C39DB7 /* SmartKondateApp.swift */; };
 		D9AF186F3024C0DD00C39DB7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9AF18693024C0DD00C39DB7 /* Assets.xcassets */; };
@@ -79,6 +80,7 @@
 /* Begin PBXFileReference section */
 		D910C5683070BBCC00489582 /* SavedShoppingList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedShoppingList.swift; sourceTree = "<group>"; };
 		D910C56B3070BBEB00489582 /* SavedShoppingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedShoppingView.swift; sourceTree = "<group>"; };
+		D910C573307210DF00489582 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		D9AF185B3024C05C00C39DB7 /* SmartKondate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartKondate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9AF18693024C0DD00C39DB7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D9AF186A3024C0DD00C39DB7 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -296,6 +298,7 @@
 				D9AF18BD3024C7BB00C39DB7 /* PresetDataService.swift */,
 				D9AF18BF3024C7C400C39DB7 /* DiffCalculator.swift */,
 				D9BA15DD30565C88008B3FC5 /* DataBackupService.swift */,
+				D910C573307210DF00489582 /* NotificationManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -449,6 +452,7 @@
 				D9AF18C03024C7C400C39DB7 /* DiffCalculator.swift in Sources */,
 				D9BA15DE30565C88008B3FC5 /* DataBackupService.swift in Sources */,
 				D9AF18CE3024C88A00C39DB7 /* Menu.swift in Sources */,
+				D910C574307210DF00489582 /* NotificationManager.swift in Sources */,
 				D9AF18A63024C6F500C39DB7 /* PatternListView.swift in Sources */,
 				D9AF18D23024C89E00C39DB7 /* KondatePattern.swift in Sources */,
 				D9AF186D3024C0DD00C39DB7 /* MainTabView.swift in Sources */,
@@ -620,7 +624,7 @@
 				CODE_SIGN_ENTITLEMENTS = SmartKondate/SmartKondate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -637,7 +641,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.11;
+				MARKETING_VERSION = 3.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -663,7 +667,7 @@
 				CODE_SIGN_ENTITLEMENTS = SmartKondate/SmartKondate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -680,7 +684,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.11;
+				MARKETING_VERSION = 3.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -705,7 +709,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = SmartKondateWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartKondateWidget/Info.plist;
@@ -717,7 +721,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 3.11;
+				MARKETING_VERSION = 3.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate.SmartKondateWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -741,7 +745,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = SmartKondateWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				DEVELOPMENT_TEAM = D86GFNUD35;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartKondateWidget/Info.plist;
@@ -753,7 +757,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 3.11;
+				MARKETING_VERSION = 3.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.suzuki.kenichiro.SmartKondate.SmartKondateWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
