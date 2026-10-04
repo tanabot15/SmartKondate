@@ -60,26 +60,28 @@ struct SavedShoppingView: View {
 
     // MARK: - Formatted Text for Sharing & Copying
     private var formattedTextForSharing: String {
-        var text = "【\(navigationTitleText)】\n\n"
+        var text = "[\(navigationTitleText)]\n\n"
 
         if !stockItems.isEmpty {
             text += "■ Stock Items (Refill Needed)\n"
             for item in stockItems {
-                text += " ・\(item.name)\n"
+                text += " - \(item.name)\n"
             }
             text += "\n"
         }
 
-        if !recipeItems.isEmpty {
+        let validRecipeItems = recipeItems.filter { $0.quantity > 0 }
+        if !validRecipeItems.isEmpty {
+            let validGrouped = Dictionary(grouping: validRecipeItems, by: { $0.category })
             text += "■ Ingredients\n"
             for category in IngredientCategory.allCases {
-                if let items = groupedRecipeItems[category], !items.isEmpty {
+                if let items = validGrouped[category], !items.isEmpty {
                     text += " [\(category.rawValue)]\n"
                     for item in items {
                         let qtyStr = formatQuantity(item.quantity)
                         let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
                         let menuInfo = item.menuDetails != nil && !item.menuDetails!.isEmpty ? " (\(item.menuDetails!))" : ""
-                        text += " ・\(item.name): \(qtyStr)\(unitStr)\(menuInfo)\n"
+                        text += " - \(item.name): \(qtyStr)\(unitStr)\(menuInfo)\n"
                     }
                 }
             }
@@ -89,11 +91,11 @@ struct SavedShoppingView: View {
     }
 
     private var uncheckedItemsFormattedText: String {
-        var text = "【Pending Items List】\n\n"
-        let uncheckedRecipeItems = recipeItems.filter { !$0.isChecked }
+        var text = "[Pending Items List]\n\n"
+        let uncheckedRecipeItems = recipeItems.filter { !$0.isChecked && $0.quantity > 0 }
 
         if uncheckedRecipeItems.isEmpty && stockItems.filter({ !$0.isChecked }).isEmpty {
-            return "【Pending Items List】\nAll items have been purchased."
+            return "[Pending Items List]\nAll items have been purchased."
         }
 
         for category in IngredientCategory.allCases {
@@ -103,7 +105,7 @@ struct SavedShoppingView: View {
                 for item in items {
                     let qtyStr = formatQuantity(item.quantity)
                     let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                    text += "・\(item.name) \(qtyStr)\(unitStr)\n"
+                    text += "- \(item.name) \(qtyStr)\(unitStr)\n"
                 }
                 text += "\n"
             }

@@ -158,98 +158,105 @@ struct ShoppingListView: View {
     }
 
     private var formattedTextForSharing: String {
-        var text = "【Shopping List】\n"
-        if let pattern = config.selectedPattern {
-            text += "Target: \(pattern.name) (\(config.selectedDayIndices.count) days)\n"
-        }
-        text += "\n"
+            var text = "[Shopping List]\n"
+            if let pattern = config.selectedPattern {
+                text += "Target: \(pattern.name) (\(config.selectedDayIndices.count) days)\n"
+            }
+            text += "\n"
 
-        if !outOfStockItems.isEmpty {
-            text += "■ Stock Items (Refill Needed)\n"
-            for category in StockCategory.allCases {
-                let itemsInCategory = outOfStockItems.filter { $0.category == category }
-                if !itemsInCategory.isEmpty {
-                    text += " [\(category.rawValue)]\n"
-                    for stock in itemsInCategory {
-                        text += " ・\(stock.name)\n"
+            if !outOfStockItems.isEmpty {
+                text += "■ Stock Items (Refill Needed)\n"
+                for category in StockCategory.allCases {
+                    let itemsInCategory = outOfStockItems.filter { $0.category == category }
+                    if !itemsInCategory.isEmpty {
+                        text += " [\(category.rawValue)]\n"
+                        for stock in itemsInCategory {
+                            text += " - \(stock.name)\n"
+                        }
                     }
                 }
+                text += "\n"
             }
-            text += "\n"
-        }
 
-        if !modifiedItems.isEmpty {
-            text += "■ Modified / Added Meal Ingredients\n"
-            for item in modifiedItems {
-                let qtyStr = formatQuantity(item.quantity)
-                let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                text += "・\(item.ingredientName): \(qtyStr)\(unitStr)\n"
-            }
-            text += "\n"
-        }
-
-        if !standardItemsByCategory.isEmpty {
-            text += "■ Ingredients\n"
-            for group in standardItemsByCategory {
-                text += " [\(group.category.rawValue)]\n"
-                for item in group.items {
+            let validModifiedItems = modifiedItems.filter { $0.quantity > 0 }
+            if !validModifiedItems.isEmpty {
+                text += "■ Modified / Added Meal Ingredients\n"
+                for item in validModifiedItems {
                     let qtyStr = formatQuantity(item.quantity)
                     let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                    text += " ・\(item.ingredientName): \(qtyStr)\(unitStr)\n"
+                    text += "- \(item.ingredientName): \(qtyStr)\(unitStr)\n"
                 }
+                text += "\n"
             }
-            text += "\n"
+
+            let validStandardGroup = standardItemsByCategory.compactMap { group -> ShoppingCategoryGroup? in
+                let filtered = group.items.filter { $0.quantity > 0 }
+                guard !filtered.isEmpty else { return nil }
+                return ShoppingCategoryGroup(category: group.category, items: filtered)
+            }
+
+            if !validStandardGroup.isEmpty {
+                text += "■ Ingredients\n"
+                for group in validStandardGroup {
+                    text += " [\(group.category.rawValue)]\n"
+                    for item in group.items {
+                        let qtyStr = formatQuantity(item.quantity)
+                        let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                        text += " - \(item.ingredientName): \(qtyStr)\(unitStr)\n"
+                    }
+                }
+                text += "\n"
+            }
+
+            return text.trimmingCharacters(in: .whitespacesAndNewlines)
         }
 
-        return text.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     private var uncheckedItemsFormattedText: String {
-        var text = "【Pending Items List】\n"
+        var text = "[Pending Items List] \n"
 
-        let uncheckedModified = modifiedItems.filter { !checkedIngredientKeys.contains($0.id) }
+        let uncheckedModified = modifiedItems.filter { !checkedIngredientKeys.contains($0.id) && $0.quantity > 0 }
         if !uncheckedModified.isEmpty {
             text += "■ Recipe Ingredients\n"
             for item in uncheckedModified {
                 let qtyStr = formatQuantity(item.quantity)
                 let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                text += "・\(item.ingredientName) \(qtyStr)\(unitStr)\n"
+                text += "- \(item.ingredientName) \(qtyStr)\(unitStr)\n"
             }
             text += "\n"
         }
 
         for group in standardItemsByCategory {
-            let uncheckedGroupItems = group.items.filter { !checkedIngredientKeys.contains($0.id) }
+            let uncheckedGroupItems = group.items.filter { !checkedIngredientKeys.contains($0.id) && $0.quantity > 0 }
             if !uncheckedGroupItems.isEmpty {
                 text += "■ \(group.category.rawValue)\n"
                 for item in uncheckedGroupItems {
                     let qtyStr = formatQuantity(item.quantity)
                     let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                    text += "・\(item.ingredientName) \(qtyStr)\(unitStr)\n"
+                    text += "- \(item.ingredientName) \(qtyStr)\(unitStr)\n"
                 }
                 text += "\n"
             }
         }
 
         let result = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if result == "【Pending Items List】" {
-            return "【Pending Items List】\nAll items have been purchased."
+        if result == "[Pending Items List]" {
+            return "[Pending Items List]\nAll items have been purchased."
         }
         return result
     }
 
     private var unbuyableItemsFormattedText: String {
-        var text = "【Unbuyable Items】\n"
-        let unbuyableItems = aggregatedItems.filter { checkedIngredientKeys.contains($0.id) }
+        var text = "[Unbuyable Items]\n"
+        let unbuyableItems = aggregatedItems.filter { checkedIngredientKeys.contains($0.id) && $0.quantity > 0 }
         
         if unbuyableItems.isEmpty {
-            return "【Unbuyable Items】\nNo items marked as unbuyable."
+            return "[Unbuyable Items]\nNo items marked as unbuyable."
         }
 
         for item in unbuyableItems {
             let qtyStr = formatQuantity(item.quantity)
             let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-            text += "・\(item.ingredientName) \(qtyStr)\(unitStr)\n"
+            text += "- \(item.ingredientName) \(qtyStr)\(unitStr)\n"
         }
 
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -356,20 +363,22 @@ struct ShoppingListView: View {
             let newList = SavedShoppingList(title: finalTitle, items: [])
             modelContext.insert(newList)
 
-            let recipeItems = aggregatedItems.map { item in
-                SavedIngredientItem(
-                    name: item.ingredientName,
-                    quantity: item.quantity,
-                    unit: item.unit,
-                    category: item.category,
-                    stockCategory: nil,
-                    isChecked: checkedIngredientKeys.contains(item.id),
-                    isOutOfStock: false,
-                    dayIndex: item.dayIndex,
-                    menuDetails: item.menuDetails,
-                    list: newList
-                )
-            }
+            let recipeItems = aggregatedItems
+                .filter { $0.quantity > 0 }
+                .map { item in
+                    SavedIngredientItem(
+                        name: item.ingredientName,
+                        quantity: item.quantity,
+                        unit: item.unit,
+                        category: item.category,
+                        stockCategory: nil,
+                        isChecked: checkedIngredientKeys.contains(item.id),
+                        isOutOfStock: false,
+                        dayIndex: item.dayIndex,
+                        menuDetails: item.menuDetails,
+                        list: newList
+                    )
+                }
 
             let stockOutSavedItems = outOfStockItems.map { stock in
                 SavedIngredientItem(
