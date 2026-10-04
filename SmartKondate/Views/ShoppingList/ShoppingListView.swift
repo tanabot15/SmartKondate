@@ -366,6 +366,7 @@ struct ShoppingListView: View {
                     isChecked: checkedIngredientKeys.contains(item.id),
                     isOutOfStock: false,
                     dayIndex: item.dayIndex,
+                    menuDetails: item.menuDetails,
                     list: newList
                 )
             }
@@ -541,17 +542,21 @@ struct ShoppingListView: View {
     private var standardItemsSections: some View {
         Section {
             ForEach(standardItemsByCategory) { group in
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(group.category.rawValue)
                         .font(.caption)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundStyle(.secondary)
+                        .padding(.top, 4)
 
-                    ForEach(group.items) { item in
+                    ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
+                        if index > 0 {
+                            Divider()
+                        }
                         ingredientRow(for: item, isModified: false)
                     }
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, 4)
             }
         } header: {
             HStack {

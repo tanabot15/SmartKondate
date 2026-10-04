@@ -34,6 +34,7 @@ final class SavedIngredientItem {
     var isChecked: Bool
     var isOutOfStock: Bool
     var dayIndex: Int?
+    var menuDetails: String?
     
     var list: SavedShoppingList?
 
@@ -61,6 +62,7 @@ final class SavedIngredientItem {
         isChecked: Bool = false,
         isOutOfStock: Bool = false,
         dayIndex: Int? = nil,
+        menuDetails: String? = nil,
         list: SavedShoppingList? = nil
     ) {
         self.id = id
@@ -72,6 +74,7 @@ final class SavedIngredientItem {
         self.isChecked = isChecked
         self.isOutOfStock = isOutOfStock
         self.dayIndex = dayIndex
+        self.menuDetails = menuDetails
         self.list = list
     }
 }
