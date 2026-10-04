@@ -29,6 +29,7 @@ final class SavedIngredientItem {
     var unit: String
     var categoryRawValue: String
     var isChecked: Bool
+    var dayIndex: Int?
 
     var category: IngredientCategory {
         get { IngredientCategory(rawValue: categoryRawValue) ?? .other }
@@ -41,7 +42,8 @@ final class SavedIngredientItem {
         quantity: Double,
         unit: String,
         category: IngredientCategory,
-        isChecked: Bool = false
+        isChecked: Bool = false,
+        dayIndex: Int? = nil
     ) {
         self.id = id
         self.name = name
@@ -49,5 +51,6 @@ final class SavedIngredientItem {
         self.unit = unit
         self.categoryRawValue = category.rawValue
         self.isChecked = isChecked
+        self.dayIndex = dayIndex
     }
 }

@@ -10,86 +10,270 @@ struct SavedShoppingView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \SavedShoppingList.createdAt, order: .reverse) private var savedLists: [SavedShoppingList]
 
+    // MARK: - Filter States
+    @State private var selectedCategories: Set<IngredientCategory> = Set(IngredientCategory.allCases)
+    @State private var selectedDayIndices: Set<Int> = []
+    @State private var isFilterExpanded: Bool = false
+
+    // 表示用のタイトル（保存リストのタイトル、無ければデフォルト名）
+    private var navigationTitleText: String {
+        savedLists.first?.title ?? "Saved List"
+    }
+
+    // 保存されているアイテムに含まれる全 dayIndex のリスト（昇順）
+    private var availableDayIndices: [Int] {
+        let allItems = savedLists.flatMap { $0.items }
+        let indices = allItems.compactMap { $0.dayIndex }
+        return Array(Set(indices)).sorted()
+    }
+
+    // dayIndex フィルターおよび Category フィルターに合致するアイテム群
+    private var filteredItems: [SavedIngredientItem] {
+        let allItems = savedLists.flatMap { $0.items }
+        
+        return allItems.filter { item in
+            // 1. Day Index Filter (選択が空の場合は全件表示)
+            let matchesDay: Bool
+            if selectedDayIndices.isEmpty {
+                matchesDay = true
+            } else if let dayIndex = item.dayIndex {
+                matchesDay = selectedDayIndices.contains(dayIndex)
+            } else {
+                // dayIndex が nil のアイテム（全体追加分など）は常に含める仕様
+                matchesDay = true
+            }
+
+            // 2. Category Filter
+            let matchesCategory = selectedCategories.contains(item.category)
+
+            return matchesDay && matchesCategory
+        }
+    }
+
+    private var groupedItems: [IngredientCategory: [SavedIngredientItem]] {
+        Dictionary(grouping: filteredItems, by: { $0.category })
+    }
+
     var body: some View {
-        List {
+        Group {
             if savedLists.isEmpty {
                 ContentUnavailableView {
-                    Label("No Saved Lists", systemImage: "cart")
+                    Label("No Saved List", systemImage: "cart")
                 } description: {
                     Text("You can save a shopping list using the save button on the Shopping List screen.")
                 }
             } else {
-                ForEach(savedLists) { list in
-                    NavigationLink(destination: SavedShoppingDetailView(shoppingList: list)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(list.title)
-                                .font(.headline)
-                            Text(list.createdAt.formatted(date: .numeric, time: .shortened))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text("\(list.items.count) item(s)")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
-                .onDelete(perform: deleteLists)
-            }
-        }
-        .navigationTitle("Saved Lists")
-    }
+                List {
+                    // MARK: - Filter Section
+                    Section {
+                        DisclosureGroup(isExpanded: $isFilterExpanded) {
+                            VStack(alignment: .leading, spacing: 14) {
+                                // 1. Day Filter (Multi-selection)
+                                if !availableDayIndices.isEmpty {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack {
+                                            Text("Day Filter")
+                                                .font(.subheadline)
+                                                .fontWeight(.bold)
+                                            Spacer()
+                                            if !selectedDayIndices.isEmpty {
+                                                Button("Reset") {
+                                                    selectedDayIndices.removeAll()
+                                                }
+                                                .font(.caption)
+                                            }
+                                        }
 
-    private func deleteLists(offsets: IndexSet) {
-        for index in offsets {
-            let list = savedLists[index]
-            modelContext.delete(list)
-        }
-    }
-}
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 8) {
+                                                ForEach(availableDayIndices, id: \.self) { dayIndex in
+                                                    let isSelected = selectedDayIndices.contains(dayIndex)
+                                                    Button {
+                                                        if isSelected {
+                                                            selectedDayIndices.remove(dayIndex)
+                                                        } else {
+                                                            selectedDayIndices.insert(dayIndex)
+                                                        }
+                                                    } label: {
+                                                        Text("Day \(dayIndex + 1)")
+                                                            .font(.caption)
+                                                            .padding(.horizontal, 12)
+                                                            .padding(.vertical, 6)
+                                                            .background(isSelected ? Color.accentColor : Color(.tertiarySystemFill))
+                                                            .foregroundStyle(isSelected ? .white : .primary)
+                                                            .clipShape(Capsule())
+                                                    }
+                                                    .buttonStyle(.plain)
+                                                }
+                                            }
+                                        }
+                                    }
 
-struct SavedShoppingDetailView: View {
-    @Bindable var shoppingList: SavedShoppingList
-
-    private var groupedItems: [IngredientCategory: [SavedIngredientItem]] {
-        Dictionary(grouping: shoppingList.items, by: { $0.category })
-    }
-
-    var body: some View {
-        List {
-            ForEach(IngredientCategory.allCases, id: \.self) { category in
-                if let items = groupedItems[category], !items.isEmpty {
-                    Section(header: Text(category.rawValue)) {
-                        ForEach(items) { item in
-                            HStack {
-                                Button {
-                                    item.isChecked.toggle()
-                                } label: {
-                                    Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(item.isChecked ? Color.accentColor : Color.secondary)
+                                    Divider()
                                 }
-                                .buttonStyle(.plain)
 
-                                Text(item.name)
-                                    .strikethrough(item.isChecked)
-                                    .foregroundStyle(item.isChecked ? .secondary : .primary)
+                                // 2. Category Filter (Multi-selection)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text("Category")
+                                            .font(.subheadline)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                        Button(selectedCategories.count == IngredientCategory.allCases.count ? "Deselect All" : "Select All") {
+                                            if selectedCategories.count == IngredientCategory.allCases.count {
+                                                selectedCategories.removeAll()
+                                            } else {
+                                                selectedCategories = Set(IngredientCategory.allCases)
+                                            }
+                                        }
+                                        .font(.caption)
+                                    }
 
+                                    FlowLayout(spacing: 6) {
+                                        ForEach(IngredientCategory.allCases, id: \.self) { category in
+                                            let isSelected = selectedCategories.contains(category)
+                                            Button {
+                                                if isSelected {
+                                                    selectedCategories.remove(category)
+                                                } else {
+                                                    selectedCategories.insert(category)
+                                                }
+                                            } label: {
+                                                Text(category.rawValue)
+                                                    .font(.caption)
+                                                    .padding(.horizontal, 10)
+                                                    .padding(.vertical, 5)
+                                                    .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.tertiarySystemFill))
+                                                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                                                    .overlay(
+                                                        Capsule()
+                                                            .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
+                                                    )
+                                                    .clipShape(Capsule())
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 6)
+                        } label: {
+                            HStack {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .foregroundStyle(Color.accentColor)
+                                Text("Filter Items")
+                                    .fontWeight(.medium)
                                 Spacer()
+                                if !selectedDayIndices.isEmpty || selectedCategories.count != IngredientCategory.allCases.count {
+                                    Text("Active Filters")
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.accentColor)
+                                        .foregroundStyle(.white)
+                                        .clipShape(Capsule())
+                                }
+                            }
+                        }
+                    }
 
-                                Text("\(formatQuantity(item.quantity)) \(item.unit)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                    // MARK: - Items List
+                    if filteredItems.isEmpty {
+                        ContentUnavailableView {
+                            Label("No Matching Items", systemImage: "magnifyingglass")
+                        } description: {
+                            Text("Try adjusting your filters to show saved items.")
+                        }
+                    } else {
+                        ForEach(IngredientCategory.allCases, id: \.self) { category in
+                            if selectedCategories.contains(category), let items = groupedItems[category], !items.isEmpty {
+                                Section(header: Text(category.rawValue)) {
+                                    ForEach(items) { item in
+                                        HStack {
+                                            Button {
+                                                item.isChecked.toggle()
+                                            } label: {
+                                                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+                                                    .foregroundStyle(item.isChecked ? Color.accentColor : Color.secondary)
+                                            }
+                                            .buttonStyle(.plain)
+
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(item.name)
+                                                    .strikethrough(item.isChecked)
+                                                    .foregroundStyle(item.isChecked ? .secondary : .primary)
+
+                                                if let dayIndex = item.dayIndex {
+                                                    Text("Day \(dayIndex + 1)")
+                                                        .font(.caption2)
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                            }
+
+                                            Spacer()
+
+                                            Text("\(formatQuantity(item.quantity)) \(item.unit)")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        .navigationTitle(shoppingList.title)
+        .navigationTitle(navigationTitleText)
     }
 
     private func formatQuantity(_ val: Double) -> String {
         val.truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", val) : String(format: "%.1f", val)
+    }
+}
+
+// MARK: - FlowLayout Helper for Chips
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        var height: CGFloat = 0
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var maxHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > width {
+                x = 0
+                y += maxHeight + spacing
+                maxHeight = 0
+            }
+            x += size.width + spacing
+            maxHeight = max(maxHeight, size.height)
+        }
+        height = y + maxHeight
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var maxHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > bounds.maxX {
+                x = bounds.minX
+                y += maxHeight + spacing
+                maxHeight = 0
+            }
+            subview.place(at: CGPoint(x: x, y: y), proposal: .unspecified)
+            x += size.width + spacing
+            maxHeight = max(maxHeight, size.height)
+        }
     }
 }
 
@@ -102,32 +286,17 @@ struct SavedShoppingDetailView: View {
     )
     let context = container.mainContext
 
-    // Sample List 1
-    let sampleList1 = SavedShoppingList(
-        title: "Weekly Grocery - Plan A",
+    let sampleList = SavedShoppingList(
+        title: "Latest Saved List",
         createdAt: Date()
     )
-    context.insert(sampleList1)
+    context.insert(sampleList)
 
-    let sampleItem1 = SavedIngredientItem(name: "Onion", quantity: 2, unit: "pcs", category: .produce)
-    let sampleItem2 = SavedIngredientItem(name: "Pork Belly", quantity: 300, unit: "g", category: .meatAndFish, isChecked: true)
-    let sampleItem3 = SavedIngredientItem(name: "Soy Sauce", quantity: 1, unit: "tbsp", category: .pantryAndGrain)
-    
-    [sampleItem1, sampleItem2, sampleItem3].forEach { context.insert($0) }
-    sampleList1.items = [sampleItem1, sampleItem2, sampleItem3]
+    let sampleItem1 = SavedIngredientItem(name: "Onion", quantity: 2, unit: "pcs", category: .produce, dayIndex: 0)
+    let sampleItem2 = SavedIngredientItem(name: "Pork Belly", quantity: 300, unit: "g", category: .meatAndFish, isChecked: true, dayIndex: 1)
 
-    // Sample List 2
-    let sampleList2 = SavedShoppingList(
-        title: "Weekend BBQ",
-        createdAt: Date().addingTimeInterval(-86400 * 2)
-    )
-    context.insert(sampleList2)
-
-    let sampleItem4 = SavedIngredientItem(name: "Beef Ribs", quantity: 500, unit: "g", category: .meatAndFish)
-    let sampleItem5 = SavedIngredientItem(name: "Lettuce", quantity: 1, unit: "head", category: .produce)
-    
-    [sampleItem4, sampleItem5].forEach { context.insert($0) }
-    sampleList2.items = [sampleItem4, sampleItem5]
+    [sampleItem1, sampleItem2].forEach { context.insert($0) }
+    sampleList.items = [sampleItem1, sampleItem2]
 
     return NavigationStack {
         SavedShoppingView()

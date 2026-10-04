@@ -27,6 +27,10 @@ struct ShoppingListView: View {
     @State private var showCopiedToast = false
     @State private var toastMessage = ""
 
+    // MARK: - Save Dialog State
+    @State private var showSaveAlert = false
+    @State private var inputListTitle = ""
+
     private var activePattern: KondatePattern? {
         allPatterns.first { $0.queueOrder == 0 } ?? allPatterns.first { $0.isActive }
     }
@@ -35,8 +39,8 @@ struct ShoppingListView: View {
         allStockItems.filter { $0.isOut }
     }
 
-    private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool)] {
-        var result: [(Ingredient, String, Bool)] = []
+    private var rawIngredientItems: [(ingredient: Ingredient, menuName: String, isModified: Bool, dayIndex: Int?)] {
+        var result: [(Ingredient, String, Bool, Int?)] = []
 
         if let pattern = config.selectedPattern {
             for dayIndex in config.selectedDayIndices {
@@ -46,7 +50,7 @@ struct ShoppingListView: View {
                 for menus in meals {
                     for menu in menus {
                         for ingredient in menu.ingredients {
-                            result.append((ingredient, "Day \(dayIndex + 1): \(menu.name)", false))
+                            result.append((ingredient, "Day \(dayIndex + 1): \(menu.name)", false, dayIndex))
                         }
                     }
                 }
@@ -66,7 +70,7 @@ struct ShoppingListView: View {
                 for res in diffResults {
                     for menu in res.effectiveMenus {
                         for ingredient in menu.ingredients {
-                            result.append((ingredient, "[\(dateLabel)] \(menu.name)", res.isModified))
+                            result.append((ingredient, "[\(dateLabel)] \(menu.name)", res.isModified, nil))
                         }
                     }
                 }
@@ -75,7 +79,7 @@ struct ShoppingListView: View {
                 for day in pattern.days {
                     for menu in day.breakfastMenus + day.lunchMenus + day.dinnerMenus {
                         for ingredient in menu.ingredients {
-                            result.append((ingredient, "[\(pattern.name) Day \(day.dayIndex + 1)] \(menu.name)", false))
+                            result.append((ingredient, "[\(pattern.name) Day \(day.dayIndex + 1)] \(menu.name)", false, day.dayIndex))
                         }
                     }
                 }
@@ -83,13 +87,13 @@ struct ShoppingListView: View {
             case .patternDay(let name, let dayIndex, let day):
                 for menu in day.breakfastMenus + day.lunchMenus + day.dinnerMenus {
                     for ingredient in menu.ingredients {
-                        result.append((ingredient, "[\(name) Day \(dayIndex + 1)] \(menu.name)", false))
+                        result.append((ingredient, "[\(name) Day \(dayIndex + 1)] \(menu.name)", false, dayIndex))
                     }
                 }
 
             case .menu(let menu):
                 for ingredient in menu.ingredients {
-                    result.append((ingredient, "[Extra] \(menu.name)", false))
+                    result.append((ingredient, "[Extra] \(menu.name)", false, nil))
                 }
             }
         }
@@ -99,7 +103,7 @@ struct ShoppingListView: View {
 
     private var aggregatedItems: [ShoppingIngredientItem] {
         let stockedNames = Set(allStockItems.filter { !$0.isOut }.map { $0.name.trimmingCharacters(in: .whitespaces).lowercased() })
-        var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool)] = [:]
+        var groupedDict: [String: (name: String, quantity: Double, unit: String, category: IngredientCategory, menus: Set<String>, isModified: Bool, dayIndex: Int?)] = [:]
 
         for item in rawIngredientItems {
             let name = item.ingredient.name.trimmingCharacters(in: .whitespaces)
@@ -111,9 +115,12 @@ struct ShoppingListView: View {
             if var existing = groupedDict[groupKey] {
                 existing.quantity += item.ingredient.quantity
                 existing.menus.insert(item.menuName)
+                if existing.dayIndex == nil {
+                    existing.dayIndex = item.dayIndex
+                }
                 groupedDict[groupKey] = existing
             } else {
-                groupedDict[groupKey] = (name, item.ingredient.quantity, unit, item.ingredient.category, [item.menuName], item.isModified)
+                groupedDict[groupKey] = (name, item.ingredient.quantity, unit, item.ingredient.category, [item.menuName], item.isModified, item.dayIndex)
             }
         }
 
@@ -132,7 +139,8 @@ struct ShoppingListView: View {
                 unit: value.unit,
                 category: value.category,
                 menuDetails: sortedMenus,
-                isModifiedMeal: value.isModified
+                isModifiedMeal: value.isModified,
+                dayIndex: value.dayIndex
             )
         }
         .sorted { $0.ingredientName < $1.ingredientName }
@@ -275,9 +283,8 @@ struct ShoppingListView: View {
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {
-                // Save button
                 Button {
-                    saveCurrentShoppingList()
+                    prepareAndShowSaveAlert()
                 } label: {
                     Image(systemName: "square.and.arrow.down")
                 }
@@ -297,22 +304,59 @@ struct ShoppingListView: View {
                 }
             }
         }
+        .alert("Save Shopping List", isPresented: $showSaveAlert) {
+            TextField("List Title", text: $inputListTitle)
+            Button("Cancel", role: .cancel) { }
+            Button("Save") {
+                saveCurrentShoppingList(with: inputListTitle)
+            }
+        } message: {
+            Text("Please enter a title.")
+        }
     }
 
-    private func saveCurrentShoppingList() {
-        let title = config.selectedPattern?.name ?? "Shopping List (\(Date().formatted(date: .numeric, time: .omitted)))"
+    private func prepareAndShowSaveAlert() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        let dateString = formatter.string(from: Date())
         
+        let patternName = config.selectedPattern?.name ?? "Shopping List"
+        let defaultTitle = "\(dateString) \(patternName)"
+        
+        inputListTitle = defaultTitle
+        showSaveAlert = true
+    }
+
+    private func saveCurrentShoppingList(with title: String) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        let dateString = formatter.string(from: Date())
+        let fallbackTitle = "\(dateString)  \(config.selectedPattern?.name ?? "Shopping List")"
+
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalTitle = trimmedTitle.isEmpty ? fallbackTitle : trimmedTitle
+        
+        do {
+            let existingLists = try modelContext.fetch(FetchDescriptor<SavedShoppingList>())
+            for list in existingLists {
+                modelContext.delete(list)
+            }
+        } catch {
+            print("Failed to clear previous saved lists: \(error)")
+        }
+
         let savedItems = aggregatedItems.map { item in
             SavedIngredientItem(
                 name: item.ingredientName,
                 quantity: item.quantity,
                 unit: item.unit,
                 category: item.category,
-                isChecked: checkedIngredientKeys.contains(item.id)
+                isChecked: checkedIngredientKeys.contains(item.id),
+                dayIndex: item.dayIndex
             )
         }
 
-        let newList = SavedShoppingList(title: title, items: savedItems)
+        let newList = SavedShoppingList(title: finalTitle, items: savedItems)
         modelContext.insert(newList)
 
         toastMessage = "Shopping list saved"
@@ -522,6 +566,7 @@ struct ShoppingIngredientItem: Identifiable {
     let category: IngredientCategory
     let menuDetails: String
     let isModifiedMeal: Bool
+    let dayIndex: Int?
 }
 
 #Preview {
