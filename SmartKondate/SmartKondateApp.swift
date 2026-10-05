@@ -30,7 +30,13 @@ struct SmartKondateApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Failed to initialize ModelContainer: \(error)")
+            print("Failed to initialize ModelContainer, attempting recovery: \(error)")
+            do {
+                let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 

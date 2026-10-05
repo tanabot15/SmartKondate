@@ -10,28 +10,33 @@ struct SavedShoppingView: View {
     @Environment(\.modelContext) private var modelContext
     
     @Query(sort: \SavedShoppingList.createdAt, order: .reverse) private var savedLists: [SavedShoppingList]
-    @Query private var savedItems: [SavedIngredientItem]
 
-    // MARK: - Filter States
     @State private var selectedCategories: Set<IngredientCategory> = Set(IngredientCategory.allCases)
     @State private var selectedDayIndices: Set<Int> = []
     @State private var isFilterExpanded: Bool = false
 
-    // MARK: - Toast State
     @State private var showCopiedToast = false
     @State private var toastMessage = ""
 
+    private var currentList: SavedShoppingList? {
+        savedLists.first
+    }
+
     private var navigationTitleText: String {
-        savedLists.first?.title ?? "Saved List"
+        currentList?.title ?? "Saved List"
+    }
+
+    private var allItemsInList: [SavedIngredientItem] {
+        currentList?.items ?? []
     }
 
     private var availableDayIndices: [Int] {
-        let indices = savedItems.compactMap { $0.dayIndex }
+        let indices = allItemsInList.compactMap { $0.dayIndex }
         return Array(Set(indices)).sorted()
     }
 
     private var filteredItems: [SavedIngredientItem] {
-        savedItems.filter { item in
+        allItemsInList.filter { item in
             let matchesDay: Bool
             if selectedDayIndices.isEmpty {
                 matchesDay = true

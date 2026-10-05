@@ -355,33 +355,39 @@ struct ShoppingListView: View {
         let finalTitle = trimmedTitle.isEmpty ? fallbackTitle : trimmedTitle
         
         do {
+            // 既存のリストおよびアイテムを削除
             let existingLists = try modelContext.fetch(FetchDescriptor<SavedShoppingList>())
             for list in existingLists {
                 modelContext.delete(list)
             }
-
+            
+            // 1. 新しいリスト（親）を作成してコンテキストに挿入
             let newList = SavedShoppingList(title: finalTitle, items: [])
             modelContext.insert(newList)
 
-            let recipeItems = aggregatedItems
-                .filter { $0.quantity > 0 }
-                .map { item in
-                    SavedIngredientItem(
-                        name: item.ingredientName,
-                        quantity: item.quantity,
-                        unit: item.unit,
-                        category: item.category,
-                        stockCategory: nil,
-                        isChecked: checkedIngredientKeys.contains(item.id),
-                        isOutOfStock: false,
-                        dayIndex: item.dayIndex,
-                        menuDetails: item.menuDetails,
-                        list: newList
-                    )
-                }
+            // 2. レシピ由来のアイテムを生成＆挿入
+            var allNewItems: [SavedIngredientItem] = []
+            
+            for item in aggregatedItems.filter({ $0.quantity > 0 }) {
+                let savedItem = SavedIngredientItem(
+                    name: item.ingredientName,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    category: item.category,
+                    stockCategory: nil,
+                    isChecked: checkedIngredientKeys.contains(item.id),
+                    isOutOfStock: false,
+                    dayIndex: item.dayIndex,
+                    menuDetails: item.menuDetails,
+                    list: newList
+                )
+                modelContext.insert(savedItem)
+                allNewItems.append(savedItem)
+            }
 
-            let stockOutSavedItems = outOfStockItems.map { stock in
-                SavedIngredientItem(
+            // 3. 在庫切れアイテムを生成＆挿入
+            for stock in outOfStockItems {
+                let savedItem = SavedIngredientItem(
                     name: stock.name,
                     quantity: 0.0,
                     unit: "",
@@ -392,10 +398,12 @@ struct ShoppingListView: View {
                     dayIndex: nil,
                     list: newList
                 )
+                modelContext.insert(savedItem)
+                allNewItems.append(savedItem)
             }
 
-            newList.items = recipeItems + stockOutSavedItems
-
+            // 4. 明示的にリレーションをセットして保存
+            newList.items = allNewItems
             try modelContext.save()
 
             toastMessage = "Shopping list saved"
