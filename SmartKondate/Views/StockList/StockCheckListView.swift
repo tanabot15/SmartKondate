@@ -10,9 +10,23 @@ struct StockCheckListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StockItem.name) private var stockItems: [StockItem]
 
+    @State private var searchText = ""
+    @State private var selectedCategory: StockCategory? = nil
+    @State private var showOnlyOut = false
+
     @State private var isShowingAddSheet = false
     @State private var newItemName = ""
     @State private var newItemCategory: StockCategory = .pantry
+
+    // MARK: - Filtered Stock Items
+    private var filteredStockItems: [StockItem] {
+        stockItems.filter { item in
+            let matchesSearch = searchText.isEmpty || item.name.localizedStandardContains(searchText)
+            let matchesCategory = (selectedCategory == nil) || (item.category == selectedCategory)
+            let matchesStatus = !showOnlyOut || item.isOut
+            return matchesSearch && matchesCategory && matchesStatus
+        }
+    }
 
     var body: some View {
         Group {
@@ -24,49 +38,87 @@ struct StockCheckListView: View {
                         .foregroundStyle(.secondary)
                 }
             } else {
-                List {
-                    // MARK: - Stock Items Section
-                    ForEach(StockCategory.allCases) { category in
-                        let itemsInCategory = stockItems.filter { $0.category == category }
-                        if !itemsInCategory.isEmpty {
-                            Section(header: Text(category.rawValue)) {
-                                ForEach(itemsInCategory) { item in
-                                    Button {
-                                        toggleStockStatus(item)
-                                    } label: {
-                                        HStack {
-                                            Image(systemName: item.isOut ? "checkmark.circle.fill" : "circle")
-                                                .foregroundStyle(item.isOut ? Color.accentColor : .secondary)
-                                                .font(.title3)
+                VStack(spacing: 0) {
+                    // MARK: - Category Filter & Status Toggle
+                    VStack(spacing: 8) {
+                        Picker("Category", selection: $selectedCategory) {
+                            Text("All").tag(Optional<StockCategory>.none)
+                            ForEach(StockCategory.allCases) { category in
+                                Text(category.rawValue).tag(Optional(category))
+                            }
+                        }
+                        .pickerStyle(.segmented)
 
-                                            Text(item.name)
-                                                .foregroundStyle(.primary)
+                        HStack {
+                            Toggle(isOn: $showOnlyOut) {
+                                Label("Need to Buy Only", systemImage: "cart.fill")
+                                    .font(.subheadline)
+                                    .foregroundStyle(showOnlyOut ? .orange : .secondary)
+                            }
+                            .toggleStyle(.button)
+                            .buttonStyle(.bordered)
+                            .tint(showOnlyOut ? .orange : .gray)
 
-                                            Spacer()
+                            Spacer()
 
-                                            if item.isOut {
-                                                Text("Need to Buy")
-                                                    .font(.caption2)
-                                                    .padding(.horizontal, 6)
-                                                    .padding(.vertical, 2)
-                                                    .background(Color.orange.opacity(0.15))
-                                                    .foregroundStyle(.orange)
-                                                    .clipShape(Capsule())
+                            Text("\(filteredStockItems.count) items")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
+
+                    // MARK: - List / Search Results
+                    if filteredStockItems.isEmpty {
+                        ContentUnavailableView.search(text: searchText)
+                    } else {
+                        List {
+                            ForEach(StockCategory.allCases) { category in
+                                let itemsInCategory = filteredStockItems.filter { $0.category == category }
+                                if !itemsInCategory.isEmpty {
+                                    Section(header: Text(category.rawValue)) {
+                                        ForEach(itemsInCategory) { item in
+                                            Button {
+                                                toggleStockStatus(item)
+                                            } label: {
+                                                HStack {
+                                                    Image(systemName: item.isOut ? "checkmark.circle.fill" : "circle")
+                                                        .foregroundStyle(item.isOut ? Color.accentColor : .secondary)
+                                                        .font(.title3)
+
+                                                    Text(item.name)
+                                                        .foregroundStyle(.primary)
+
+                                                    Spacer()
+
+                                                    if item.isOut {
+                                                        Text("Need to Buy")
+                                                            .font(.caption2)
+                                                            .padding(.horizontal, 6)
+                                                            .padding(.vertical, 2)
+                                                            .background(Color.orange.opacity(0.15))
+                                                            .foregroundStyle(.orange)
+                                                            .clipShape(Capsule())
+                                                    }
+                                                }
                                             }
+                                        }
+                                        .onDelete { offsets in
+                                            deleteItems(at: offsets, in: itemsInCategory)
                                         }
                                     }
                                 }
-                                .onDelete { offsets in
-                                    deleteItems(at: offsets, in: itemsInCategory)
-                                }
                             }
                         }
+                        .listStyle(.insetGrouped)
                     }
                 }
-                .listStyle(.insetGrouped)
             }
         }
         .navigationTitle("Stock Checklist")
+        .searchable(text: $searchText, prompt: "Search stock items")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -81,7 +133,7 @@ struct StockCheckListView: View {
                 Form {
                     Section(header: Text("Item Info")) {
                         TextField("Item Name (e.g. Soy Sauce)", text: $newItemName)
-                        
+
                         Picker("Category", selection: $newItemCategory) {
                             ForEach(StockCategory.allCases) { category in
                                 Text(category.rawValue).tag(category)
@@ -118,7 +170,7 @@ struct StockCheckListView: View {
     private func addStockItem() {
         let trimmed = newItemName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
-        
+
         let item = StockItem(name: trimmed, category: newItemCategory, isOut: true)
         modelContext.insert(item)
         resetInput()
