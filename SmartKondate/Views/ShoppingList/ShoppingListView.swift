@@ -355,17 +355,14 @@ struct ShoppingListView: View {
         let finalTitle = trimmedTitle.isEmpty ? fallbackTitle : trimmedTitle
         
         do {
-            // 既存のリストおよびアイテムを削除
             let existingLists = try modelContext.fetch(FetchDescriptor<SavedShoppingList>())
             for list in existingLists {
                 modelContext.delete(list)
             }
             
-            // 1. 新しいリスト（親）を作成してコンテキストに挿入
             let newList = SavedShoppingList(title: finalTitle, items: [])
             modelContext.insert(newList)
 
-            // 2. レシピ由来のアイテムを生成＆挿入
             var allNewItems: [SavedIngredientItem] = []
             
             for item in aggregatedItems.filter({ $0.quantity > 0 }) {
@@ -385,7 +382,6 @@ struct ShoppingListView: View {
                 allNewItems.append(savedItem)
             }
 
-            // 3. 在庫切れアイテムを生成＆挿入
             for stock in outOfStockItems {
                 let savedItem = SavedIngredientItem(
                     name: stock.name,
@@ -402,7 +398,6 @@ struct ShoppingListView: View {
                 allNewItems.append(savedItem)
             }
 
-            // 4. 明示的にリレーションをセットして保存
             newList.items = allNewItems
             try modelContext.save()
 

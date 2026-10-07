@@ -30,12 +30,20 @@ struct SmartKondateApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            print("Failed to initialize ModelContainer, attempting recovery: \(error)")
+            print("Failed to initialize ModelContainer. Attempting to recreate database: \(error)")
+            
+            let url = modelConfiguration.url
+            let fileManager = FileManager.default
+            let urlPath = url.path
+            
+            try? fileManager.removeItem(at: url)
+            try? fileManager.removeItem(atPath: "\(urlPath)-shm")
+            try? fileManager.removeItem(atPath: "\(urlPath)-wal")
+            
             do {
-                let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+                return try ModelContainer(for: schema, configurations: [modelConfiguration])
             } catch {
-                fatalError("Could not create ModelContainer: \(error)")
+                fatalError("Could not reset ModelContainer: \(error)")
             }
         }
     }()

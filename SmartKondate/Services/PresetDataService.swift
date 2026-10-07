@@ -447,9 +447,6 @@ struct PresetDataService {
         let stockItems = [
             // Pantry
             StockItem(name: "豆乳", category: .pantry),
-            StockItem(name: "チーズ", category: .pantry),
-            StockItem(name: "バナナ", category: .pantry),
-            StockItem(name: "プチトマト", category: .pantry),
             StockItem(name: "バター", category: .pantry),
             StockItem(name: "昆布", category: .pantry),
             StockItem(name: "粉チーズ", category: .pantry),
@@ -626,6 +623,7 @@ struct PresetDataService {
             RawIngredient(menuName: "かぼちゃの煮物", name: "かぼちゃ", quantity: 0.25, unit: "個", category: .produce, source: "うたまる親子 p.122"),
             RawIngredient(menuName: "エビサラダ", name: "レタス", quantity: 0.25, unit: "個", category: .produce, source: "The基本 p.118"),
             RawIngredient(menuName: "エビサラダ", name: "冷凍エビ", quantity: 0.25, unit: "袋", category: .chilledAndDairy, source: "The基本 p.118"),
+            RawIngredient(menuName: "エビサラダ", name: "トマト", quantity: 1, unit: "個", category: .produce, source: "The基本 p.118"),
             RawIngredient(menuName: "切り干し大根の煮物", name: "切り干し大根", quantity: 35, unit: "g", category: .pantryAndGrain, source: "うたまる親子 p.129"),
             RawIngredient(menuName: "切り干し大根の煮物", name: "にんじん", quantity: 0.5, unit: "本", category: .produce, source: "うたまる親子 p.129"),
             RawIngredient(menuName: "切り干し大根の煮物", name: "ちくわ", quantity: 2, unit: "本", category: .chilledAndDairy, source: "うたまる親子 p.129"),
@@ -765,9 +763,9 @@ struct PresetDataService {
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "お好み焼き", lunchSide: nil, lunchSoup: "にんじんのポタージュ", dinnerMain: "豚生姜焼き", dinnerSide: "トマトのマリネサラダ", dinnerSoup: nil)
             ]),
             ("Pattern C", [
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "親子丼", lunchSide: nil, lunchSoup: nil, dinnerMain: "野菜たっぷりカレーライス", dinnerSide: "エビサラダ", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ガパオライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "野菜たっぷりカレーライス", dinnerSide: "エビサラダ", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "炒飯", lunchSide: nil, lunchSoup: "ミネストローネ", dinnerMain: "大葉とチーズのミルフィーユカツ", dinnerSide: "ブロッコリーとしらすのおかか和え", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ガパオライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "ねぎ塩れんこんつくね", dinnerSide: "カプレーゼ", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "親子丼", lunchSide: nil, lunchSoup: nil, dinnerMain: "ねぎ塩れんこんつくね", dinnerSide: "カプレーゼ", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "リゾット", lunchSide: nil, lunchSoup: "豆腐とわかめの味噌汁", dinnerMain: "鶏の唐揚げ", dinnerSide: "切り干し大根の煮物", dinnerSoup: nil)
             ]),
             ("Pattern D", [
