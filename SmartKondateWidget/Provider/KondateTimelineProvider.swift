@@ -81,7 +81,9 @@ private enum WidgetDataFetcher {
             Menu.self,
             PatternDay.self,
             KondatePattern.self,
-            StockItem.self
+            StockItem.self,
+            SavedShoppingList.self,
+            SavedIngredientItem.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
         guard let container = try? ModelContainer(for: schema, configurations: [modelConfiguration]) else {
