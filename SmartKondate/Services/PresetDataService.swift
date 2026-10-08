@@ -764,7 +764,7 @@ struct PresetDataService {
             ]),
             ("Pattern C", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ガパオライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "野菜たっぷりカレーライス", dinnerSide: "エビサラダ", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "炒飯", lunchSide: nil, lunchSoup: "ミネストローネ", dinnerMain: "大葉とチーズのミルフィーユカツ", dinnerSide: "ブロッコリーとしらすのおかか和え", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "炒飯", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "大葉とチーズのミルフィーユカツ", dinnerSide: "ブロッコリーとしらすのおかか和え", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "親子丼", lunchSide: nil, lunchSoup: nil, dinnerMain: "ねぎ塩れんこんつくね", dinnerSide: "カプレーゼ", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "リゾット", lunchSide: nil, lunchSoup: "豆腐とわかめの味噌汁", dinnerMain: "鶏の唐揚げ", dinnerSide: "切り干し大根の煮物", dinnerSoup: nil)
             ]),

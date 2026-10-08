@@ -13,7 +13,7 @@ final class SavedShoppingList {
     var createdAt: Date
     
     @Relationship(deleteRule: .cascade, inverse: \SavedIngredientItem.list)
-    var items: [SavedIngredientItem]
+    var items: [SavedIngredientItem] = []
 
     init(id: UUID = UUID(), title: String, createdAt: Date = Date(), items: [SavedIngredientItem] = []) {
         self.id = id
