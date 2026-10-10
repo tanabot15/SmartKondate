@@ -67,27 +67,35 @@ struct SavedShoppingView: View {
     private var formattedTextForSharing: String {
         var text = "[\(navigationTitleText)]\n\n"
 
+        // MARK: - Stock Items (カテゴリー別)
         if !stockItems.isEmpty {
             text += "■ Stock Items (Refill Needed)\n"
-            for item in stockItems {
-                text += " - \(item.name)\n"
+            for category in StockCategory.allCases {
+                let categoryStockItems = stockItems.filter { $0.stockCategory == category }
+                if !categoryStockItems.isEmpty {
+                    text += "[\(category.rawValue)]\n"
+                    for item in categoryStockItems {
+                        text += "- \(item.name)\n"
+                    }
+                    text += "\n"
+                }
             }
-            text += "\n"
         }
 
+        // MARK: - Ingredients (カテゴリー別)
         let validRecipeItems = recipeItems.filter { $0.quantity > 0 }
         if !validRecipeItems.isEmpty {
             let validGrouped = Dictionary(grouping: validRecipeItems, by: { $0.category })
             text += "■ Ingredients\n"
             for category in IngredientCategory.allCases {
                 if let items = validGrouped[category], !items.isEmpty {
-                    text += " [\(category.rawValue)]\n"
+                    text += "[\(category.rawValue)]\n"
                     for item in items {
                         let qtyStr = formatQuantity(item.quantity)
                         let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                        let menuInfo = item.menuDetails != nil && !item.menuDetails!.isEmpty ? " (\(item.menuDetails!))" : ""
-                        text += " - \(item.name): \(qtyStr)\(unitStr)\(menuInfo)\n"
+                        text += "- \(item.name) \(qtyStr)\(unitStr)\n"
                     }
+                    text += "\n"
                 }
             }
         }
@@ -325,7 +333,7 @@ struct SavedShoppingView: View {
                 }
 
                 Button {
-                    copyToClipboard(text: uncheckedItemsFormattedText, message: "Copied pending items")
+                    copyToClipboard(text: formattedTextForSharing, message: "Copied shopping list")
                 } label: {
                     Image(systemName: "doc.on.doc")
                 }

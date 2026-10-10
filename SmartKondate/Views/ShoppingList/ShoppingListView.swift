@@ -158,58 +158,57 @@ struct ShoppingListView: View {
     }
 
     private var formattedTextForSharing: String {
-            var text = "[Shopping List]\n"
-            if let pattern = config.selectedPattern {
-                text += "Target: \(pattern.name) (\(config.selectedDayIndices.count) days)\n"
+        var text = "[\(config.selectedPattern?.name ?? "Shopping List")]\n\n"
+
+        // MARK: - Stock Items
+        if !outOfStockItems.isEmpty {
+            text += "■ Stock Items (Refill Needed)\n"
+            for category in StockCategory.allCases {
+                let itemsInCategory = outOfStockItems.filter { $0.category == category }
+                if !itemsInCategory.isEmpty {
+                    text += "[\(category.rawValue)]\n"
+                    for stock in itemsInCategory {
+                        text += "- \(stock.name)\n"
+                    }
+                    text += "\n"
+                }
+            }
+        }
+
+        // MARK: - Modified / Added Meal Ingredients
+        let validModifiedItems = modifiedItems.filter { $0.quantity > 0 }
+        if !validModifiedItems.isEmpty {
+            text += "■ Modified / Added Meal Ingredients\n"
+            for item in validModifiedItems {
+                let qtyStr = formatQuantity(item.quantity)
+                let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
+                text += "- \(item.ingredientName) \(qtyStr)\(unitStr)\n"
             }
             text += "\n"
+        }
 
-            if !outOfStockItems.isEmpty {
-                text += "■ Stock Items (Refill Needed)\n"
-                for category in StockCategory.allCases {
-                    let itemsInCategory = outOfStockItems.filter { $0.category == category }
-                    if !itemsInCategory.isEmpty {
-                        text += " [\(category.rawValue)]\n"
-                        for stock in itemsInCategory {
-                            text += " - \(stock.name)\n"
-                        }
-                    }
-                }
-                text += "\n"
-            }
+        // MARK: - Standard Ingredients (カテゴリー別)
+        let validStandardGroups = standardItemsByCategory.compactMap { group -> ShoppingCategoryGroup? in
+            let filtered = group.items.filter { $0.quantity > 0 }
+            guard !filtered.isEmpty else { return nil }
+            return ShoppingCategoryGroup(category: group.category, items: filtered)
+        }
 
-            let validModifiedItems = modifiedItems.filter { $0.quantity > 0 }
-            if !validModifiedItems.isEmpty {
-                text += "■ Modified / Added Meal Ingredients\n"
-                for item in validModifiedItems {
+        if !validStandardGroups.isEmpty {
+            text += "■ Ingredients\n"
+            for group in validStandardGroups {
+                text += "[\(group.category.rawValue)]\n"
+                for item in group.items {
                     let qtyStr = formatQuantity(item.quantity)
                     let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                    text += "- \(item.ingredientName): \(qtyStr)\(unitStr)\n"
+                    text += "- \(item.ingredientName) \(qtyStr)\(unitStr)\n"
                 }
                 text += "\n"
             }
-
-            let validStandardGroup = standardItemsByCategory.compactMap { group -> ShoppingCategoryGroup? in
-                let filtered = group.items.filter { $0.quantity > 0 }
-                guard !filtered.isEmpty else { return nil }
-                return ShoppingCategoryGroup(category: group.category, items: filtered)
-            }
-
-            if !validStandardGroup.isEmpty {
-                text += "■ Ingredients\n"
-                for group in validStandardGroup {
-                    text += " [\(group.category.rawValue)]\n"
-                    for item in group.items {
-                        let qtyStr = formatQuantity(item.quantity)
-                        let unitStr = item.unit.isEmpty ? "" : " \(item.unit)"
-                        text += " - \(item.ingredientName): \(qtyStr)\(unitStr)\n"
-                    }
-                }
-                text += "\n"
-            }
-
-            return text.trimmingCharacters(in: .whitespacesAndNewlines)
         }
+
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     private var uncheckedItemsFormattedText: String {
         var text = "[Pending Items List] \n"
@@ -312,11 +311,7 @@ struct ShoppingListView: View {
                 }
 
                 Button {
-                    if checkMode == .standard {
-                        copyToClipboard(text: uncheckedItemsFormattedText, message: "Copied pending items")
-                    } else {
-                        copyToClipboard(text: unbuyableItemsFormattedText, message: "Copied unbuyable items")
-                    }
+                    copyToClipboard(text: formattedTextForSharing, message: "Copied shopping list")
                 } label: {
                     Image(systemName: "doc.on.doc")
                 }
