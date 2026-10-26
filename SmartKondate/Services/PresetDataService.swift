@@ -457,6 +457,7 @@ struct PresetDataService {
             StockItem(name: "バナナ", category: .pantry),
             StockItem(name: "ミニトマト", category: .pantry),
             StockItem(name: "幼児チーズ", category: .pantry),
+            StockItem(name: "幼児牛乳", category: .pantry),
 
             // Seasoning
             StockItem(name: "酒", category: .seasoning),
@@ -778,7 +779,7 @@ struct PresetDataService {
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ビビンバ", lunchSide: nil, lunchSoup: nil, dinnerMain: "肉じゃが", dinnerSide: "豆苗とツナの和風炒め", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "よだれどり", lunchSide: nil, lunchSoup: "トマトと卵のスープ", dinnerMain: "豆腐入り月見つくね", dinnerSide: "焼きびたし", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "マカロニグラタン", lunchSide: nil, lunchSoup: nil, dinnerMain: "たらのムニエル", dinnerSide: "アンチョビブロッコリー", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "外食・テイクアウト", lunchSide: nil, lunchSoup: "外食・テイクアウト", dinnerMain: "外食・テイクアウト", dinnerSide: "ほうれん草とにんじんのナムル", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ポトフ", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "ローストビーフ", dinnerSide: "ほうれん草とにんじんのナムル", dinnerSoup: nil)
             ])
         ]
 
