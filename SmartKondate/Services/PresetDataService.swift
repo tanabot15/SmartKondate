@@ -445,8 +445,15 @@ struct PresetDataService {
     // MARK: - 3. Japanese Home
     private static func insertJapanseHome(context: ModelContext) {
         let stockItems = [
+            // Leftover
+            StockItem(name: "豆乳1本残り", category: .leftover),
+            StockItem(name: "牛乳1本残り", category: .leftover),
+            StockItem(name: "無脂肪牛乳1本残り", category: .leftover),
+            StockItem(name: "小岩井ヨーグルト1個残り", category: .leftover),
+            StockItem(name: "無脂肪ヨーグルト1個残り", category: .leftover),
+
+            
             // Pantry
-            StockItem(name: "豆乳", category: .pantry),
             StockItem(name: "バター", category: .pantry),
             StockItem(name: "昆布", category: .pantry),
             StockItem(name: "粉チーズ", category: .pantry),
@@ -457,7 +464,6 @@ struct PresetDataService {
             StockItem(name: "バナナ", category: .pantry),
             StockItem(name: "ミニトマト", category: .pantry),
             StockItem(name: "幼児チーズ", category: .pantry),
-            StockItem(name: "幼児牛乳", category: .pantry),
 
             // Seasoning
             StockItem(name: "酒", category: .seasoning),
@@ -608,11 +614,11 @@ struct PresetDataService {
             RawIngredient(menuName: "スコップコロッケ", name: "合いびき肉", quantity: 200, unit: "g", category: .meatAndFish, source: "うたまる親子 p.30"),
             RawIngredient(menuName: "スコップコロッケ", name: "じゃがいも", quantity: 4, unit: "個", category: .produce, source: "うたまる親子 p.30"),
             RawIngredient(menuName: "スコップコロッケ", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.30"),
-            RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "合いびき肉", quantity: 300, unit: "g", category: .produce, source: "うたまる親子 p.24"),
+            RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "合いびき肉", quantity: 300, unit: "g", category: .meatAndFish, source: "うたまる親子 p.24"),
             RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "豆腐", quantity: 160, unit: "g", category: .produce, source: "うたまる親子 p.24"),
             RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.24"),
             RawIngredient(menuName: "和風あんかけ豆腐ハンバーグ", name: "しめじ", quantity: 1, unit: "パック", category: .produce, source: "うたまる親子 p.24"),
-            RawIngredient(menuName: "のり塩チキン", name: "鶏もも肉(切)", quantity: 500, unit: "g", category: .produce, source: "うたまる親子 p.24"),
+            RawIngredient(menuName: "のり塩チキン", name: "鶏もも肉(切)", quantity: 500, unit: "g", category: .meatAndFish, source: "うたまる親子 p.24"),
             RawIngredient(menuName: "ひじきの煮物", name: "芽ひじき", quantity: 11, unit: "g", category: .pantryAndGrain, source: "うたまる親子 p.133"),
             RawIngredient(menuName: "ひじきの煮物", name: "にんじん", quantity: 0.5, unit: "本", category: .produce, source: "うたまる親子 p.133"),
             RawIngredient(menuName: "ひじきの煮物", name: "ちくわ", quantity: 1, unit: "本", category: .chilledAndDairy, source: "うたまる親子 p.133"),
@@ -778,7 +784,7 @@ struct PresetDataService {
             ("Pattern D", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ビビンバ", lunchSide: nil, lunchSoup: nil, dinnerMain: "肉じゃが", dinnerSide: "豆苗とツナの和風炒め", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "よだれどり", lunchSide: nil, lunchSoup: "トマトと卵のスープ", dinnerMain: "豆腐入り月見つくね", dinnerSide: "焼きびたし", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "マカロニグラタン", lunchSide: nil, lunchSoup: nil, dinnerMain: "たらのムニエル", dinnerSide: "アンチョビブロッコリー", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "マカロニグラタン", lunchSide: nil, lunchSoup: nil, dinnerMain: "たらのムニエル", dinnerSide: "レタスオイスター炒め", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ポトフ", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "ローストビーフ", dinnerSide: "ほうれん草とにんじんのナムル", dinnerSoup: nil)
             ])
         ]

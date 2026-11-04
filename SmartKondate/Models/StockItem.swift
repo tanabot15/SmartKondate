@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 
 enum StockCategory: String, Codable, CaseIterable, Identifiable {
+    case leftover = "Leftover"
     case pantry = "Pantry"
     case seasoning = "Seasoning"
     case household = "Household"
