@@ -157,8 +157,20 @@ private struct MealEditorSheet: View {
     let onSelectMenus: (MealType, [Menu]?) -> Void
     let onDismiss: () -> Void
 
+    @State private var searchText = ""
+    @State private var selectedCategory: MenuCategory? = nil
+
     private var currentMenus: [Menu] {
         diffResult?.effectiveMenus ?? []
+    }
+
+    // 検索キーワードとカテゴリーで絞り込み
+    private var filteredMenus: [Menu] {
+        availableMenus.filter { menu in
+            let matchesSearch = searchText.isEmpty || menu.name.localizedStandardContains(searchText)
+            let matchesCategory = selectedCategory == nil || menu.category == selectedCategory
+            return matchesSearch && matchesCategory
+        }
     }
 
     private func isSelected(_ menu: Menu) -> Bool {
@@ -177,39 +189,83 @@ private struct MealEditorSheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Button("Clear All") {
-                        onSelectMenus(mealType, nil)
-                        onDismiss()
+            VStack(spacing: 0) {
+                // MARK: - Category Filter Segmented Picker
+                Picker("Category", selection: $selectedCategory) {
+                    Text("All").tag(Optional<MenuCategory>.none)
+                    ForEach(MenuCategory.allCases) { category in
+                        Text(category.rawValue).tag(Optional(category))
                     }
-                    .foregroundStyle(.red)
                 }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
 
-                Section(header: Text("Available Menus")) {
-                    ForEach(availableMenus) { menu in
-                        Button {
-                            toggleMenu(menu)
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(menu.name)
-                                        .foregroundStyle(.primary)
-                                    Text(menu.category.rawValue)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
+                List {
+                    // MARK: - Clear All Section
+                    if !currentMenus.isEmpty {
+                        Section {
+                            Button("Clear All Selected Menus") {
+                                onSelectMenus(mealType, nil)
+                                onDismiss()
+                            }
+                            .foregroundStyle(.red)
+                        }
+                    }
 
-                                if isSelected(menu) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(Color.accentColor)
+                    // MARK: - Menu List Section
+                    Section(header: Text("Available Menus (\(filteredMenus.count))")) {
+                        if filteredMenus.isEmpty {
+                            ContentUnavailableView.search(text: searchText)
+                        } else {
+                            ForEach(filteredMenus) { menu in
+                                Button {
+                                    toggleMenu(menu)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(menu.name)
+                                                .font(.body)
+                                                .fontWeight(.medium)
+                                                .foregroundStyle(.primary)
+
+                                            HStack(spacing: 6) {
+                                                Text(menu.category.rawValue)
+                                                    .font(.caption2)
+                                                    .padding(.horizontal, 6)
+                                                    .padding(.vertical, 2)
+                                                    .background(Color.secondary.opacity(0.15))
+                                                    .clipShape(Capsule())
+
+                                                if !menu.source.isEmpty {
+                                                    Text(menu.source)
+                                                        .font(.caption)
+                                                        .foregroundStyle(.secondary)
+                                                        .lineLimit(1)
+                                                }
+                                            }
+                                        }
+
+                                        Spacer()
+
+                                        if isSelected(menu) {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(Color.accentColor)
+                                                .font(.title3)
+                                        } else {
+                                            Image(systemName: "circle")
+                                                .foregroundStyle(.secondary.opacity(0.4))
+                                                .font(.title3)
+                                        }
+                                    }
+                                    .padding(.vertical, 4)
                                 }
                             }
                         }
                     }
                 }
             }
+            .searchable(text: $searchText, prompt: "Search menus by name")
             .navigationTitle("\(mealType.rawValue) Menu")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

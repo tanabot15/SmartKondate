@@ -16,7 +16,7 @@ struct StockCheckListView: View {
 
     @State private var isShowingAddSheet = false
     @State private var newItemName = ""
-    @State private var newItemCategory: StockCategory = .pantry
+    @State private var newItemCategory: StockCategory = .leftover // デフォルトを Leftover にすると便利です
 
     // MARK: - Filtered Stock Items
     private var filteredStockItems: [StockItem] {
@@ -26,6 +26,12 @@ struct StockCheckListView: View {
             let matchesStatus = !showOnlyOut || item.isOut
             return matchesSearch && matchesCategory && matchesStatus
         }
+    }
+
+    // 表示順をカスタムする場合（Leftoverを先頭に、残りを続行）
+    private var orderedCategories: [StockCategory] {
+        // 必要に応じて好みの並び順にカスタマイズできます
+        [.leftover, .pantry, .seasoning, .household, .other]
     }
 
     var body: some View {
@@ -43,7 +49,7 @@ struct StockCheckListView: View {
                     VStack(spacing: 8) {
                         Picker("Category", selection: $selectedCategory) {
                             Text("All").tag(Optional<StockCategory>.none)
-                            ForEach(StockCategory.allCases) { category in
+                            ForEach(orderedCategories) { category in
                                 Text(category.rawValue).tag(Optional(category))
                             }
                         }
@@ -75,7 +81,7 @@ struct StockCheckListView: View {
                         ContentUnavailableView.search(text: searchText)
                     } else {
                         List {
-                            ForEach(StockCategory.allCases) { category in
+                            ForEach(orderedCategories) { category in
                                 let itemsInCategory = filteredStockItems.filter { $0.category == category }
                                 if !itemsInCategory.isEmpty {
                                     Section(header: Text(category.rawValue)) {
@@ -132,10 +138,10 @@ struct StockCheckListView: View {
             NavigationStack {
                 Form {
                     Section(header: Text("Item Info")) {
-                        TextField("Item Name (e.g. Soy Sauce)", text: $newItemName)
+                        TextField("Item Name (e.g. Leftover Curry)", text: $newItemName)
 
                         Picker("Category", selection: $newItemCategory) {
-                            ForEach(StockCategory.allCases) { category in
+                            ForEach(orderedCategories) { category in
                                 Text(category.rawValue).tag(category)
                             }
                         }
@@ -171,14 +177,14 @@ struct StockCheckListView: View {
         let trimmed = newItemName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
 
-        let item = StockItem(name: trimmed, category: newItemCategory, isOut: true)
+        let item = StockItem(name: trimmed, category: newItemCategory, isOut: false)
         modelContext.insert(item)
         resetInput()
     }
 
     private func resetInput() {
         newItemName = ""
-        newItemCategory = .pantry
+        newItemCategory = .leftover
     }
 
     private func deleteItems(at offsets: IndexSet, in categoryItems: [StockItem]) {
@@ -198,6 +204,7 @@ struct StockCheckListView: View {
     let context = container.mainContext
 
     let items = [
+        StockItem(name: "Milk", category: .leftover, isOut: false),
         StockItem(name: "Soy Sauce", category: .seasoning, isOut: false),
         StockItem(name: "Mirin", category: .seasoning, isOut: false),
         StockItem(name: "Miso Paste", category: .seasoning, isOut: true),

@@ -16,6 +16,20 @@ struct DashboardView: View {
     @AppStorage("isQueueLoopEnabled") private var isQueueLoopEnabled: Bool = false
 
     @State private var customMenuDict: [String: [Menu]] = [:]
+    
+    // MARK: - Today Shift State (App Group 経由で Widget と共有)
+    @AppStorage("dashboardDayOffset", store: UserDefaults(suiteName: "group.com.suzuki.kenichiro.SmartKondate"))
+    private var dayOffset: Int = 0
+
+    private var effectiveToday: Date {
+        Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) ?? Date()
+    }
+
+    private var effectiveTodayString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d (EEE)"
+        return formatter.string(from: effectiveToday)
+    }
 
     private var queuedPatterns: [KondatePattern] {
         allPatterns
@@ -42,6 +56,9 @@ struct DashboardView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(spacing: 24) {
+                            // MARK: - Date Shift Bar (Today Control)
+                            dateShiftControlBar(proxy: proxy)
+
                             ForEach(Array(queuedPatterns.enumerated()), id: \.element.id) { index, pattern in
                                 let patternStartDate = startDate(for: index)
                                 
@@ -88,7 +105,9 @@ struct DashboardView: View {
                                     ForEach(0..<pattern.durationDays, id: \.self) { dayIndex in
                                         let date = Calendar.current.date(byAdding: .day, value: dayIndex, to: patternStartDate) ?? patternStartDate
                                         let diffResults = getDiffResults(for: date, dayIndex: dayIndex, pattern: pattern, patternStartDate: patternStartDate)
-                                        let isToday = Calendar.current.isDateInToday(date)
+                                        
+                                        // effectiveToday を基準に本日のカードを判定
+                                        let isToday = Calendar.current.isDate(date, inSameDayAs: effectiveToday)
 
                                         MealCardView(
                                             dayIndex: dayIndex,
@@ -108,7 +127,7 @@ struct DashboardView: View {
                         .padding()
                     }
                     .onAppear {
-                        scrollToToday(proxy: proxy)
+                        scrollToEffectiveToday(proxy: proxy)
                     }
                 }
             }
@@ -121,7 +140,71 @@ struct DashboardView: View {
         }
     }
 
-    private func scrollToToday(proxy: ScrollViewProxy) {
+    // MARK: - Date Shift Header UI
+    @ViewBuilder
+    private func dateShiftControlBar(proxy: ScrollViewProxy) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                dayOffset -= 1
+                scrollToEffectiveToday(proxy: proxy)
+                WidgetCenter.shared.reloadAllTimelines() // Widget を更新
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
+            .buttonStyle(.bordered)
+            .tint(.secondary)
+
+            VStack(spacing: 2) {
+                Text(effectiveTodayString)
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                
+                if dayOffset != 0 {
+                    Text(dayOffset > 0 ? "+\(dayOffset) days shifted" : "\(dayOffset) days shifted")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.accentColor)
+                } else {
+                    Text("Today (Standard)")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            Button {
+                dayOffset += 1
+                scrollToEffectiveToday(proxy: proxy)
+                WidgetCenter.shared.reloadAllTimelines() // Widget を更新
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
+            .buttonStyle(.bordered)
+            .tint(.secondary)
+
+            if dayOffset != 0 {
+                Button("Reset") {
+                    dayOffset = 0
+                    scrollToEffectiveToday(proxy: proxy)
+                    WidgetCenter.shared.reloadAllTimelines() // Widget を更新
+                }
+                .font(.caption)
+                .fontWeight(.medium)
+                .buttonStyle(.borderedProminent)
+                .tint(Color.accentColor.opacity(0.8))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func scrollToEffectiveToday(proxy: ScrollViewProxy) {
         let calendar = Calendar.current
         for index in 0..<queuedPatterns.count {
             let pattern = queuedPatterns[index]
@@ -129,7 +212,7 @@ struct DashboardView: View {
             
             for dayIndex in 0..<pattern.durationDays {
                 if let date = calendar.date(byAdding: .day, value: dayIndex, to: pStartDate),
-                   calendar.isDateInToday(date) {
+                   calendar.isDate(date, inSameDayAs: effectiveToday) {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         withAnimation {
                             proxy.scrollTo("card_\(pattern.id)_\(dayIndex)", anchor: .top)

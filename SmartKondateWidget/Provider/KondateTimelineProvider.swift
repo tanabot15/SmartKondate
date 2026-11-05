@@ -53,9 +53,16 @@ struct KondateTimelineProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleKondateEntry>) -> Void) {
         let currentDate = Date()
         
+        // App Group から dayOffset を取得して適用
+        let sharedDefaults = UserDefaults(suiteName: "group.com.suzuki.kenichiro.SmartKondate")
+        let dayOffset = sharedDefaults?.integer(forKey: "dashboardDayOffset") ?? 0
+        
+        let calendar = Calendar.current
+        let effectiveDate = calendar.date(byAdding: .day, value: dayOffset, to: currentDate) ?? currentDate
+        
         Task { @MainActor in
-            let entry = WidgetDataFetcher.fetchTodayEntry(for: currentDate) ?? SimpleKondateEntry(
-                date: currentDate,
+            let entry = WidgetDataFetcher.fetchTodayEntry(for: effectiveDate) ?? SimpleKondateEntry(
+                date: effectiveDate,
                 patternName: "Not Set",
                 dayText: "-",
                 breakfastMain: "-", breakfastSub: "",
@@ -63,7 +70,6 @@ struct KondateTimelineProvider: TimelineProvider {
                 dinnerMain: "-", dinnerSub: ""
             )
             
-            let calendar = Calendar.current
             let nextUpdate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate)
             
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
@@ -114,11 +120,11 @@ private enum WidgetDataFetcher {
         for index in 0..<queuedPatterns.count {
             let pattern = queuedPatterns[index]
             
-            // patternIndex までの累積日数を計算 (DashboardView の startDate(for:) と同じ)
+            // patternIndex までの累積日数を計算
             let offsetDays = queuedPatterns.prefix(index).reduce(0) { $0 + $1.durationDays }
             guard let patternStartDate = calendar.date(byAdding: .day, value: offsetDays, to: baseStartDate) else { continue }
             
-            // このパターンの期間中に「今日」が含まれるか判定
+            // このパターンの期間中に「今日（シフト後の日付）」が含まれるか判定
             for dayIndex in 0..<pattern.durationDays {
                 if let dayDate = calendar.date(byAdding: .day, value: dayIndex, to: patternStartDate),
                    calendar.isDate(dayDate, inSameDayAs: startOfToday) {
