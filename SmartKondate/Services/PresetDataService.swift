@@ -464,6 +464,9 @@ struct PresetDataService {
             StockItem(name: "バナナ", category: .pantry),
             StockItem(name: "ミニトマト", category: .pantry),
             StockItem(name: "幼児チーズ", category: .pantry),
+            StockItem(name: "わかめスープ", category: .pantry),
+            StockItem(name: "コーンスープ", category: .pantry),
+
 
             // Seasoning
             StockItem(name: "酒", category: .seasoning),

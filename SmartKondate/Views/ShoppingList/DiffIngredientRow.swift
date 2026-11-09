@@ -16,7 +16,7 @@ struct DiffIngredientRow: View {
     let onToggle: () -> Void
     let onQuantityChange: (Double) -> Void
 
-    @State private var showEditPopover = false
+    @State private var showEditSheet = false // .popover から .sheet へ変更
     @State private var editingText = ""
 
     var body: some View {
@@ -52,7 +52,7 @@ struct DiffIngredientRow: View {
                     .font(.body)
                     .fontWeight(isModifiedMeal ? .bold : .regular)
                     .foregroundStyle(isChecked ? (isUnbuyableMode ? .red : .secondary) : .primary)
-                    .strikethrough(isChecked && !isUnbuyableMode) // 買えなかったモード時は打消し線を引かない
+                    .strikethrough(isChecked && !isUnbuyableMode)
 
                 if isModifiedMeal {
                     Text("Changed")
@@ -77,7 +77,7 @@ struct DiffIngredientRow: View {
     private var quantityBadgeButton: some View {
         Button {
             editingText = formatQuantity(quantity)
-            showEditPopover = true
+            showEditSheet = true
         } label: {
             HStack(spacing: 3) {
                 Text(formatQuantity(quantity))
@@ -97,17 +97,18 @@ struct DiffIngredientRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
-        .popover(isPresented: $showEditPopover) {
-            QuantityEditPopover(
+        .sheet(isPresented: $showEditSheet) { // .popover から .sheet に変更し位置を完全に固定
+            QuantityEditSheet(
                 ingredientName: ingredientName,
                 unit: unit,
                 quantityText: $editingText,
                 onSave: { newQty in
                     onQuantityChange(newQty)
-                    showEditPopover = false
+                    showEditSheet = false
                 }
             )
-            .presentationCompactAdaptation(.popover)
+            .presentationDetents([.height(240)]) // 高さを固定してすっきりと表示
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -116,14 +117,15 @@ struct DiffIngredientRow: View {
     }
 }
 
-// MARK: - Quantity Edit Popover
-private struct QuantityEditPopover: View {
+// MARK: - Quantity Edit Sheet (PopoverからSheetへ移行)
+private struct QuantityEditSheet: View {
     let ingredientName: String
     let unit: String
     @Binding var quantityText: String
     let onSave: (Double) -> Void
 
     @FocusState private var isTextFieldFocused: Bool
+    @Environment(\.dismiss) private var dismiss
 
     private var stepAmount: Double {
         switch unit.lowercased().trimmingCharacters(in: .whitespaces) {
@@ -134,73 +136,80 @@ private struct QuantityEditPopover: View {
     }
 
     var body: some View {
-        VStack(spacing: 14) {
-            Text(ingredientName)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
+        NavigationStack {
+            VStack(spacing: 20) {
+                inputStepperRow
 
-            inputStepperRow
-
-            Button {
-                if let val = Double(quantityText) {
-                    onSave(max(0, val))
+                Button {
+                    if let val = Double(quantityText) {
+                        onSave(max(0, val))
+                    }
+                } label: {
+                    Text("Done")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
                 }
-            } label: {
-                Text("Done")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                .buttonStyle(.borderedProminent)
+                
+                Spacer()
             }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding(16)
-        .frame(minWidth: 220)
-        .onAppear {
-            isTextFieldFocused = true
+            .padding(20)
+            .navigationTitle(ingredientName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                isTextFieldFocused = true
+            }
         }
     }
 
     private var inputStepperRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             Button {
                 adjustAmount(by: -stepAmount)
             } label: {
                 Image(systemName: "minus")
-                    .font(.body.bold())
-                    .frame(width: 36, height: 36)
+                    .font(.title3.bold())
+                    .frame(width: 44, height: 44)
                     .background(Color(.secondarySystemFill))
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
 
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 TextField("0", text: $quantityText)
                     .keyboardType(.decimalPad)
                     .focused($isTextFieldFocused)
                     .multilineTextAlignment(.center)
-                    .font(.title3)
+                    .font(.title2)
                     .fontWeight(.bold)
-                    .frame(minWidth: 50, maxWidth: 90)
+                    .frame(minWidth: 60, maxWidth: 100)
 
                 if !unit.isEmpty {
                     Text(unit)
-                        .font(.callout)
+                        .font(.body)
                         .foregroundStyle(.secondary)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
             .background(Color(.tertiarySystemFill))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
 
             Button {
                 adjustAmount(by: stepAmount)
             } label: {
                 Image(systemName: "plus")
-                    .font(.body.bold())
-                    .frame(width: 36, height: 36)
+                    .font(.title3.bold())
+                    .frame(width: 44, height: 44)
                     .background(Color(.secondarySystemFill))
                     .clipShape(Circle())
             }
@@ -226,18 +235,6 @@ private struct QuantityEditPopover: View {
             menuDetails: "Pork Ginger (Standard)",
             isModifiedMeal: false,
             isChecked: false,
-            onToggle: {},
-            onQuantityChange: { _ in }
-        )
-        
-        DiffIngredientRow(
-            ingredientName: "Salmon Fillet",
-            quantity: 2,
-            unit: "pcs",
-            menuDetails: "Grilled Salmon (Custom)",
-            isModifiedMeal: true,
-            isChecked: true,
-            isUnbuyableMode: true,
             onToggle: {},
             onQuantityChange: { _ in }
         )
