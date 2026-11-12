@@ -499,6 +499,7 @@ struct PresetDataService {
             StockItem(name: "コンソメ", category: .seasoning),
             StockItem(name: "鶏ガラスープ", category: .seasoning),
             StockItem(name: "焼肉のタレ", category: .seasoning),
+            StockItem(name: "オイスターソース", category: .seasoning),
 
             // Household
             StockItem(name: "ラップ（大）", category: .household),
