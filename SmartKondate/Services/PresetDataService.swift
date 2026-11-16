@@ -454,10 +454,12 @@ struct PresetDataService {
 
             
             // Pantry
+            StockItem(name: "米", category: .pantry),
             StockItem(name: "バター", category: .pantry),
             StockItem(name: "昆布", category: .pantry),
             StockItem(name: "粉チーズ", category: .pantry),
             StockItem(name: "フレークチーズ", category: .pantry),
+            StockItem(name: "マカロニ", category: .pantry),
             StockItem(name: "小麦粉", category: .pantry),
             StockItem(name: "片栗粉", category: .pantry),
             StockItem(name: "パン粉", category: .pantry),
@@ -599,7 +601,7 @@ struct PresetDataService {
             RawIngredient(menuName: "肉じゃが", name: "牛薄切り肉", quantity: 150, unit: "g", category: .meatAndFish, source: "うたまる親子 p.52"),
             RawIngredient(menuName: "肉じゃが", name: "玉ねぎ", quantity: 1, unit: "個", category: .produce, source: "うたまる親子 p.52"),
             RawIngredient(menuName: "肉じゃが", name: "じゃがいも", quantity: 4, unit: "個", category: .produce, source: "うたまる親子 p.52"),
-            RawIngredient(menuName: "肉じゃが", name: "にんじん", quantity: 0.5, unit: "本", category: .produce, source: "うたまる親子 p.52"),
+            RawIngredient(menuName: "肉じゃが", name: "にんじん", quantity: 1, unit: "本", category: .produce, source: "うたまる親子 p.52"),
             RawIngredient(menuName: "たらのムニエル", name: "たら", quantity: 3, unit: "切", category: .meatAndFish, source: "うたまる親子 p.59"),
             RawIngredient(menuName: "プルコギ", name: "牛薄切り肉", quantity: 300, unit: "g", category: .meatAndFish, source: "うたまる親子 p.51"),
             RawIngredient(menuName: "プルコギ", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.51"),
@@ -615,6 +617,7 @@ struct PresetDataService {
             RawIngredient(menuName: "豚の角煮", name: "豚肩ロース（塊）", quantity: 800, unit: "g", category: .meatAndFish, source: "ヘルシオ p.8"),
             RawIngredient(menuName: "豚の角煮", name: "ネギの青い部分", quantity: 1, unit: "本", category: .produce, source: "ヘルシオ p.8"),
             RawIngredient(menuName: "餃子", name: "冷凍餃子", quantity: 1, unit: "袋", category: .chilledAndDairy, source: nil),
+            RawIngredient(menuName: "焼き魚 or 刺身", name: "焼き魚 or 刺身", quantity: 2, unit: "個", category: .meatAndFish, source: nil),
             RawIngredient(menuName: "スコップコロッケ", name: "合いびき肉", quantity: 200, unit: "g", category: .meatAndFish, source: "うたまる親子 p.30"),
             RawIngredient(menuName: "スコップコロッケ", name: "じゃがいも", quantity: 4, unit: "個", category: .produce, source: "うたまる親子 p.30"),
             RawIngredient(menuName: "スコップコロッケ", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.30"),
@@ -692,7 +695,7 @@ struct PresetDataService {
             RawIngredient(menuName: "お好み焼き", name: "冷凍エビ", quantity: 0.25, unit: "袋", category: .chilledAndDairy, source: "ハツ江おばあちゃん p.40"),
             RawIngredient(menuName: "親子丼", name: "鶏もも肉(切)", quantity: 240, unit: "g", category: .meatAndFish, source: "うたまる親子 p.77"),
             RawIngredient(menuName: "親子丼", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "うたまる親子 p.77"),
-            RawIngredient(menuName: "親子丼", name: "卵", quantity: 2, unit: "個", category: .chilledAndDairy, source: "うたまる親子 p.77"),
+            RawIngredient(menuName: "親子丼", name: "卵", quantity: 5, unit: "個", category: .chilledAndDairy, source: "うたまる親子 p.77"),
             RawIngredient(menuName: "炒飯", name: "卵", quantity: 1, unit: "個", category: .chilledAndDairy, source: "The基本 p.64"),
             RawIngredient(menuName: "炒飯", name: "ハム", quantity: 70, unit: "g", category: .chilledAndDairy, source: "The基本 p.64"),
             RawIngredient(menuName: "炒飯", name: "長ネギ", quantity: 0.5, unit: "本", category: .produce, source: "The基本 p.64"),
@@ -771,7 +774,7 @@ struct PresetDataService {
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ミートソースパスタ", lunchSide: nil, lunchSoup: nil, dinnerMain: "プルコギ", dinnerSide: "アンチョビキャベツ", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ポークケチャップ", lunchSide: nil, lunchSoup: "じゃがいものポタージュ", dinnerMain: "チキンソテー（トマト）", dinnerSide: "ひじきの煮物", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "カオマンガイ", lunchSide: nil, lunchSoup: nil, dinnerMain: "麻婆豆腐", dinnerSide: "トマトサラダ", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "チヂミ", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "豚肉トマト煮込み", dinnerSide: "ほうれん草としらすのおひたし", dinnerSoup: nil)
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "チヂミ", lunchSide: nil, lunchSoup: "かぼちゃのポタージュ", dinnerMain: "焼き魚 or 刺身", dinnerSide: "ほうれん草としらすのおひたし", dinnerSoup: nil)
             ]),
             ("Pattern B", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "オムライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "スコップコロッケ", dinnerSide: "なす味噌炒め", dinnerSoup: nil),
