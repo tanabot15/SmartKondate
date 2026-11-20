@@ -615,7 +615,6 @@ struct PresetDataService {
             RawIngredient(menuName: "スペアリブの煮込み", name: "スペアリブ肉", quantity: 400, unit: "g", category: .meatAndFish, source: "ヘルシオ p.9"),
             RawIngredient(menuName: "スペアリブの煮込み", name: "玉ねぎ", quantity: 0.5, unit: "個", category: .produce, source: "ヘルシオ p.9"),
             RawIngredient(menuName: "豚の角煮", name: "豚肩ロース（塊）", quantity: 800, unit: "g", category: .meatAndFish, source: "ヘルシオ p.8"),
-            RawIngredient(menuName: "豚の角煮", name: "ネギの青い部分", quantity: 1, unit: "本", category: .produce, source: "ヘルシオ p.8"),
             RawIngredient(menuName: "餃子", name: "冷凍餃子", quantity: 1, unit: "袋", category: .chilledAndDairy, source: nil),
             RawIngredient(menuName: "焼き魚 or 刺身", name: "焼き魚 or 刺身", quantity: 2, unit: "個", category: .meatAndFish, source: nil),
             RawIngredient(menuName: "スコップコロッケ", name: "合いびき肉", quantity: 200, unit: "g", category: .meatAndFish, source: "うたまる親子 p.30"),
@@ -661,7 +660,6 @@ struct PresetDataService {
             RawIngredient(menuName: "レタスオイスター炒め", name: "レタス", quantity: 0.25, unit: "個", category: .produce, source: "The基本 p.115"),
             RawIngredient(menuName: "牛すじの煮込み", name: "牛すじ", quantity: 500, unit: "g", category: .meatAndFish, source: "ヘルシオ p.10"),
             RawIngredient(menuName: "牛すじの煮込み", name: "こんにゃく", quantity: 1, unit: "枚", category: .chilledAndDairy, source: "ヘルシオ p.10"),
-            RawIngredient(menuName: "牛すじの煮込み", name: "ネギの青い部分", quantity: 1, unit: "本", category: .produce, source: "ヘルシオ p.10"),
             RawIngredient(menuName: "トマト卵炒め", name: "トマト", quantity: 1, unit: "個", category: .produce, source: "https://www.nichireifoods.co.jp/media/9561/"),
             RawIngredient(menuName: "トマト卵炒め", name: "卵", quantity: 2, unit: "個", category: .chilledAndDairy, source: "https://www.nichireifoods.co.jp/media/9561/"),
             RawIngredient(menuName: "鶏と大根の煮物", name: "鶏もも肉(切)", quantity: 120, unit: "g", category: .meatAndFish, source: "ヘルシオ p.7"),
@@ -778,7 +776,7 @@ struct PresetDataService {
             ]),
             ("Pattern B", [
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "オムライス", lunchSide: nil, lunchSoup: nil, dinnerMain: "スコップコロッケ", dinnerSide: "なす味噌炒め", dinnerSoup: nil),
-                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ささみユッケ丼", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "豚肉とトマト重ね蒸し", dinnerSide: "にんじんしりしり", dinnerSoup: nil),
+                DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ささみユッケ丼", lunchSide: nil, lunchSoup: "コーンポタージュ", dinnerMain: "豚の角煮", dinnerSide: "にんじんしりしり", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "ツナトマトパスタ", lunchSide: "外食・テイクアウト", lunchSoup: nil, dinnerMain: "和風あんかけ豆腐ハンバーグ", dinnerSide: "かぼちゃの煮物", dinnerSoup: nil),
                 DayData(breakfastMain: "トースト", breakfastSide: "ヨーグルト", lunchMain: "お好み焼き", lunchSide: nil, lunchSoup: "にんじんのポタージュ", dinnerMain: "豚生姜焼き", dinnerSide: "トマトのマリネサラダ", dinnerSoup: nil)
             ]),
